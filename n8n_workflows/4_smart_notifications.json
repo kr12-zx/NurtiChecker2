@@ -1,0 +1,621 @@
+{
+  "name": "NutriChecker - Smart Notifications",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "smart-notification",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-smart-notification",
+      "name": "Webhook - Smart Notification",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "smart-notification"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/push_tokens",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "user_id",
+              "value": "eq.{{ $json.userId }}"
+            },
+            {
+              "name": "is_active",
+              "value": "eq.true"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-user-token",
+      "name": "Get User Token",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [460, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "supabase-nutrichecker",
+          "name": "Supabase NutriChecker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-token",
+              "leftValue": "={{ $('Get User Token').item.json.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-has-token",
+      "name": "Check Has Token",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "high-calories",
+              "leftValue": "={{ $('Webhook - Smart Notification').item.json.nutritionInfo.calories }}",
+              "rightValue": 400,
+              "operator": {
+                "type": "number",
+                "operation": "gte",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-high-calories",
+      "name": "Check High Calories",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-allergens",
+              "leftValue": "={{ $('Webhook - Smart Notification').item.json.allergens && $('Webhook - Smart Notification').item.json.allergens.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-allergens",
+      "name": "Check Allergens",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [900, 400]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/nutrition_data",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "user_id",
+              "value": "eq.{{ $('Webhook - Smart Notification').item.json.userId }}"
+            },
+            {
+              "name": "scanned_at",
+              "value": "gte.{{ new Date().toISOString().split('T')[0] }}"
+            },
+            {
+              "name": "select",
+              "value": "id"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-daily-scans",
+      "name": "Get Daily Scans",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [900, 600],
+      "credentials": {
+        "supabaseApi": {
+          "id": "supabase-nutrichecker",
+          "name": "Supabase NutriChecker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "achievement-5-scans",
+              "leftValue": "={{ $('Get Daily Scans').item.json.length }}",
+              "rightValue": 5,
+              "operator": {
+                "type": "number",
+                "operation": "equal",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-achievement",
+      "name": "Check Achievement",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1120, 600]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://exp.host/--/api/v2/push/send",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "to",
+              "value": "={{ $('Get User Token').item.json[0].push_token }}"
+            },
+            {
+              "name": "title",
+              "value": "⚠️ Высококалорийный продукт"
+            },
+            {
+              "name": "body",
+              "value": "={{ $('Webhook - Smart Notification').item.json.foodName }} содержит {{ $('Webhook - Smart Notification').item.json.nutritionInfo.calories }} ккал. Учтите это в рационе!"
+            },
+            {
+              "name": "data",
+              "value": "={{ JSON.stringify({\n  type: 'high_calorie_warning',\n  userId: $('Webhook - Smart Notification').item.json.userId,\n  foodName: $('Webhook - Smart Notification').item.json.foodName,\n  calories: $('Webhook - Smart Notification').item.json.nutritionInfo.calories\n}) }}"
+            },
+            {
+              "name": "sound",
+              "value": "default"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "send-high-calorie-warning",
+      "name": "Send High Calorie Warning",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1120, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://exp.host/--/api/v2/push/send",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "to",
+              "value": "={{ $('Get User Token').item.json[0].push_token }}"
+            },
+            {
+              "name": "title",
+              "value": "🚨 Внимание: аллерген!"
+            },
+            {
+              "name": "body",
+              "value": "=В продукте {{ $('Webhook - Smart Notification').item.json.foodName }} обнаружен аллерген: {{ $('Webhook - Smart Notification').item.json.allergens.join(', ') }}"
+            },
+            {
+              "name": "data",
+              "value": "={{ JSON.stringify({\n  type: 'allergen_warning',\n  userId: $('Webhook - Smart Notification').item.json.userId,\n  foodName: $('Webhook - Smart Notification').item.json.foodName,\n  allergens: $('Webhook - Smart Notification').item.json.allergens\n}) }}"
+            },
+            {
+              "name": "sound",
+              "value": "default"
+            },
+            {
+              "name": "priority",
+              "value": "high"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "send-allergen-warning",
+      "name": "Send Allergen Warning",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1120, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://exp.host/--/api/v2/push/send",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "to",
+              "value": "={{ $('Get User Token').item.json[0].push_token }}"
+            },
+            {
+              "name": "title",
+              "value": "🎉 Отличная работа!"
+            },
+            {
+              "name": "body",
+              "value": "Вы отсканировали уже 5 продуктов сегодня! Продолжайте следить за питанием!"
+            },
+            {
+              "name": "data",
+              "value": "={{ JSON.stringify({\n  type: 'achievement',\n  userId: $('Webhook - Smart Notification').item.json.userId,\n  achievement: 'daily_5_scans',\n  scansCount: 5\n}) }}"
+            },
+            {
+              "name": "sound",
+              "value": "default"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "send-achievement-notification",
+      "name": "Send Achievement Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1340, 600]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/sent_notifications",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_id",
+              "value": "={{ $('Webhook - Smart Notification').item.json.userId }}"
+            },
+            {
+              "name": "push_token",
+              "value": "={{ $('Get User Token').item.json[0].push_token }}"
+            },
+            {
+              "name": "notification_type",
+              "value": "={% if $('Send High Calorie Warning').item %}high_calorie_warning{% elif $('Send Allergen Warning').item %}allergen_warning{% elif $('Send Achievement Notification').item %}achievement{% endif %}"
+            },
+            {
+              "name": "title",
+              "value": "={% if $('Send High Calorie Warning').item %}⚠️ Высококалорийный продукт{% elif $('Send Allergen Warning').item %}🚨 Внимание: аллерген!{% elif $('Send Achievement Notification').item %}🎉 Отличная работа!{% endif %}"
+            },
+            {
+              "name": "body",
+              "value": "={% if $('Send High Calorie Warning').item %}{{ $('Webhook - Smart Notification').item.json.foodName }} содержит {{ $('Webhook - Smart Notification').item.json.nutritionInfo.calories }} ккал{% elif $('Send Allergen Warning').item %}В продукте {{ $('Webhook - Smart Notification').item.json.foodName }} обнаружен аллерген{% elif $('Send Achievement Notification').item %}Вы отсканировали уже 5 продуктов сегодня!{% endif %}"
+            },
+            {
+              "name": "status",
+              "value": "sent"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "log-smart-notification",
+      "name": "Log Smart Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1560, 400],
+      "credentials": {
+        "supabaseApi": {
+          "id": "supabase-nutrichecker",
+          "name": "Supabase NutriChecker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Smart notification processed\",\n  \"userId\": \"{{ $('Webhook - Smart Notification').item.json.userId }}\",\n  \"notifications_sent\": {\n    \"high_calorie\": {{ $('Send High Calorie Warning').item ? 'true' : 'false' }},\n    \"allergen\": {{ $('Send Allergen Warning').item ? 'true' : 'false' }},\n    \"achievement\": {{ $('Send Achievement Notification').item ? 'true' : 'false' }}\n  },\n  \"timestamp\": \"{{ new Date().toISOString() }}\"\n}",
+        "options": {}
+      },
+      "id": "success-response",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1780, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": false,\n  \"error\": \"No active push token found\",\n  \"userId\": \"{{ $('Webhook - Smart Notification').item.json.userId }}\",\n  \"timestamp\": \"{{ new Date().toISOString() }}\"\n}",
+        "responseCode": 404,
+        "options": {}
+      },
+      "id": "no-token-response",
+      "name": "No Token Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [900, 800]
+    }
+  ],
+  "connections": {
+    "Webhook - Smart Notification": {
+      "main": [
+        [
+          {
+            "node": "Get User Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Token": {
+      "main": [
+        [
+          {
+            "node": "Check Has Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Has Token": {
+      "main": [
+        [
+          {
+            "node": "Check High Calories",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check Allergens",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Daily Scans",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Token Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check High Calories": {
+      "main": [
+        [
+          {
+            "node": "Send High Calorie Warning",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Allergens": {
+      "main": [
+        [
+          {
+            "node": "Send Allergen Warning",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Daily Scans": {
+      "main": [
+        [
+          {
+            "node": "Check Achievement",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Achievement": {
+      "main": [
+        [
+          {
+            "node": "Send Achievement Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send High Calorie Warning": {
+      "main": [
+        [
+          {
+            "node": "Log Smart Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Allergen Warning": {
+      "main": [
+        [
+          {
+            "node": "Log Smart Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Achievement Notification": {
+      "main": [
+        [
+          {
+            "node": "Log Smart Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Smart Notification": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "smart-notifications",
+  "tags": [
+    {
+      "createdAt": "2024-12-25T10:00:00.000Z",
+      "updatedAt": "2024-12-25T10:00:00.000Z",
+      "id": "nutrichecker",
+      "name": "nutrichecker"
+    }
+  ]
+} 

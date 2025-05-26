@@ -1,0 +1,283 @@
+{
+  "name": "NutriChecker - Send Test Push",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "send-test-push",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-test-push",
+      "name": "Webhook - Test Push",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "send-test-push"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "validate-userid",
+              "leftValue": "={{ $json.userId }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "validate-pushtoken",
+              "leftValue": "={{ $json.pushToken }}",
+              "rightValue": "ExponentPushToken",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "validate-input",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://exp.host/--/api/v2/push/send",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept-encoding",
+              "value": "gzip, deflate"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "to",
+              "value": "={{ $('Webhook - Test Push').item.json.pushToken }}"
+            },
+            {
+              "name": "title",
+              "value": "🧪 Тестовое уведомление"
+            },
+            {
+              "name": "body",
+              "value": "Push-уведомления работают! 🎉"
+            },
+            {
+              "name": "data",
+              "value": "={{ JSON.stringify({\n  type: 'test',\n  userId: $('Webhook - Test Push').item.json.userId,\n  timestamp: new Date().toISOString()\n}) }}"
+            },
+            {
+              "name": "sound",
+              "value": "default"
+            },
+            {
+              "name": "badge",
+              "value": 1
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "send-expo-push",
+      "name": "Send Expo Push",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/sent_notifications",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_id",
+              "value": "={{ $('Webhook - Test Push').item.json.userId }}"
+            },
+            {
+              "name": "push_token",
+              "value": "={{ $('Webhook - Test Push').item.json.pushToken }}"
+            },
+            {
+              "name": "notification_type",
+              "value": "test"
+            },
+            {
+              "name": "title",
+              "value": "🧪 Тестовое уведомление"
+            },
+            {
+              "name": "body",
+              "value": "Push-уведомления работают! 🎉"
+            },
+            {
+              "name": "data",
+              "value": "={{ JSON.stringify({\n  type: 'test',\n  userId: $('Webhook - Test Push').item.json.userId,\n  timestamp: new Date().toISOString()\n}) }}"
+            },
+            {
+              "name": "status",
+              "value": "={{ $('Send Expo Push').item.json.data && $('Send Expo Push').item.json.data.status === 'ok' ? 'sent' : 'failed' }}"
+            },
+            {
+              "name": "error_message",
+              "value": "={{ $('Send Expo Push').item.json.data && $('Send Expo Push').item.json.data.status !== 'ok' ? JSON.stringify($('Send Expo Push').item.json.data) : null }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "log-notification",
+      "name": "Log Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 400],
+      "credentials": {
+        "supabaseApi": {
+          "id": "supabase-nutrichecker",
+          "name": "Supabase NutriChecker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Test notification sent successfully\",\n  \"userId\": \"{{ $('Webhook - Test Push').item.json.userId }}\",\n  \"pushResponse\": {{ JSON.stringify($('Send Expo Push').item.json) }},\n  \"timestamp\": \"{{ new Date().toISOString() }}\"\n}",
+        "options": {}
+      },
+      "id": "success-response",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": false,\n  \"error\": \"Invalid input data\",\n  \"message\": \"Required fields: userId, pushToken (must start with ExponentPushToken)\",\n  \"timestamp\": \"{{ new Date().toISOString() }}\"\n}",
+        "responseCode": 400,
+        "options": {}
+      },
+      "id": "error-response",
+      "name": "Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [680, 500]
+    }
+  ],
+  "connections": {
+    "Webhook - Test Push": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Send Expo Push",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log Notification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Expo Push": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Notification": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "send-test-push",
+  "tags": [
+    {
+      "createdAt": "2024-12-25T10:00:00.000Z",
+      "updatedAt": "2024-12-25T10:00:00.000Z",
+      "id": "nutrichecker",
+      "name": "nutrichecker"
+    }
+  ]
+} 

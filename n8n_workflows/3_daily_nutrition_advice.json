@@ -1,0 +1,512 @@
+{
+  "name": "NutriChecker - Daily Nutrition Advice",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "id": "cron-daily-trigger",
+      "name": "Daily Trigger (9:00 AM)",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/active_users_with_tokens",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-active-users",
+      "name": "Get Active Users",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [460, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "supabase-nutrichecker",
+          "name": "Supabase NutriChecker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-users",
+      "name": "Split Users",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/weekly_nutrition_stats",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "user_id",
+              "value": "eq.{{ $json.user_id }}"
+            },
+            {
+              "name": "week_start",
+              "value": "eq.{{ new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-nutrition-stats",
+      "name": "Get Nutrition Stats",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [900, 200],
+      "credentials": {
+        "supabaseApi": {
+          "id": "supabase-nutrichecker",
+          "name": "Supabase NutriChecker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-nutrition-data",
+              "leftValue": "={{ $('Get Nutrition Stats').item.json.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-has-data",
+      "name": "Check Has Data",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [900, 400]
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "operation": "create",
+        "chatInput": {
+          "messages": {
+            "values": [
+              {
+                "role": "system",
+                "content": "Ты опытный диетолог и нутрициолог. Дай краткий персонализированный совет по питанию на основе данных пользователя за последнюю неделю. Ответ должен быть не более 100 символов, дружелюбным и мотивирующим."
+              },
+              {
+                "role": "user",
+                "content": "=Статистика питания за неделю:\n- Количество сканирований: {{ $('Get Nutrition Stats').item.json[0].scans_count || 0 }}\n- Средние калории на продукт: {{ Math.round($('Get Nutrition Stats').item.json[0].avg_calories || 0) }} ккал\n- Общие калории: {{ Math.round($('Get Nutrition Stats').item.json[0].total_calories || 0) }} ккал\n- Средний белок: {{ Math.round($('Get Nutrition Stats').item.json[0].avg_protein || 0) }}г\n- Средний жир: {{ Math.round($('Get Nutrition Stats').item.json[0].avg_fat || 0) }}г\n- Средние углеводы: {{ Math.round($('Get Nutrition Stats').item.json[0].avg_carbs || 0) }}г\n\nДай краткий совет для улучшения питания."
+              }
+            ]
+          },
+          "options": {
+            "maxTokens": 150,
+            "temperature": 0.7
+          }
+        }
+      },
+      "id": "generate-ai-advice",
+      "name": "Generate AI Advice",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.3,
+      "position": [1120, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "openai-nutrichecker",
+          "name": "OpenAI NutriChecker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/nutrition_advice",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_id",
+              "value": "={{ $('Split Users').item.json.user_id }}"
+            },
+            {
+              "name": "advice_text",
+              "value": "={{ $('Generate AI Advice').item.json.choices[0].message.content }}"
+            },
+            {
+              "name": "advice_type",
+              "value": "daily"
+            },
+            {
+              "name": "nutrition_summary",
+              "value": "={{ JSON.stringify($('Get Nutrition Stats').item.json[0]) }}"
+            },
+            {
+              "name": "ai_model",
+              "value": "gpt-4"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "save-advice",
+      "name": "Save Advice",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1340, 200],
+      "credentials": {
+        "supabaseApi": {
+          "id": "supabase-nutrichecker",
+          "name": "Supabase NutriChecker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://exp.host/--/api/v2/push/send",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept-encoding",
+              "value": "gzip, deflate"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "to",
+              "value": "={{ $('Split Users').item.json.push_token }}"
+            },
+            {
+              "name": "title",
+              "value": "🥗 Ваш ежедневный совет"
+            },
+            {
+              "name": "body",
+              "value": "={{ $('Generate AI Advice').item.json.choices[0].message.content }}"
+            },
+            {
+              "name": "data",
+              "value": "={{ JSON.stringify({\n  type: 'nutrition_advice',\n  userId: $('Split Users').item.json.user_id,\n  adviceId: $('Save Advice').item.json[0].id,\n  timestamp: new Date().toISOString()\n}) }}"
+            },
+            {
+              "name": "sound",
+              "value": "default"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "send-push-notification",
+      "name": "Send Push Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1340, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/sent_notifications",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_id",
+              "value": "={{ $('Split Users').item.json.user_id }}"
+            },
+            {
+              "name": "push_token",
+              "value": "={{ $('Split Users').item.json.push_token }}"
+            },
+            {
+              "name": "notification_type",
+              "value": "nutrition_advice"
+            },
+            {
+              "name": "title",
+              "value": "🥗 Ваш ежедневный совет"
+            },
+            {
+              "name": "body",
+              "value": "={{ $('Generate AI Advice').item.json.choices[0].message.content }}"
+            },
+            {
+              "name": "data",
+              "value": "={{ JSON.stringify({\n  type: 'nutrition_advice',\n  userId: $('Split Users').item.json.user_id,\n  adviceId: $('Save Advice').item.json[0].id\n}) }}"
+            },
+            {
+              "name": "status",
+              "value": "={{ $('Send Push Notification').item.json.data && $('Send Push Notification').item.json.data.status === 'ok' ? 'sent' : 'failed' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "log-notification",
+      "name": "Log Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1560, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "supabase-nutrichecker",
+          "name": "Supabase NutriChecker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/nutrition_advice",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "eq.{{ $('Save Advice').item.json[0].id }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "sent_at",
+              "value": "={{ new Date().toISOString() }}"
+            },
+            {
+              "name": "is_sent",
+              "value": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "update-advice-status",
+      "name": "Update Advice Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1560, 500],
+      "credentials": {
+        "supabaseApi": {
+          "id": "supabase-nutrichecker",
+          "name": "Supabase NutriChecker"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Daily Trigger (9:00 AM)": {
+      "main": [
+        [
+          {
+            "node": "Get Active Users",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Active Users": {
+      "main": [
+        [
+          {
+            "node": "Split Users",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Users": {
+      "main": [
+        [
+          {
+            "node": "Get Nutrition Stats",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check Has Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Nutrition Stats": {
+      "main": [
+        [
+          {
+            "node": "Generate AI Advice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Has Data": {
+      "main": [
+        [
+          {
+            "node": "Generate AI Advice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate AI Advice": {
+      "main": [
+        [
+          {
+            "node": "Save Advice",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Push Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Advice": {
+      "main": [
+        [
+          {
+            "node": "Log Notification",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update Advice Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Push Notification": {
+      "main": [
+        [
+          {
+            "node": "Log Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "daily-nutrition-advice",
+  "tags": [
+    {
+      "createdAt": "2024-12-25T10:00:00.000Z",
+      "updatedAt": "2024-12-25T10:00:00.000Z",
+      "id": "nutrichecker",
+      "name": "nutrichecker"
+    }
+  ]
+} 

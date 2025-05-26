@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "56615385728",
+    "project_id": "nutrichecker-41993",
+    "storage_bucket": "nutrichecker-41993.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:56615385728:android:e92c49d22d2eace3e10465",
+        "android_client_info": {
+          "package_name": "com.caloriestracker.nutrichecker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAWX_DWWf3fFyn4HiGqraClKsr9nqhByJ0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

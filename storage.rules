@@ -1,0 +1,17 @@
+rules_version = '2';
+
+// Правила для Firebase Storage
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Разрешаем чтение и запись для всех файлов (для тестирования)
+    match /{allPaths=**} {
+      allow read, write;
+    }
+    
+    // Правила для миниатюр
+    match /thumbnails/{allPaths=**} {
+      // Чтение и запись доступны всем (для тестирования)
+      allow read, write;
+    }
+  }
+}

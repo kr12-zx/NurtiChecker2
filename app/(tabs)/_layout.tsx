@@ -1,45 +1,48 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
-
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import CustomTabBar from '../../components/CustomTabBar'; // Путь к нашему кастомному таб-бару
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
-    <Tabs
+    <Tabs 
+      tabBar={props => <CustomTabBar {...props} />} // Используем кастомный таб-бар
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
+        headerShown: false, // Скрываем стандартный заголовок для всех экранов табов
+      }}
+    >
       <Tabs.Screen
-        name="index"
+        name="main01" // Имя файла без расширения
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          // Опции для экрана main01 (например, иконка для стандартного таб-бара, если бы он использовался)
+          // title: 'Dashboard', 
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="diets" // Имя файла без расширения
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          // title: 'Diets', 
+        }}
+      />
+       {/* Пустая вкладка для центральной кнопки, если бы она была частью таб-бара*/}
+       {/* 
+       <Tabs.Screen 
+        name="scan-placeholder" 
+        component={() => null} // Пустой компонент
+        options={{ tabBarButton: () => null }} // Скрываем кнопку таба
+       /> 
+       */}
+      <Tabs.Screen
+        name="allergens" // Имя файла без расширения
+        options={{
+          // title: 'Allergens',
+        }}
+      />
+      <Tabs.Screen
+        name="history" // Имя файла без расширения
+        options={{
+          // title: 'History',
         }}
       />
     </Tabs>
   );
-}
+} 

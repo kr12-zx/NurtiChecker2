@@ -1,0 +1,437 @@
+## Onboarding Flow Design for a Weight Loss Application
+
+**General Concept:**
+This onboarding flow is designed to gather comprehensive user information (anthropometrics, goals, habits, psychological profile, medical aspects) to create a personalized weight loss plan. A key feature is the presentation of this tailored plan *before* user registration to increase the motivation to create an account and thereby improve conversion rates. The flow incorporates direct questions, informational screens, and intermediate screens that dynamically show the user how their program is being built based on their input.
+
+---
+
+**Part 0: Welcome and Initial Setup**
+
+*   **Screen 0: "Welcome!"**
+    *   **Purpose:** To welcome the user, initiate the personalized plan creation process, and show the structure of the upcoming program.
+    *   **Displayed Content:**
+        *   Title: "Welcome!"
+        *   Subtitle: "Let's build a personalized plan that will set you up for success."
+        *   "PROGRAM" block (visualizing setup stages, all greyed out/inactive):
+            *   Weight Goal (scales icon)
+            *   Calorie Budget (calculator/bar chart icon)
+            *   Calorie Schedule (calendar icon)
+            *   Nutrition Strategy (fork and knife icon)
+            *   Intermittent Fasting (clock icon)
+        *   Button: "Continue"
+    *   **Data Collected:** None (welcome screen).
+    *   **Navigation Logic:** "Continue" -> **Screen 1: "When is your birthday?"**.
+    *   **Important Notes/Recommendations:** A great starting screen that immediately sets expectations.
+
+---
+
+**Part 1: Basic Anthropometry and Primary Goals**
+
+*   **Screen 1: "When is your birthday?"**
+    *   **Purpose:** To obtain the user's date of birth for age calculation.
+    *   **Displayed Content:**
+        *   Title: "When is your birthday?"
+        *   Date picker (three columns: day, month, year). Example selected value: "1 January 1975".
+        *   Button: "Next"
+    *   **Data Collected:** Date of birth (day, month, year).
+    *   **Navigation Logic:** "Next" -> **Screen 2: "How tall are you?"**.
+    *   **Important Notes/Recommendations:** Standard and clear date picker.
+
+*   **Screen 2: "How tall are you?"**
+    *   **Purpose:** To obtain the user's height.
+    *   **Displayed Content:**
+        *   Title: "How tall are you?"
+        *   Height picker (vertical scroll). Example selected value: "170 cm".
+        *   Unit switcher: "ft/in" | "cm" ("cm" active and highlighted).
+        *   Button: "Next"
+    *   **Data Collected:** Height (numerical value), selected units (cm/ft,in).
+    *   **Navigation Logic:** "Next" -> **Screen 3: "Select your gender"**.
+    *   **Important Notes/Recommendations:** User-friendly picker with unit conversion.
+
+*   **Screen 3: "Select your gender"**
+    *   **Purpose:** To obtain the user's gender for more accurate calorie calculations.
+    *   **Displayed Content:**
+        *   Title: "Select your gender"
+        *   Option buttons:
+            *   "Female"
+            *   "Male"
+            *   "Non-Binary"
+            *   "Prefer Not To Say"
+        *   (No "Next/Continue" button, selection likely leads directly to the next screen)
+    *   **Data Collected:** Gender (categorical).
+    *   **Navigation Logic:** Selection of an option -> **Screen 4: "What is your current weight?"**.
+    *   **Important Notes/Recommendations:** Crucial for calculations. "Non-Binary" and "Prefer Not To Say" might require using averaged formulas or a disclaimer about potentially lower calculation accuracy.
+
+*   **Screen 4: "What is your current weight?"**
+    *   **Purpose:** To obtain the user's current weight.
+    *   **Displayed Content:**
+        *   Title: "What is your current weight?"
+        *   Subtitle: "Take a guess if you are not sure. You can update it later."
+        *   Weight picker (allowing whole numbers and decimals). Example selected value: "77 . 1 kg".
+        *   Unit switcher: "lb" | "st/lb" | "kg" ("kg" active and highlighted).
+        *   Button: "Next"
+    *   **Data Collected:** Current weight (numerical value), selected units (kg/lb/st/lb).
+    *   **Navigation Logic:** "Next" -> **Screen 5: "It's time to set your goal weight"**.
+
+*   **Screen 5: "It's time to set your goal weight"**
+    *   **Purpose:** To prepare the user for entering their desired weight, emphasizing flexibility in goal setting.
+    *   **Displayed Content:**
+        *   Title: "It's time to set your goal weight"
+        *   Text: "Whether you'd like to start with a smaller, short-term goal or aim for your long-term target, the decision is yours. You can always adjust your goal as you progress."
+        *   Button: "Continue"
+    *   **Data Collected:** None (informational).
+    *   **Navigation Logic:** "Continue" -> **Screen 6: "What is your goal weight?"**.
+    *   **Important Notes/Recommendations:** Reduces potential user pressure when setting a goal.
+
+*   **Screen 6: "What is your goal weight?"**
+    *   **Purpose:** To obtain the user's desired weight.
+    *   **Displayed Content:**
+        *   Title: "What is your goal weight?"
+        *   Weight picker (allowing whole numbers and decimals). Example selected value: "72 . 1 kg".
+        *   Unit switcher: "lb" | "st/lb" | "kg" ("kg" active and highlighted).
+        *   Button: "Next"
+    *   **Data Collected:** Desired weight (numerical value), selected units.
+    *   **Navigation Logic:** "Next" -> **Screen 7: "What's your primary goal?"**.
+
+*   **Screen 7: "What's your primary goal?"**
+    *   **Purpose:** To determine the user's primary motivation, which might be broader than just weight loss.
+    *   **Displayed Content:**
+        *   Title: "What's your primary goal?"
+        *   Option buttons: "Lose weight", "Improve my overall health", "Gain more control over my eating habits", "Build better habits for the long term", "Feel more confident in my body".
+    *   **Data Collected:** User's primary goal (categorical).
+    *   **Navigation Logic:** Selection of an option -> **Screen 8: "You've Set Your Goal!"**.
+
+*   **Screen 8: "You've Set Your Goal!"**
+    *   **Purpose:** To confirm that the weight goal is set and show the updated program status.
+    *   **Displayed Content:**
+        *   Title: "You've Set Your Goal!"
+        *   Subtitle: "Now it's time to create the plan to help you reach it."
+        *   "PROGRAM" block: "Lose X kgs" (active), "Weigh Y kgs" (active), other items greyed out.
+        *   Button: "Continue"
+    *   **Data Collected:** None (informational).
+    *   **Navigation Logic:** "Continue" -> **Screen 9: "Next up is your calorie budget"**.
+
+---
+
+**Part 2: Determining Calorie Budget and Activity**
+
+*   **Screen 9: "Next up is your calorie budget"**
+    *   **Purpose:** To announce the transition to calorie budget setup and show the updated program status.
+    *   **Displayed Content:**
+        *   Title: "Next up is your calorie budget"
+        *   Subtitle: "Your calorie budget is the most important element of your program."
+        *   "PROGRAM" block: "Lose X kgs" (active), "Weigh Y kgs" (active), "Calorie Budget" (highlighted as next step), other items greyed out.
+        *   Button: "Continue"
+    *   **Data Collected:** None (informational).
+    *   **Navigation Logic:** "Continue" -> **Screen 10: "There are two steps to determine your calorie budget"**.
+
+*   **Screen 10: "There are two steps to determine your calorie budget"**
+    *   **Purpose:** To explain the process of determining the user's daily calorie allowance.
+    *   **Displayed Content:**
+        *   Title: "There are two steps to determine your calorie budget"
+        *   Text: "Step One: We'll calculate how many calories your body burns each day using some personal data. Step Two: We'll create a calorie deficit by subtracting calories from your daily burn to help you lose weight."
+        *   Button: "Continue"
+    *   **Data Collected:** None (informational).
+    *   **Navigation Logic:** "Continue" -> **Screen 11: "While we're talking about calories, let's cover exercise"**.
+
+*   **Screen 11: "While we're talking about calories, let's cover exercise"**
+    *   **Purpose:** To inquire if the user plans to exercise.
+    *   **Displayed Content:**
+        *   Icon: Dumbbell and water bottle/shaker.
+        *   Title: "While we're talking about calories, let's cover exercise"
+        *   Question: "Are you planning to exercise while working on losing weight?"
+        *   Option buttons: "Yes, most likely", "No, probably not".
+    *   **Data Collected:** Intention to exercise (boolean/categorical).
+    *   **Navigation Logic:** Selection of an option -> **Screen 12: "Great!"**.
+
+*   **Screen 12: "Great!"**
+    *   **Purpose:** To provide positive feedback on the exercise choice and offer additional information about its benefits.
+    *   **Displayed Content:**
+        *   Icon: Dumbbell and water bottle/shaker.
+        *   Title: "Great!"
+        *   Text: "Exercise offers many benefits... remember—your calorie budget will be the key... Strength training... talk to your doctor. Now, let's continue building your program."
+        *   Button: "Continue"
+    *   **Data Collected:** None (informational).
+    *   **Navigation Logic:** "Continue" -> **Screen 13: "Step One is Done!"**.
+
+*   **Screen 13: "Step One is Done!"**
+    *   **Purpose:** To inform that the daily calorie expenditure (TDEE) calculation is complete and prepare for deficit selection.
+    *   **Displayed Content:**
+        *   Icon: Calculator.
+        *   Title: "Step One is Done!"
+        *   Text: "We've calculated your daily calorie burn. Now, let's decide how many calories to subtract... to create your calorie budget..."
+        *   Button: "Continue"
+    *   **Data Collected:** None (informational).
+    *   **Navigation Logic:** "Continue" -> **Screen 14: "Would you like a quick overview of how calorie counting works?"**.
+
+*   **Screen 14: "Would you like a quick overview of how calorie counting works?"**
+    *   **Purpose:** To offer educational content about calorie counting.
+    *   **Displayed Content:**
+        *   Title: "Would you like a quick overview of how calorie counting works?"
+        *   Option buttons: "Yes, please!", "No, thanks".
+    *   **Data Collected:** Interest in calorie counting overview (boolean).
+    *   **Navigation Logic:**
+        *   "Yes, please!" -> (Assumed) Screen with calorie counting overview, then -> **Screen 15: "Select a weight loss plan"**.
+        *   "No, thanks" -> **Screen 15: "Select a weight loss plan"**.
+
+*   **Screen 15: "Select a weight loss plan"**
+    *   **Purpose:** To allow the user to choose their weight loss intensity and corresponding calorie budget.
+    *   **Displayed Content:**
+        *   Title: "Select a weight loss plan"
+        *   Horizontal scroll or multiple plan cards. Each card includes: Status ("RECOMMENDED FOR YOU" or "NOT RECOMMENDED"), Plan Name ("Steady", "Accelerated"), Description, Details (Eat X calories/day, Lose Y kg/week, About Z weeks to goal), "Select" button.
+    *   **Data Collected:** Selected weight loss plan (defines daily calorie intake and projected weight loss rate).
+    *   **Navigation Logic:** Clicking "Select" on a card -> **Screen 16: "Your budget is [X] calories"**.
+
+*   **Screen 16: "Your budget is [X] calories"**
+    *   **Purpose:** To confirm the user's chosen calorie budget.
+    *   **Displayed Content:**
+        *   Icon: Flame.
+        *   Title: "Your budget is [X] calories" (e.g., "Your budget is 1,485 calories").
+        *   Text: "If you consistently eat an average of [X] calories, you'll lose weight at the rate you selected."
+        *   Button: "Continue"
+    *   **Data Collected:** None (confirmation).
+    *   **Navigation Logic:** "Continue" -> **Screen 17: "Is a Calorie Schedule Right For You?"**.
+
+*   **Screen 17: "Is a Calorie Schedule Right For You?"**
+    *   **Purpose:** To offer the option of a flexible calorie schedule.
+    *   **Displayed Content:**
+        *   Title: "Is a Calorie Schedule Right For You?"
+        *   Description of the feature.
+        *   Question: "What would you like to do?"
+        *   "PROGRAM" block (updated with chosen calorie budget).
+        *   Option buttons: "Skip This Feature (Recommended)", "Add a Calorie Schedule".
+    *   **Data Collected:** User's choice regarding a flexible calorie schedule (boolean).
+    *   **Navigation Logic:**
+        *   "Skip This Feature (Recommended)" -> **Screen 18: "Okay, we'll stick with [X] calories every day."**.
+        *   "Add a Calorie Schedule" -> (Assumed) Screen for setting up a flexible calorie schedule, then -> **Screen 19: "Next up is nutrition"**.
+
+*   **Screen 18: "Okay, we'll stick with [X] calories every day."**
+    *   **Purpose:** To confirm the choice of a fixed daily calorie budget.
+    *   **Displayed Content:**
+        *   Icon: Vertical bars.
+        *   Title: "Okay, we'll stick with [X] calories every day."
+        *   Subtitle: "If you change your mind, you can always add a Calorie Schedule later."
+        *   Button: "Continue"
+    *   **Data Collected:** None (confirmation).
+    *   **Navigation Logic:** "Continue" -> **Screen 19: "Next up is nutrition"**.
+
+---
+
+**Part 3: Nutrition and Eating Habits**
+
+*   **Screen 19: "Next up is nutrition"**
+    *   **Purpose:** To announce the transition to nutrition-related questions and show the updated program status.
+    *   **Displayed Content:**
+        *   Title: "Next up is nutrition"
+        *   "PROGRAM" block (updated: Lose X kgs, Weigh Y kgs, Z avg daily calories, Lose ¾ kg/week, Calorie Schedule "Same budget everyday" all active; "Nutrition Strategy" highlighted).
+        *   Button: "Continue"
+    *   **Data Collected:** None (informational).
+    *   **Navigation Logic:** "Continue" -> **Screen 20: "What's been the biggest obstacle..."**.
+
+*   **Screen 20: "What's been the biggest obstacle when it comes to managing your weight?"**
+    *   **Purpose:** To identify the user's main difficulties in weight management.
+    *   **Displayed Content:** Title and option buttons: "Struggles with self-control", "Staying motivated long term", "Emotional or stress-related eating habits", "Lack of time", "Something else".
+    *   **Data Collected:** Main obstacle (categorical).
+    *   **Navigation Logic:** Selection -> **Screen 21: "How do you feel about your current eating habits?"**.
+
+*   **Screen 21: "How do you feel about your current eating habits?"**
+    *   **Purpose:** To assess the user's self-perception of their current eating habits.
+    *   **Displayed Content:** Icon (apple & carrot), Title, option buttons: "I feel confident in my choices", "I'm looking to make some improvements", "I'm still figuring things out", "I'm feeling unsure and need guidance".
+    *   **Data Collected:** Self-assessment of eating habits (categorical).
+    *   **Navigation Logic:** Selection -> **Screen 22: "What's most important to you when it comes to food?"**.
+
+*   **Screen 22: "What's most important to you when it comes to food?"**
+    *   **Purpose:** To determine the user's food priorities.
+    *   **Displayed Content:** Title, option buttons: "Enjoying what I eat", "Eating nutritious meals", "Convenience", "Affordability", "Balancing my diet with other health goals".
+    *   **Data Collected:** Main food priority (categorical).
+    *   **Navigation Logic:** Selection -> **Screen 23: "How often do you try new foods or recipes?"**.
+
+*   **Screen 23: "How often do you try new foods or recipes?"**
+    *   **Purpose:** To assess the user's openness to food variety.
+    *   **Displayed Content:** Icon (plate with fork & spoon), Title, option buttons: "Often: I like variety", "Sometimes: I mix in a few new things", "Rarely: I stick to my favorites", "Never: I prefer to eat the same foods regularly".
+    *   **Data Collected:** Frequency of trying new foods (categorical).
+    *   **Navigation Logic:** Selection -> **Screen 24: "How do you feel after most meals?"**.
+
+*   **Screen 24: "How do you feel after most meals?"**
+    *   **Purpose:** To understand how the user typically feels after eating.
+    *   **Displayed Content:** Title, option buttons: "Energized and content", "Satisfied, but sometimes too full", "I often feel hungry again soon after", "I often feel sluggish or tired".
+    *   **Data Collected:** Post-meal sensations (categorical).
+    *   **Navigation Logic:** Selection -> **Screen 25: "Do you take any medications or supplements..."**.
+
+---
+
+**Part 4: Medications, Special Programs, and Nutrition Strategies**
+
+*   **Screen 25: "Do you take any medications or supplements to aid in your weight loss?"**
+    *   **Purpose:** To inquire about the use of weight loss medications or supplements.
+    *   **Displayed Content:** Icon (pill/graph), Title, option buttons: "Yes, something that reduces appetite...", "Yes, something that reduces... fat absorption", "No, but I am interested...", "No, I am not".
+    *   **Data Collected:** Medication/supplement use (categorical, with type/interest).
+    *   **Navigation Logic:** Based on answer -> **Screen 26: "Are you interested in watching your nutrition?"**.
+
+*   **Screen 26: "Are you interested in watching your nutrition?"**
+    *   **Purpose:** To determine if the user wants to focus on calories only or also track nutrition, with a recommendation for low-appetite individuals.
+    *   **Displayed Content:** Icon (fork & knife), Title, Description ("Our Low Appetite Nutrition Strategy..."), option buttons: "I'm interested (Recommended)", "No, I'll just focus on calories".
+    *   **Data Collected:** Interest in tracking nutrition (boolean).
+    *   **Navigation Logic:**
+        *   "I'm interested (Recommended)" -> **Screen 27: "Let's choose your nutrition focus"**.
+        *   "No, I'll just focus on calories" -> (Program sets Nutrition Strategy to "Focus on Calories") -> **Screen 30: "Lastly, let's talk about Intermittent Fasting"**.
+
+*   **Screen 27: "Let's choose your nutrition focus"**
+    *   **Purpose:** To announce the transition to selecting a specific nutrition strategy.
+    *   **Displayed Content:** Title ("Let's choose your nutrition focus"), Subtitle ("On the next page you'll select a nutrition strategy..."), Button: "Continue".
+    *   **Data Collected:** None (informational).
+    *   **Navigation Logic:** "Continue" -> **Screen 28: "Low Appetite Nutrition Strategy"** (or a strategy selection screen).
+
+*   **Screen 28: "Low Appetite Nutrition Strategy"**
+    *   **Purpose:** To detail the nutrition strategy for low-appetite individuals.
+    *   **Displayed Content:** Image (healthy food), Title, Description (GLP-1s, high protein, fiber, fat targets, doctor confirmation), "Your Low Appetite Nutrient Targets" (Protein, Fibre, Saturated Fat), option buttons: "Apply this strategy", "Explore other strategies".
+    *   **Data Collected:** User's choice to apply this strategy or explore others.
+    *   **Navigation Logic:**
+        *   "Apply this strategy" -> **Screen 29: "This is looking really good!"**.
+        *   "Explore other strategies" -> (Assumed) Screen for selecting from multiple nutrition strategies, then -> **Screen 29: "This is looking really good!"**.
+
+*   **Screen 29: "This is looking really good!"**
+    *   **Purpose:** To show the user their updated plan with the chosen nutrition strategy.
+    *   **Displayed Content:** Title, "PROGRAM" block (updated with selected Nutrition Strategy and its macronutrient targets). Button: "Continue".
+    *   **Data Collected:** None (informational).
+    *   **Navigation Logic:** "Continue" -> **Screen 30: "Lastly, let's talk about Intermittent Fasting"**.
+
+---
+
+**Part 5: Additional Options (IF) and Psychological Profile**
+
+*   **Screen 30: "Lastly, let's talk about Intermittent Fasting"**
+    *   **Purpose:** To offer the option of intermittent fasting and provide recommendations.
+    *   **Displayed Content:** Title, Description (IF explanation, not recommended for low appetites, doctor consultation), "PROGRAM" block (Intermittent Fasting highlighted), option buttons: "Skip Intermittent Fasting (Recommended)", "Add a Fasting Schedule".
+    *   **Data Collected:** User's choice regarding intermittent fasting (boolean).
+    *   **Navigation Logic:**
+        *   "Skip Intermittent Fasting (Recommended)" -> **Screen 31: "We'll continue without Intermittent Fasting"**.
+        *   "Add a Fasting Schedule" -> (Assumed) Screen for setting up IF schedule, then -> **Screen 32: "We're almost ready to project your goal date"**.
+
+*   **Screen 31: "We'll continue without Intermittent Fasting"**
+    *   **Purpose:** To confirm the choice not to use intermittent fasting.
+    *   **Displayed Content:** Title, Button: "Continue".
+    *   **Data Collected:** None (confirmation).
+    *   **Navigation Logic:** "Continue" -> **Screen 32: "We're almost ready to project your goal date"**.
+
+*   **Screen 32: "We're almost ready to project your goal date"**
+    *   **Purpose:** A transitional screen announcing the final information gathering stage (psychological profile).
+    *   **Displayed Content:** Icon (lightning bolt), Title, Subtitle ("Before we do, take a moment to reflect on your strengths and challenges..."), Button: "Continue".
+    *   **Data Collected:** None (informational).
+    *   **Navigation Logic:** "Continue" -> **Screen 33: "How do you handle unexpected changes?"**.
+
+*   **Screen 33: "How do you handle unexpected changes?"**
+    *   **Purpose:** To assess user adaptability.
+    *   **Displayed Content:** Title, option buttons ("I embrace change quickly.", "I adapt, but it takes time", "I struggle but try to adjust", "I find change overwhelming").
+    *   **Data Collected:** Reaction to unexpected changes (categorical).
+    *   **Navigation Logic:** Selection -> **Screen 34: "How do you view challenges?"**.
+
+*   **Screen 34: "How do you view challenges?"**
+    *   **Purpose:** To understand the user's attitude towards difficulties.
+    *   **Displayed Content:** Title, option buttons ("I see them as chances to grow", "I try to learn but sometimes get discouraged", "I avoid them because I fear failure", "I feel they're too difficult to handle").
+    *   **Data Collected:** Perception of challenges (categorical).
+    *   **Navigation Logic:** Selection -> **Screen 35: "When you face setbacks, how do you typically respond?"**.
+
+*   **Screen 35: "When you face setbacks, how do you typically respond?"**
+    *   **Purpose:** To assess the user's reaction to setbacks.
+    *   **Displayed Content:** Title, option buttons ("I bounce back quickly...", "I recover, but it takes some effort", "It's hard to get back on track...", "I struggle to recover...").
+    *   **Data Collected:** Reaction to setbacks (categorical).
+    *   **Navigation Logic:** Selection -> **Screen 36: "How do you manage stress?"**.
+
+*   **Screen 36: "How do you manage stress?"**
+    *   **Purpose:** To learn how the user copes with stress.
+    *   **Displayed Content:** Title, option buttons ("I stay calm and in control", "I usually stay composed", "Stress often overwhelms me", "I struggle to stay composed").
+    *   **Data Collected:** Stress management method (categorical).
+    *   **Navigation Logic:** Selection -> **Screen 37: "How confident are you in your ability to make the right decisions for yourself?"**.
+
+*   **Screen 37: "How confident are you in your ability to make the right decisions for yourself?"**
+    *   **Purpose:** To assess the user's confidence in decision-making.
+    *   **Displayed Content:** Title, option buttons ("I trust my choices fully", "I'm confident but sometimes doubt myself", "I often feel unsure", "I second-guess myself a lot").
+    *   **Data Collected:** Confidence in decision-making (categorical).
+    *   **Navigation Logic:** Selection -> **Screen 38: "How do you handle difficult situations?"**.
+
+*   **Screen 38: "How do you handle difficult situations?"**
+    *   **Purpose:** To assess the user's general ability to cope with difficulties.
+    *   **Displayed Content:** Title, option buttons ("I handle them well with good strategies", "I cope most of the time", "I struggle to cope and often feel stuck", "I find it hard to manage...").
+    *   **Data Collected:** Method of overcoming difficult situations (categorical).
+    *   **Navigation Logic:** Selection -> **Screen 39: "How confident are you in your ability to achieve your goals?"**.
+
+*   **Screen 39: "How confident are you in your ability to achieve your goals?"**
+    *   **Purpose:** To assess the user's confidence in achieving their set goals.
+    *   **Displayed Content:** Title, option buttons ("I'm very confident...", "I believe I can, but I may need support", "I'm unsure I can without help", "I often doubt I can reach my goals").
+    *   **Data Collected:** Confidence in achieving goals (categorical).
+    *   **Navigation Logic:** Selection -> **Screen 40: "When you're faced with temptation, how do you typically respond?"**.
+
+*   **Screen 40: "When you're faced with temptation, how do you typically respond?"**
+    *   **Purpose:** To assess the user's reaction to temptations related to their plan/food.
+    *   **Displayed Content:** Title, option buttons ("I easily resist...", "I usually stay in control but sometimes slip", "I try to resist, but it's hard...", "I often give in...").
+    *   **Data Collected:** Reaction to temptations (categorical).
+    *   **Navigation Logic:** Selection -> **Screen 41: "Thanks for sharing your thoughts"**.
+
+*   **Screen 41: "Thanks for sharing your thoughts"**
+    *   **Purpose:** To thank the user for answering psychological questions and announce the plan finalization.
+    *   **Displayed Content:** Title, Text ("Understanding your challenges and mindset is key... Now, let's dive into the specifics."), Button: "Continue".
+    *   **Data Collected:** None (informational).
+    *   **Navigation Logic:** "Continue" -> **Screen 42: "Well done!"**.
+
+---
+
+**Part 6: Final Plan Assembly, Disclaimer, Generation, and Registration**
+
+*   **Screen 42: "Well done!"**
+    *   **Purpose:** To show the user the fully assembled plan (without the goal date yet) before final generation.
+    *   **Displayed Content:** Title, "PROGRAM" block (all fields filled based on user input: Lose X kgs, Weigh Y kgs, Z avg daily calories, Lose ¾ kg/week, Calorie Schedule, Nutrition Strategy + macros, Intermittent Fasting status). Button: "Continue".
+    *   **Data Collected:** None (final summary before date projection).
+    *   **Navigation Logic:** "Continue" -> **Screen 43: "This is not medical advice"**.
+
+*   **Screen 43: "This is not medical advice"**
+    *   **Purpose:** To provide an important disclaimer that the app's information is not medical advice.
+    *   **Displayed Content:** Title, Text ("Talk with a doctor about the ideal lifestyle behaviors for your specific situation."), Button: "Continue".
+    *   **Data Collected:** None (informational/disclaimer).
+    *   **Navigation Logic:** "Continue" -> **Screen 44: "Generating Your Custom Plan..."**.
+
+*   **Screen 44: "Generating Your Custom Plan..."**
+    *   **Purpose:** To create a sense of active plan creation and use social proof.
+    *   **Displayed Content (can be a sequence or random selection):**
+        *   Title: "Generating Your Custom Plan..."
+        *   **Variant A:** 5 stars icon, "4.8 Stars", "In the app store".
+        *   **Variant B:** Kettlebell icon, "145 Million+", "pounds lost".
+        *   **Variant C:** Orange icon, "213 Million+", "foods & exercises"; Smartphone icon, "53 Million+", "members".
+    *   **Data Collected:** None (loading screen).
+    *   **Navigation Logic:** Automatically upon "generation" completion -> **Screen 45: "Your Plan Is Ready!"**.
+
+*   **Screen 45: "Your Plan Is Ready!"**
+    *   **Purpose:** A motivational screen before showing the final plan.
+    *   **Displayed Content:** Title, App Logo ("Lose It!"), Text ("The path to your healthiest self is right around the corner. You've got this!"), Medal icon.
+    *   **Data Collected:** None (motivational).
+    *   **Navigation Logic:** Automatically or on tap -> **Screen 46: "Your program is complete!"**.
+
+*   **Screen 46: "Your program is complete!"**
+    *   **Purpose:** To present the final personalized plan, including the projected goal achievement date, and prompt to save by creating an account.
+    *   **Displayed Content:** Title, Subtitle with projection ("You'll reach 72 kgs on 25 June 2025."), Text ("Save your program by creating an account."), "PROGRAM" block (final, all details filled including macronutrients for the chosen strategy and projected date). Button: "Save my program".
+    *   **Data Collected:** None (results presentation).
+    *   **Navigation Logic:** "Save my program" -> **Screen 47: "Create Account"**.
+
+*   **Screen 47: "Create Account"**
+    *   **Purpose:** User registration to save their personalized plan and access app features.
+    *   **Displayed Content:** Title, "Email Address" field, "Password" field, Checkbox ("Subscribe to the Lose It! newsletter."), Checkbox ("I agree to Lose It! collecting and processing my information..."), Links to Privacy Policy & Terms of Service, Button: "Create Account", Button: "Sign up with Apple".
+    *   **Data Collected:** Email, password (or Apple token), agreement to terms, newsletter subscription consent.
+    *   **Navigation Logic:** "Create Account" or "Sign up with Apple" -> Account creation and transition to the main app, with all collected data and plan saved.
+
+---
+
+**General Implementation Recommendations:**
+
+1.  **Program State Management:** All information collected during onboarding should be temporarily stored (e.g., in app state or local storage) and used to dynamically update the "PROGRAM" block on intermediate screens and for final calculations. Upon successful registration, this data must be saved to the server and linked to the user's account.
+2.  **Design and UX:**
+    *   Maintain a consistent visual style (background color, fonts, button styles).
+    *   Selection buttons should be large enough for easy tapping.
+    *   Progress indication (the "PROGRAM" block) is vital for user engagement.
+    *   Icons make the interface more user-friendly and understandable.
+    *   Recommended options should be visually highlighted.
+3.  **Calculations:** All calculations (BMR, TDEE, calorie deficit, weight loss rate, goal date projection, nutrient targets) must be based on accepted formulas (e.g., Harris-Benedict or Mifflin-St Jeor) and user inputs.
+4.  **Flexibility:** Provide users with the ability to go back to previous steps (a "Back" button).
+5.  **Localization:** If the app will be available in multiple languages, all text content must be prepared for localization.
+6.  **Testing:** Thoroughly test all logic branches, especially conditional transitions and calculations.
+
+---

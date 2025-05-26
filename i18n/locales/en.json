@@ -1,0 +1,1261 @@
+{
+  "common": {
+    "back": "Back",
+    "continue": "Continue",
+    "cancel": "Cancel",
+    "save": "Save",
+    "done": "Done",
+    "edit": "Edit",
+    "delete": "Delete",
+    "add": "Add",
+    "search": "Search",
+    "settings": "Settings",
+    "error": "Error",
+    "skip": "Skip",
+    "viewAll": "View All",
+    "scanMore": "Scan More",
+    "scanProduct": "Scan Product",
+    "gallery": "Gallery",
+    "camera": "Camera",
+    "retake": "Retake",
+    "use": "Use",
+    "processing": "Processing...",
+    "takePhotoFood": "Take Food Photo",
+    "foodPhotoSaved": "Food photo saved successfully",
+    "success": "Success",
+    "foodAddedToJournal": "{{foodName}} added to your food journal!",
+    "quantity": "Quantity",
+    "months": {
+      "january": "January",
+      "february": "February", 
+      "march": "March",
+      "april": "April",
+      "may": "May",
+      "june": "June",
+      "july": "July",
+      "august": "August",
+      "september": "September",
+      "october": "October",
+      "november": "November",
+      "december": "December"
+    },
+    "kcal": "kcal"
+  },
+  "tabs": {
+    "dashboard": "Dashboard",
+    "diets": "Diets",
+    "allergens": "Allergens",
+    "history": "History",
+    "scan": "Scan"
+  },
+  "dashboard": {
+    "title": "NutriChecker",
+    "caloriesLeft": "Calories Left",
+    "burned": "Burned",
+    "protein": "Protein",
+    "fat": "Fat",
+    "carbs": "Carbs",
+    "recentScans": "Recent Scans",
+    "noScannedProducts": "No scanned products yet"
+  },
+  "nutrition": {
+    "nutritionFacts": "Nutrition Facts",
+    "disclaimerPortionStandard": "Data calculated for the scanned portion. You can adjust size, consumed amount and additives for an accurate calculation when you tap the Add button",
+    "portion": "Portion",
+    "gram": "g",
+    "kcal": "kcal",
+    "nutritionalValue": "Nutritional Value",
+    "calories": "Calories",
+    "protein": "Protein",
+    "fats": "Fats",
+    "hiddenSugar": "Hidden Sugar",
+    "dailyGoal": "Daily Goal",
+    "goal": "Goal",
+    "burnedToday": "Burned Today",
+    "carbs": "Carbs",
+    "sugars": "Sugars",
+    "fiber": "Fiber",
+    "saturatedFat": "Saturated Fat",
+    "overallHealthScore": "Overall Health Score",
+    "recommendations": "Recommendations",
+    "frequency": "Frequency",
+    "recentScans": "Recent Scans",
+    "noScannedProducts": "No scanned products yet"
+  },
+  "allergens": {
+    "title": "Allergens",
+    "yourAllergens": "Your Allergens",
+    "addNewAllergen": "Add new allergen...",
+    "alreadyAdded": "Already Added",
+    "allergenExists": "This allergen is already in your list.",
+    "warningTitle": "Allergen Warning",
+    "allergenWarnings": "Allergen Warnings",
+    "allergenWarningsDescription": "Show warnings when scanned products contain your allergens",
+    "allergenWarningInfo": "Selected allergens will trigger warnings when scanning products that contain them",
+    "Молоко": "Milk",
+    "Яйца": "Eggs",
+    "Арахис": "Peanuts",
+    "Орехи": "Nuts",
+    "Рыба": "Fish",
+    "Моллюски": "Shellfish",
+    "Пшеница": "Wheat",
+    "Соя": "Soy",
+    "Кунжут": "Sesame",
+    "Глютен": "Gluten",
+    "Ракообразные": "Crustaceans",
+    "Сельдерей": "Celery",
+    "Горчица": "Mustard",
+    "Люпин": "Lupin",
+    "Лактоза": "Lactose",
+    "Фруктоза": "Fructose",
+    "Гистамин": "Histamine",
+    "Сульфиты": "Sulfites",
+    "Нитраты": "Nitrates",
+    "Глутамат": "MSG",
+    "Каррагинан": "Carrageenan",
+    "contains": "Contains",
+    "notSafeMessage": "This product is not safe for you based on your allergies.",
+    "generalInfoTitle": "Allergen Information",
+    "generalInfoMessage": "This product contains the following allergens:",
+    "foundIn": "found in"
+  },
+  "diets": {
+    "title": "Diets",
+    "comingSoon": "Coming Soon",
+    "comingSoonDescription": "We're working on personalized diet plans and meal recommendations based on your nutritional needs and preferences.",
+    "features": {
+      "mealPlans": "Personalized meal plans",
+      "recipes": "Diet-specific recipes",
+      "tracking": "Nutritional goal tracking",
+      "shopping": "Shopping list generation"
+    },
+    "notifyMe": "Notify me when available"
+  },
+  "history": {
+    "title": "History",
+    "noHistory": "No scan history yet",
+    "startScanning": "Start scanning products to see your history",
+    "calories": "calories",
+    "filter": "Filter",
+    "scannedProducts": "Scanned",
+    "addedToDashboard": "Added",
+    "noScannedProducts": "No scanned products",
+    "noDashboardProducts": "No products added to dashboard"
+  },
+  "scan": {
+    "positionProduct": "Position food product in the frame",
+    "requestingPermission": "Requesting camera permission...",
+    "noAccess": "No access to camera",
+    "enableAccess": "Enable Camera Access",
+    "openSettings": "Open Settings",
+    "settingsError": "Failed to open app settings",
+    "requestingGalleryPermission": "Requesting gallery access...",
+    "noGalleryAccess": "No access to gallery",
+    "enableGalleryAccess": "Enable Gallery Access",
+    "processing": "Processing..."
+  },
+  "settings": {
+    "title": "Settings",
+    "appearance": "Appearance",
+    "useSystemTheme": "Use System Theme",
+    "useSystemThemeDescription": "Follow device dark/light mode settings",
+    "darkMode": "Dark Mode",
+    "darkModeDescription": "Use dark theme for the app",
+    "preferences": "Preferences",
+    "notifications": "Notifications",
+    "notificationsDescription": "Enable push notifications",
+    "units": "Units",
+    "metric": "Metric (g, ml)",
+    "imperial": "Imperial (oz, fl oz)",
+    "manageAllergens": "Manage Allergens",
+    "manageAllergensDescription": "Add or remove food allergens",
+    "about": "About",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "aboutApp": "About NutriChecker",
+    "version": "Version"
+  },
+  "permissions": {
+    "cameraUsage": "This app uses the camera to scan product barcodes and get information about their calories, nutritional content, and allergens.",
+    "cameraAccess": "Allow NutriChecker to access your camera to scan food products.",
+    "photoLibraryUsage": "This app requires access to your photo library so you can select photos.",
+    "photoLibraryAccess": "Allow NutriChecker to access your photo library to import images of food products."
+  },
+  "photoAnalysis": {
+    "title": "Food Analysis",
+    "takeAnotherPhoto": "Take Another Photo",
+    "takeAnother": "Take Another",
+    "analyze": "Analyze",
+    "processingMessage": "Please wait, analyzing your food...",
+    "tipsTitle": "How to get accurate analysis",
+    "tip1": "Take photos in good lighting, holding the camera from above",
+    "tip2": "Capture the entire portion in the frame",
+    "tip3": "For packaged products, photograph the ingredient label",
+    "tip4": "Place a utensil nearby for accurate size determination",
+    "nonFoodError": "Could not recognize food products in this photo. Please retake the photo.",
+    "analysisError": "Unable to recognize food in the photo. Please take another photo with better lighting.",
+    "networkError": "A network error occurred during analysis. Please check your internet connection and try again."
+  },
+  "product": {
+    "add": "Add",
+    "vitamins": "Vitamins",
+    "ingredients": "Ingredients",
+    "setPortionTitle": "Set Portion Size",
+    "portionSize": "Portion Size",
+    "quantityEaten": "Quantity Eaten",
+    "confirmAndAdd": "Confirm and Add",
+    "addons": "Addons",
+    "sauce": "Sauce",
+    "sugar": "Sugar",
+    "oil": "Oil",
+    "productFeatures": "Product Features",
+    "portions": {
+      "маленький": "Small",
+      "обычный": "Regular",
+      "большой": "Large"
+    },
+    "quantities": {
+      "все": "All",
+      "половина": "Half",
+      "четверть": "Quarter"
+    }
+  },
+  "onboarding": {
+    "welcome": {
+      "title": "Welcome!",
+      "subtitle": "Let's create a personalized plan that will help you achieve success.",
+      "program": "PROGRAM",
+      "steps": {
+        "weightGoal": "Weight Goal",
+        "calories": "Calories",
+        "mealSchedule": "Meal Schedule",
+        "nutrition": "Nutrition",
+        "exercise": "Exercise",
+        "progress": "Progress Analysis"
+      }
+    },
+    "gender": {
+      "title": "Select your gender",
+      "subtitle": "This is needed for more accurate calculation of your body's energy needs",
+      "options": {
+        "male": "Male",
+        "female": "Female",
+        "nonBinary": "Non-binary",
+        "preferNotToSay": "Prefer not to say"
+      }
+    },
+    "birthday": {
+      "title": "When is your birthday?",
+      "subtitle": "Your age helps accurately calculate daily calorie needs",
+      "yourAge": "Your age: {{age}} years"
+    },
+    "heightWeight": {
+      "heightTitle": "What is your height?",
+      "weightTitle": "What is your current weight?",
+      "heightSubtitle": "Your height is used to determine optimal weight and calculate daily calorie needs.",
+      "weightSubtitle": "Your current weight will help determine how many calories you need to reach your goal.",
+      "goToWeight": "Go to weight",
+      "backToHeight": "Back to height",
+      "units": {
+        "kg": "kg",
+        "lb": "lb"
+      }
+    },
+    "goalSetting": {
+      "title": "What is your main goal?",
+      "subtitle": "Choose the primary goal you're striving for",
+      "targetWeightTitle": "What weight do you want to achieve?",
+      "targetWeightSubtitle": "Your current weight: {{weight}}",
+      "rateTitle": "How fast do you want to achieve your goal?",
+      "rateSubtitle": "Choose a comfortable weight loss speed for you",
+      "setTargetWeight": "Set target weight",
+      "backToGoal": "Back to goal",
+      "weightLossSpeed": "Weight loss speed",
+      "estimatedDate": "Estimated goal achievement date:",
+      "backToTargetWeight": "Back to target weight",
+      "options": {
+        "loseWeight": {
+          "label": "Weight Loss",
+          "description": "Lose weight and reach your desired weight"
+        },
+        "maintainWeight": {
+          "label": "Weight Maintenance",
+          "description": "Maintain current weight and fitness"
+        },
+        "gainMuscle": {
+          "label": "Muscle Gain",
+          "description": "Increase muscle mass"
+        },
+        "improveHealth": {
+          "label": "Health Improvement",
+          "description": "Eat healthier"
+        },
+        "trackNutrition": {
+          "label": "Nutrition Tracking",
+          "description": "Monitor nutrition without changing weight"
+        }
+      }
+    },
+    "activityLevel": {
+      "title": "How active are you?",
+      "subtitle": "Your physical activity level affects calorie needs",
+      "options": {
+        "sedentary": {
+          "label": "Sedentary",
+          "description": "Desk job, minimal physical activity"
+        },
+        "lightlyActive": {
+          "label": "Lightly Active",
+          "description": "Light workouts 1-2 times per week"
+        },
+        "moderatelyActive": {
+          "label": "Moderately Active",
+          "description": "Moderate intensity workouts 3-5 times per week"
+        },
+        "veryActive": {
+          "label": "Very Active",
+          "description": "Intense workouts 6-7 times per week"
+        },
+        "extremelyActive": {
+          "label": "Extremely Active",
+          "description": "Professional sports or physical job"
+        }
+      }
+    },
+    "units": {
+      "title": "Choose measurement units",
+      "subtitle": "Which measurement units are more convenient for you?",
+      "options": {
+        "metric": "Metric (kg, cm)",
+        "imperial": "Imperial (lbs, ft)"
+      }
+    },
+    "dietPreference": {
+      "title": "Your dietary preferences",
+      "subtitle": "Choose a nutrition type that suits you",
+      "options": {
+        "standard": {
+          "label": "Standard Diet",
+          "description": "Balanced diet without restrictions"
+        },
+        "vegetarian": {
+          "label": "Vegetarian",
+          "description": "Excludes meat but includes dairy and eggs"
+        },
+        "vegan": {
+          "label": "Vegan",
+          "description": "Plant-based diet without animal products"
+        },
+        "keto": {
+          "label": "Keto Diet",
+          "description": "High-fat, low-carb diet"
+        },
+        "paleo": {
+          "label": "Paleo Diet",
+          "description": "Natural unprocessed foods"
+        },
+        "mediterranean": {
+          "label": "Mediterranean Diet",
+          "description": "Fish, vegetables, fruits, olive oil"
+        },
+        "lowCarb": {
+          "label": "Low-Carb Diet",
+          "description": "Reduced carbs, increased proteins and fats"
+        }
+      }
+    },
+    "mealFrequency": {
+      "title": "How often do you prefer to eat?",
+      "subtitle": "Choose the eating pattern that suits you best",
+      "options": {
+        "twoMeals": {
+          "label": "2 meals",
+          "description": "For example, breakfast and dinner"
+        },
+        "threeMeals": {
+          "label": "3 main meals",
+          "description": "Breakfast, lunch, and dinner"
+        },
+        "fourMeals": {
+          "label": "4 meals",
+          "description": "3 main meals + 1 snack"
+        },
+        "fiveMeals": {
+          "label": "5 meals",
+          "description": "Frequent small meals throughout the day"
+        },
+        "sixMeals": {
+          "label": "6 meals",
+          "description": "Frequent fractional eating"
+        },
+        "flexible": {
+          "label": "Flexible schedule",
+          "description": "Eat when I want"
+        },
+        "intermittent": {
+          "label": "Intermittent fasting",
+          "description": "Alternating periods of eating and fasting"
+        }
+      }
+    },
+    "confidenceLevel": {
+      "title": "How confident are you in achieving your goal?",
+      "subtitle": "Rate your confidence in being able to achieve your set goal",
+      "options": {
+        "notConfident": "Not confident at all",
+        "slightlyConfident": "Slightly confident",
+        "moderatelyConfident": "Moderately confident",
+        "quiteConfident": "Quite confident",
+        "veryConfident": "Very confident"
+      },
+      "low": "Low",
+      "high": "High"
+    },
+    "challenges": {
+      "title": "What challenges do you face?",
+      "subtitle": "Select obstacles that prevent you from reaching your goal",
+      "options": {
+        "emotionalEating": "Emotional eating",
+        "cravings": "Sweet/fatty food cravings",
+        "timeConstraints": "Time constraints",
+        "socialPressure": "Social pressure",
+        "lackOfMotivation": "Lack of motivation",
+        "plateaus": "Weight plateaus",
+        "boredom": "Diet boredom",
+        "nightEating": "Night eating",
+        "stress": "Stress",
+        "lackOfKnowledge": "Lack of knowledge"
+      },
+      "descriptions": {
+        "emotionalEating": "I often eat when experiencing stress or other strong emotions",
+        "cravings": "Hard to resist sweets or other unhealthy foods",
+        "timeConstraints": "I don't have enough time to prepare healthy food",
+        "socialPressure": "Hard to stick to diet during social events or celebrations",
+        "lackOfMotivation": "It's hard for me to maintain motivation long-term",
+        "plateaus": "Weight stops at the same level",
+        "boredom": "Getting tired of monotonous diet",
+        "nightEating": "I often eat late in the evening or at night",
+        "stress": "High stress levels interfere with maintaining a healthy lifestyle",
+        "lackOfKnowledge": "I don't always know which foods are truly beneficial"
+      }
+    },
+    "exerciseIntent": {
+      "title": "Let's talk about physical exercise",
+      "subtitle": "Do you plan to engage in physical exercise while working on weight loss?",
+      "options": {
+        "yes": "Yes, most likely",
+        "no": "No, probably not"
+      }
+    },
+    "intermittentFasting": {
+      "title": "Intermittent Fasting",
+      "subtitle": "Intermittent fasting is an eating pattern that alternates between periods of eating and fasting. This method can help with calorie control, but is not recommended for people with low appetite or medical contraindications.",
+      "options": {
+        "skip": "Skip intermittent fasting (Recommended)",
+        "add": "Add fasting schedule"
+      }
+    },
+    "caloriesCounting": {
+      "title": "Want to learn how calorie counting works?",
+      "subtitle": "We can teach you the basics of calorie counting to help you better manage your nutrition.",
+      "options": {
+        "yes": "Yes, show me!",
+        "no": "No, thanks"
+      },
+      "tutorial": {
+        "title": "Calorie Counting Basics",
+        "step1": "A calorie is a unit of energy measurement. Food contains calories, and your body burns calories to provide energy.",
+        "step2": "To lose weight, you need to consume fewer calories than you burn - this creates a calorie deficit.",
+        "step3": "Main sources of calories in food: proteins (4 kcal/g), carbohydrates (4 kcal/g), fats (9 kcal/g), and alcohol (7 kcal/g).",
+        "step4": "Our calorie counter will help you track calorie intake and simplify the process of achieving your goals.",
+        "tip": "Tip: try not only to count calories but also pay attention to food quality. Nutritious foods will help you feel full longer."
+      }
+    },
+    "calorieBudgetIntro": {
+      "title": "Next step - your calorie budget",
+      "subtitle": "Calorie budget is the most important element of your weight loss program.",
+      "weightReduction": "Reduction of {{amount}} {{units}}",
+      "targetWeight": "Weight {{weight}} {{units}}",
+      "calorieBudget": "Calorie budget",
+      "calorieSchedule": "Calorie schedule",
+      "nutritionStrategy": "Nutrition strategy",
+      "intermittentFasting": "Intermittent fasting",
+      "whatIs": "What is a calorie budget?",
+      "explanation": "A calorie budget determines how many calories you can consume daily to achieve your weight loss goals. It's like a financial budget, but for your nutrition.",
+      "deficitExplanation": "Maintaining a calorie deficit — when you consume fewer calories than you burn — is the foundation of weight loss.",
+      "personalCalculation": "We will calculate your personal calorie budget based on your age, gender, height, weight, and activity level."
+    },
+    "calorieBudgetInfo": {
+      "title": "Your calorie budget: {{calories}} kcal",
+      "subtitle": "Calorie budget is the most important element of your weight loss program. Here's how it's calculated:",
+      "steps": {
+        "bmr": "Basal Metabolic Rate (BMR) calculation",
+        "activity": "Activity level consideration", 
+        "deficit": "Creating a safe calorie deficit",
+        "result": "Following safe limits"
+      },
+      "bmrDescription": "We use the Mifflin-St Jeor formula for accurate calculation of calories needed by your body at rest, based on your age, gender, height, and weight.",
+      "activityDescription": "Then we multiply BMR by an activity coefficient to get total daily energy expenditure (TDEE).",
+      "deficitDescription": "For healthy weight loss, we create a moderate deficit of 500 kcal per day, ensuring a loss of about 0.5 kg per week.",
+      "limitMale": "We never recommend calorie intake below 1500 kcal per day for men.",
+      "limitFemale": "We never recommend calorie intake below 1200 kcal per day for women.",
+      "dailyBudgetLabel": "Your daily calorie budget:",
+      "budgetNote": "If you consume an average of {{calories}} calories per day, you will lose weight at a safe pace.",
+      "adjustmentNote": "Calorie budget may be adjusted as you progress. When weight and activity level change, calorie needs will change too."
+    },
+    "nutritionFocus": {
+      "title": "Choose your nutrition strategy",
+      "subtitle": "Choosing a nutrition strategy will help us create the most suitable recommendations and determine target nutrient values for you.",
+      "recommended": "Recommended",
+      "options": {
+        "caloriesOnly": {
+          "label": "Calories Only",
+          "description": "Track only total calories without considering nutrients"
+        },
+        "balanced": {
+          "label": "Balanced Nutrition (Recommended)",
+          "description": "Optimal balance of proteins, fats, and carbs for overall health"
+        },
+        "highProtein": {
+          "label": "High-Protein Nutrition",
+          "description": "Focus on proteins to preserve muscle mass"
+        },
+        "lowCarb": {
+          "label": "Low-Carb Nutrition",
+          "description": "Reduced carbs, increased proteins and fats"
+        },
+        "plantBased": {
+          "label": "Plant-Based Nutrition",
+          "description": "Diet based on plant foods"
+        }
+      }
+    },
+    "stressResponse": {
+      "title": "How do you usually respond to stress?",
+      "subtitle": "Choose the most characteristic way you respond to stress",
+      "note": "Understanding your stress response will help us develop strategies to prevent stress-related eating setbacks.",
+      "options": {
+        "emotionalEating": "Emotional eating",
+        "lossOfAppetite": "Loss of appetite",
+        "exercise": "Exercise",
+        "sleep": "Sleep more",
+        "socializing": "Socialize with friends",
+        "mindfulness": "Mindfulness",
+        "avoidance": "Avoidance",
+        "creative": "Creative activities"
+      },
+      "descriptions": {
+        "emotionalEating": "I turn to food when experiencing stress or negative emotions",
+        "lossOfAppetite": "I lose my appetite when stressed",
+        "exercise": "I engage in sports or physical activity to relieve stress",
+        "sleep": "I sleep more when experiencing stress",
+        "socializing": "I turn to friends or loved ones for support",
+        "mindfulness": "I practice meditation, yoga, or other mindfulness techniques",
+        "avoidance": "I try to avoid stressful situations",
+        "creative": "I engage in creative activities or hobbies to relieve stress"
+      }
+    },
+    "foodPreferences": {
+      "title": "What matters most to you in food?",
+      "subtitle": "Your nutrition priorities will help us offer the most suitable diet recommendations.",
+      "options": {
+        "taste": {
+          "label": "Taste",
+          "description": "It's important to me that food is delicious and brings pleasure"
+        },
+        "health": {
+          "label": "Health benefits",
+          "description": "It's important to me that my food is nutritious and healthy"
+        },
+        "convenience": {
+          "label": "Cooking convenience",
+          "description": "It's important to me that food is simple to prepare and doesn't take much time"
+        },
+        "price": {
+          "label": "Affordable price",
+          "description": "It's important to me that healthy eating is economically accessible"
+        },
+        "tradition": {
+          "label": "Familiar food",
+          "description": "It's important to me that nutrition supports my training or health goals"
+        }
+      }
+    },
+    "foodVariety": {
+      "title": "How often do you try new foods or recipes?",
+      "subtitle": "Your openness to new foods and dishes will help us determine how diverse your nutrition plan should be.",
+      "options": {
+        "often": "Often experiment",
+        "sometimes": "Sometimes try new things",
+        "rarely": "Rarely change diet",
+        "never": "Prefer familiar foods"
+      },
+      "descriptions": {
+        "often": "I regularly try new products and recipes, I enjoy experimenting",
+        "sometimes": "From time to time I try new recipes or products, but mostly stick to familiar dishes",
+        "rarely": "I prefer to eat proven dishes and rarely try something new",
+        "never": "I regularly eat the same foods and dishes, don't strive for variety"
+      }
+    },
+    "mealFeelings": {
+      "title": "How do you usually feel after eating?",
+      "subtitle": "Your well-being after meals will help understand which eating pattern suits you best.",
+      "disclaimer": "Note: If you regularly experience serious discomfort after eating, we recommend consulting with a doctor.",
+      "options": {
+        "energized": "Full of energy",
+        "satisfied": "Satisfied and content",
+        "tired": "Feel tired",
+        "bloated": "Feel heavy",
+        "stillHungry": "Still hungry"
+      },
+      "descriptions": {
+        "energized": "After eating, I feel a surge of energy, comfort and satisfaction.",
+        "satisfied": "I usually feel comfortable, but sometimes I eat too much and feel heavy.",
+        "tired": "After eating, I often feel sleepy, tired or have decreased energy.",
+        "bloated": "After eating, I often experience bloating, discomfort or other unpleasant sensations.",
+        "stillHungry": "A short time after eating, I start feeling hungry again."
+      }
+    },
+    "difficultSituations": {
+      "title": "How do you handle difficult situations?",
+      "subtitle": "Difficult situations may arise on the path to your goal. Your ability to handle them affects long-term success.",
+      "options": {
+        "handleWell": {
+          "label": "I handle them well, using effective strategies",
+          "description": "I have proven methods for dealing with difficult situations, and they usually work."
+        },
+        "copeMost": {
+          "label": "I cope in most cases",
+          "description": "I usually find ways to solve problems, although sometimes it requires effort."
+        },
+        "struggleStuck": {
+          "label": "I struggle and often feel stuck",
+          "description": "I have difficulty finding effective solutions and often feel helpless."
+        },
+        "hardManage": {
+          "label": "I have trouble managing difficult situations",
+          "description": "Difficult situations cause me severe stress, and I have trouble finding a way out."
+        }
+      }
+    },
+    "medication": {
+      "title": "Do you take any weight loss medications or supplements?",
+      "subtitle": "This information will help us adapt recommendations considering the effects of medications on your metabolism and appetite.",
+      "disclaimer": "Important: This information is used only for personalizing recommendations. We do not provide medical advice or prescriptions. Always consult with a doctor before starting or changing any medications or supplements.",
+      "options": {
+        "notUsing": "Not taking any",
+        "prescription": "Prescription medications",
+        "overTheCounter": "Over-the-counter drugs",
+        "supplements": "Vitamins and supplements",
+        "herbal": "Herbal supplements"
+      },
+      "descriptions": {
+        "notUsing": "I choose weight loss only through changing diet and physical activity",
+        "prescription": "For example, GLP-1 agonists (Ozempic, Wegovy, Saxenda) or other doctor-approved appetite suppression medications",
+        "overTheCounter": "For example, Orlistat (Alli, Xenical) - the only approved drug in this category",
+        "supplements": "Vitamins, minerals or supplements. Important: most \"fat burners\" lack scientific evidence of effectiveness",
+        "herbal": "You're not taking anything now, but considering medication support in the future"
+      }
+    },
+    "eatingHabitsAssessment": {
+      "title": "How do you rate your current eating habits?",
+      "subtitle": "An honest assessment will help us better understand what type of recommendations will be most useful for you.",
+      "tip": "Eating habits are formed over time and can be changed through a gradual, consistent approach. Our program adapts to your current level and will help develop healthier relationships with food.",
+      "options": {
+        "excellent": "Excellent",
+        "good": "Good",
+        "improving": "Trying to improve",
+        "needWork": "Need work",
+        "poor": "Poor"
+      },
+      "descriptions": {
+        "excellent": "I know what food suits my body and usually make healthy choices",
+        "good": "I have decent habits, but I want to improve them to achieve my goals",
+        "improving": "I try different approaches to find what works for me",
+        "needWork": "I feel uncertain and need clear recommendations",
+        "poor": "I need serious help changing my eating habits"
+      }
+    },
+    "weightManagementObstacle": {
+      "title": "What is your main obstacle in weight management?",
+      "subtitle": "Understanding your challenges will help us develop a plan that addresses your specific problems.",
+      "helpNote": "Identifying main obstacles is the first step to overcoming them. We'll help you build strategies to combat your selected challenges.",
+      "options": {
+        "emotionalEating": "Emotional eating",
+        "timeConstraints": "Time constraints",
+        "socialSituations": "Social situations",
+        "lackOfMotivation": "Lack of motivation",
+        "plateaus": "Weight plateaus",
+        "cravings": "Junk food cravings",
+        "selfControl": "Self-control difficulties",
+        "other": "Something else"
+      },
+      "descriptions": {
+        "emotionalEating": "Using food to cope with stress or emotions",
+        "timeConstraints": "Hard to find time for meal planning or preparing healthy food",
+        "socialSituations": "Difficulties maintaining diet in social situations",
+        "lackOfMotivation": "Hard to stay motivated on the path to long-term goals",
+        "plateaus": "Weight stops at the same level and doesn't decrease",
+        "cravings": "Strong desire to eat sweets, fatty or unhealthy food",
+        "selfControl": "Hard to say \"no\" to favorite foods or avoid overeating",
+        "other": "I have other difficulties not listed above"
+      }
+    },
+    "calorieBudgetConfirm": {
+      "title": "Your budget - {{calories}} calories",
+      "subtitle": "If you consistently consume an average of {{calories}} calories, you will lose weight at your chosen pace.",
+      "kcalPerDay": "kcal/day",
+      "weightLossRates": {
+        "steady": "0.5 kg",
+        "moderate": "0.75 kg",
+        "aggressive": "1 kg"
+      },
+      "lossPerWeek": "Loss of approximately {{rate}} per week",
+      "goalAchievement": "Goal achievement in approximately {{weeks}} weeks",
+      "tipsTitle": "Tips for success:",
+      "tips": {
+        "tip1": "Try to track calorie intake as accurately as possible",
+        "tip2": "Don't forget to account for drinks and snacks",
+        "tip3": "Include protein and fiber-rich foods in your diet for lasting satiety",
+        "tip4": "Regularly check your progress and adjust your calorie budget if needed"
+      },
+      "note": "If you feel the budget is too low or high, you can always adjust it in the app settings."
+    },
+    "calorieSchedule": {
+      "title": "Does a calorie schedule work for you?",
+      "subtitle": "A calorie schedule allows you to distribute calories differently depending on the day of the week. For example, you can consume more calories on workout days and fewer on rest days. A fixed budget is recommended for beginners.",
+      "recommended": "Recommended",
+      "options": {
+        "fixed": "Fixed budget (Recommended)",
+        "flexible": "Flexible calorie schedule"
+      },
+      "descriptions": {
+        "fixed": "Same amount of calories every day - this is simpler and more convenient for most users",
+        "flexible": "Different amounts of calories on different days of the week - suitable for experienced users or those with regularly changing activity levels"
+      }
+    },
+    "planReady": {
+      "title": "Your plan is ready!",
+      "subtitle": "We've created a personalized nutrition plan and recommendations that will help you achieve your goals.",
+      "congratulations": "Congratulations!",
+      "successMessage": "Your individual plan includes everything necessary for successful achievement of your goals.",
+      "keyElements": "Key elements of your plan:",
+      "dailyCalories": "Your daily calorie budget",
+      "kcal": "kcal",
+      "weightLossPace": "Weight loss pace",
+      "nutritionStrategy": "Nutrition strategy",
+      "physicalActivity": "Physical activity",
+      "readyToStart": "Ready to start your journey to a healthy lifestyle? Let's unlock your potential!",
+      "startJourney": "Start journey",
+      "features": {
+        "personalizedCalories": "Personalized calorie budget",
+        "personalizedCaloriesDesc": "Calculated specifically for your goals and lifestyle",
+        "nutritionBalance": "Balanced nutrition",
+        "nutritionBalanceDesc": "Optimal ratio of proteins, fats, and carbohydrates",
+        "mealPlanning": "Meal planning",
+        "mealPlanningDesc": "Recommendations for timing and frequency of meals",
+        "progressTracking": "Progress tracking",
+        "progressTrackingDesc": "Tools for tracking your progress"
+      },
+      "weightLossPlans": {
+        "steady": "Gradual weight loss",
+        "moderate": "Moderate weight loss",
+        "aggressive": "Intensive weight loss"
+      },
+      "dietTypes": {
+        "standard": "Balanced nutrition",
+        "vegetarian": "Vegetarian nutrition",
+        "vegan": "Vegan nutrition",
+        "lowCarb": "Low-carb nutrition",
+        "keto": "Ketogenic nutrition",
+        "paleo": "Paleo nutrition",
+        "mediterranean": "Mediterranean nutrition"
+      },
+      "exercise": {
+        "included": "Included in plan",
+        "optional": "Optional"
+      }
+    },
+    "continue": "Continue",
+    "back": "Back",
+    "start": "Start",
+    "goalSetConfirm": {
+      "title": "You've set your goal!",
+      "subtitle": "Now it's time to create a plan that will help you achieve it.",
+      "weightReduction": "Reduction of {{amount}} {{units}}",
+      "targetWeight": "Weight {{weight}} {{units}}",
+      "calorieBudget": "Calorie budget",
+      "calorieSchedule": "Calorie schedule",
+      "nutritionStrategy": "Nutrition strategy",
+      "intermittentFasting": "Intermittent fasting",
+      "primaryGoal": "Primary goal",
+      "planMessage": "Your personalized plan will be created considering this goal and other selected parameters.",
+      "goals": {
+        "loseWeight": "Lose weight",
+        "improveHealth": "Improve overall health",
+        "gainControl": "Control eating habits",
+        "buildHabits": "Build better long-term habits",
+        "feelConfident": "Feel more confident in your body"
+      }
+    },
+    "summary": {
+      "title": "Your Personal Plan",
+      "subtitle": "Let's summarize and get ready to start your journey to your goal",
+      "complete": "Complete",
+      "basicInfo": "Basic Information",
+      "preferences": "Preferences",
+      "psychologicalProfile": "Psychological Profile",
+      "nutritionRecommendations": "Nutrition Recommendations",
+      "labels": {
+        "age": "Age:",
+        "gender": "Gender:",
+        "height": "Height:",
+        "currentWeight": "Current weight:",
+        "targetWeight": "Target weight:",
+        "primaryGoal": "Primary goal:",
+        "activityLevel": "Activity level:",
+        "dietType": "Diet type:",
+        "mealSchedule": "Meal schedule:",
+        "challenges": "Challenges:",
+        "stressResponse": "Stress response:",
+        "confidenceLevel": "Confidence level:",
+        "challengesView": "Challenges attitude:",
+        "decisionMaking": "Decision making:",
+        "temptationResponse": "Temptation response:",
+        "setbacksResponse": "Recovery after setbacks:",
+        "kcalPerDay": "kcal/day",
+        "proteins": "Proteins",
+        "fats": "Fats",
+        "carbs": "Carbs",
+        "notSpecified": "Not specified",
+        "years": "years"
+      },
+      "genders": {
+        "male": "Male",
+        "female": "Female",
+        "nonBinary": "Non-binary",
+        "preferNotToSay": "Prefer not to say"
+      },
+      "goals": {
+        "loseWeight": "Weight loss",
+        "maintainWeight": "Weight maintenance",
+        "gainMuscle": "Muscle gain",
+        "improveHealth": "Health improvement",
+        "trackNutrition": "Nutrition tracking"
+      },
+      "activityLevels": {
+        "sedentary": "Sedentary",
+        "lightlyActive": "Lightly active",
+        "moderatelyActive": "Moderately active",
+        "veryActive": "Very active",
+        "extremelyActive": "Extremely active"
+      },
+      "dietTypes": {
+        "standard": "Standard",
+        "vegetarian": "Vegetarian",
+        "vegan": "Vegan",
+        "lowCarb": "Low-carb",
+        "keto": "Ketogenic",
+        "paleo": "Paleo",
+        "mediterranean": "Mediterranean"
+      },
+      "mealFrequencies": {
+        "twoMeals": "2 meals",
+        "threeMeals": "3 meals",
+        "fourMeals": "4 meals",
+        "fiveMeals": "5 meals",
+        "sixMeals": "6 meals",
+        "intermittent": "Intermittent fasting"
+      },
+      "stressResponses": {
+        "emotionalEating": "Emotional eating",
+        "exercise": "Physical activity",
+        "mindfulness": "Mindfulness",
+        "avoidance": "Avoidance",
+        "socializing": "Social support",
+        "creative": "Creative activities"
+      },
+      "challengesViews": {
+        "growthOpportunity": "See opportunities for growth",
+        "tryLearn": "Try to learn lessons",
+        "avoidFailure": "Avoid due to fear",
+        "tooDifficult": "Consider too difficult"
+      },
+      "decisionMaking": {
+        "fullyTrust": "Fully trust my choices",
+        "confidentDoubt": "Confident but sometimes doubt",
+        "oftenUnsure": "Often feel uncertain",
+        "secondGuess": "Constantly change my mind"
+      },
+      "temptationResponses": {
+        "easilyResist": "Easily resist",
+        "usuallyControl": "Usually control myself",
+        "tryResist": "Try to resist",
+        "oftenGiveIn": "Often give in"
+      },
+      "setbacksResponses": {
+        "bounceBack": "Quickly bounce back",
+        "recoverEffort": "Recover with effort",
+        "hardBack": "Hard to get back on track",
+        "struggleRecover": "Struggle to recover"
+      }
+    },
+    "adaptability": {
+      "title": "How do you cope with unexpected changes?",
+      "subtitle": "Your ability to adapt to changes can significantly impact your success in achieving weight loss goals.",
+      "options": {
+        "embraceQuickly": {
+          "label": "I quickly embrace changes",
+          "description": "I easily adapt to new situations and quickly make necessary adjustments."
+        },
+        "adaptTime": {
+          "label": "I adapt, but need time",
+          "description": "I need some time to get used to changes, but eventually I manage to cope."
+        },
+        "struggleTry": {
+          "label": "I struggle but try my best",
+          "description": "It's difficult for me to adapt to changes, but I do everything possible to adjust."
+        },
+        "findOverwhelming": {
+          "label": "Changes cause me stress",
+          "description": "It's very hard for me to accept changes, and I often feel anxious or stressed."
+        }
+      }
+    },
+    "planPreview": {
+      "title": "Your personal plan is ready! 🎉",
+      "subtitle": "See what we've prepared specifically for you"
+    },
+    "intermittentFastingSkipConfirm": {
+      "title": "We'll continue without intermittent fasting",
+      "subtitle": "This is a good choice! Intermittent fasting is not necessary to achieve your weight loss goals.",
+      "benefitsTitle": "Benefits of your choice",
+      "benefits": {
+        "flexibility": "More flexibility in distributing meals throughout the day",
+        "eatWhenHungry": "Ability to eat when you're actually hungry",
+        "naturalApproach": "A more natural approach to eating for many people",
+        "lessRisk": "Lower risk of potential side effects such as headaches or irritability"
+      },
+      "futureNote": "If you want to try intermittent fasting in the future, you can always change this setting in the app settings."
+    },
+    "goalDateIntro": {
+      "title": "We're almost ready to show your goal achievement date",
+      "subtitle": "Before we do that, let's learn a bit more about your strengths and challenges you might face.",
+      "whyNeeded": "Why do we need this information?",
+      "reasons": {
+        "psychologicalProfile": "Understanding your psychological profile will allow us to adapt recommendations and advice specifically for you.",
+        "anticipateChallenges": "We'll be able to anticipate potential difficulties and provide you with tools to overcome them in advance.",
+        "useStrengths": "By using your strengths, we can accelerate your progress and increase the likelihood of achieving your goal."
+      },
+      "questionsPreview": "On the following screens we'll ask you about",
+      "questions": {
+        "adaptability": "How you cope with unexpected changes",
+        "challenges": "How you perceive difficulties and challenges",
+        "setbacks": "How you react to failures and obstacles",
+        "stress": "How you cope with stress",
+        "confidence": "How confident you are in your decisions"
+      },
+      "honestyNote": "We value your honesty. Remember: there are no 'right' or 'wrong' answers here. Honest answers will help us create the best plan for you."
+    },
+    "fixedCalorieBudgetConfirm": {
+      "title": "Great, we'll stick to {{calories}} calories every day",
+      "subtitle": "If you change your mind, you can always add a flexible calorie schedule later.",
+      "kcalPerDay": "kcal/day",
+      "explanation": "A fixed daily calorie budget helps you stick to the same meal plan every day, making tracking and planning easier.",
+      "tipsTitle": "Tips:",
+      "tip1": "Try to distribute calories evenly throughout the day to avoid overeating.",
+      "tip2": "Plan meals ahead to stay within your calorie budget.",
+      "tip3": "Don't forget to account for liquid calories from drinks and sauces."
+    },
+    "exerciseBenefits": {
+      "titlePositive": "Excellent!",
+      "titleNeutral": "Useful information",
+      "subtitlePositive": "Physical activity is an important element of a healthy lifestyle and weight loss",
+      "subtitleNeutral": "Even if you don't plan to exercise actively, here are some facts about physical activity",
+      "benefits": {
+        "calories": {
+          "title": "Increases calorie burn",
+          "description": "Physical activity helps burn more calories even at rest"
+        },
+        "muscle": {
+          "title": "Preserves muscle mass",
+          "description": "Strength training helps preserve muscles during weight loss"
+        },
+        "heart": {
+          "title": "Improves heart health",
+          "description": "Regular physical exercise strengthens the cardiovascular system"
+        },
+        "mood": {
+          "title": "Improves mood",
+          "description": "Exercise stimulates endorphin production and improves psychological well-being"
+        }
+      },
+      "recommendationPositive": "Before starting a new exercise program, it's recommended to consult with a doctor, especially if you have chronic conditions.",
+      "recommendationNeutral": "Even light physical activity, such as daily walks, can benefit your health.",
+      "note": "Remember that the foundation of weight loss is proper nutrition and calorie control, while physical activity is an additional tool."
+    },
+    "weightLossPlan": {
+      "title": "Choose your weight loss plan",
+      "subtitle": "The plan determines the rate of weight loss and daily calorie budget. Choose the most suitable option for you.",
+      "recommended": "Recommended",
+      "caloriesPerDay": "Calories per day:",
+      "lossPerWeek": "Loss per week:",
+      "kg": "kg",
+      "plans": {
+        "steady": {
+          "label": "Gradual loss",
+          "description": "Comfortable and sustainable weight loss pace, recommended by experts."
+        },
+        "moderate": {
+          "label": "Moderate loss",
+          "description": "Medium pace of weight loss, requires more discipline in nutrition."
+        },
+        "aggressive": {
+          "label": "Intensive loss",
+          "descriptionAvailable": "Fast pace of weight loss, recommended only with high TDEE.",
+          "descriptionUnavailable": "This plan is not available at your activity level. We recommend gradual loss."
+        }
+      },
+      "disclaimer": "Note: Weight loss pace may vary depending on individual body characteristics. Consultation with a doctor is recommended before starting any weight loss program."
+    },
+    "planSummary": {
+      "title": "Your personalized plan is ready!",
+      "subtitle": "Based on your answers, we've created a personal weight loss plan that takes into account your preferences and goals.",
+      "keyElements": "Key elements of your plan:",
+      "dailyCalories": "Your daily calorie budget:",
+      "weightLossPace": "Weight loss pace:",
+      "nutritionStrategy": "Nutrition strategy:",
+      "physicalActivity": "Physical activity:",
+      "intermittentFasting": "Intermittent fasting:",
+      "challengesPerception": "Challenges perception:",
+      "included": "Included in plan",
+      "notIncluded": "Not included in plan",
+      "nextSteps": "What's next?",
+      "motivationText": "Remember: success is the result of consistent small efforts that accumulate day by day!",
+      "startButton": "Start",
+      "plans": {
+        "steady": "Gradual weight loss",
+        "moderate": "Moderate weight loss",
+        "aggressive": "Intensive weight loss"
+      },
+      "nutrition": {
+        "balanced": "Balanced nutrition",
+        "lowCarb": "Low-carb diet",
+        "highProtein": "High-protein diet",
+        "plantBased": "Plant-based diet"
+      },
+      "challenges": {
+        "opportunities": "See difficulties as opportunities",
+        "obstacles": "Perceive difficulties as obstacles",
+        "mixed": "Have mixed attitude towards difficulties"
+      },
+      "steps": {
+        "step1": "Start tracking calorie and nutrient intake using our app",
+        "step2": "Regularly record your weight to track progress",
+        "step3": "Use our recipes and nutrition recommendations that match your plan",
+        "step4": "Adjust the plan in profile settings if needed"
+      }
+    },
+    "decisionMaking": {
+      "title": "How confident are you in your decisions?",
+      "subtitle": "Your confidence in making decisions about nutrition and health plays an important role in achieving your goals.",
+      "options": {
+        "fullyTrust": {
+          "label": "Fully trust my choices",
+          "description": "I am confident in the correctness of my decisions and rarely doubt them."
+        },
+        "confidentDoubt": {
+          "label": "Confident but sometimes doubt",
+          "description": "In most cases I trust my decisions, but sometimes I have doubts."
+        },
+        "oftenUnsure": {
+          "label": "Often feel uncertain",
+          "description": "I regularly doubt the correctness of my decisions and feel anxious."
+        },
+        "secondGuess": {
+          "label": "Constantly change my mind",
+          "description": "I tend to frequently reevaluate and change my decisions and strongly doubt myself."
+        }
+      }
+    },
+    "challengesView": {
+      "title": "How do you view challenges?",
+      "subtitle": "Your perception of difficulties and challenges helps us better understand how to support you on your path to achieving goals.",
+      "options": {
+        "growthOpportunity": {
+          "label": "I see them as growth opportunities",
+          "description": "I perceive difficulties as a chance to become better and develop."
+        },
+        "tryLearn": {
+          "label": "I try to learn lessons, but sometimes get upset",
+          "description": "I try to learn from difficulties, although sometimes they discourage me."
+        },
+        "avoidFailure": {
+          "label": "I avoid them due to fear of failure",
+          "description": "I try not to face difficulties because I'm afraid I won't cope."
+        },
+        "tooDifficult": {
+          "label": "I think they're too difficult to overcome",
+          "description": "It seems to me that difficulties often exceed my capabilities."
+        }
+      }
+    },
+    "outOf5": "out of 5",
+    "temptationResponse": {
+      "title": "How do you usually respond to temptations?",
+      "subtitle": "When you are tempted by food that's not part of your nutrition plan, how do you usually react?",
+      "options": {
+        "easilyResist": {
+          "label": "I easily resist",
+          "description": "I rarely give in to temptations and can easily maintain self-control."
+        },
+        "usuallyControl": {
+          "label": "I usually control myself, but sometimes slip up",
+          "description": "In most cases I can resist, but sometimes I break my plan."
+        },
+        "tryResist": {
+          "label": "I try to resist, but it's difficult",
+          "description": "It's hard for me to resist temptations, even when I try."
+        },
+        "oftenGiveIn": {
+          "label": "I often give in to temptations",
+          "description": "It's very difficult for me to resist temptations, and I often deviate from my plan."
+        }
+      }
+    },
+    "setbacksResponse": {
+      "title": "How do you usually respond to setbacks?",
+      "subtitle": "When you face setbacks in achieving your goals, how do you usually react?",
+      "options": {
+        "bounceBack": {
+          "label": "I quickly bounce back",
+          "description": "I quickly get back on track, not letting setbacks throw me off course."
+        },
+        "recoverEffort": {
+          "label": "I recover, but with effort",
+          "description": "It takes me some time and effort to get back to my plan after a setback."
+        },
+        "hardBack": {
+          "label": "It's hard to get back on track",
+          "description": "After a setback, it's difficult for me to return to my plan, and recovery takes a long time."
+        },
+        "struggleRecover": {
+          "label": "I struggle to recover",
+          "description": "I often can't fully get back to my plan after a serious setback."
+        }
+      }
+    },
+    "nutritionIntro": {
+      "title": "Next step - nutrition",
+      "subtitle": "Now let's talk about your nutrition strategy and food preferences.",
+      "program": "PROGRAM",
+      "weightLoss": "Weight loss",
+      "kcalPerDay": "{{calories}} kcal per day",
+      "lossPerWeek": "Loss {{rate}} kg/week",
+      "flexibleSchedule": "Flexible schedule",
+      "fixedBudget": "Same budget every day",
+      "nutritionStrategy": "Nutrition strategy",
+      "intermittentFasting": "Intermittent fasting",
+      "whyImportant": "Why is nutrition important?",
+      "infoItems": {
+        "energy": "Proper nutrition provides you with the energy and nutrients necessary for health and activity.",
+        "quality": "Food quality is as important as calorie quantity. A nutritious, balanced diet can enhance satiety on fewer calories.",
+        "wellbeing": "A properly chosen nutrition strategy can improve your well-being, energy, and even sleep quality."
+      },
+      "nextSteps": "In the following steps, we'll determine your nutrition preferences and find the optimal strategy that matches your needs and lifestyle."
+    },
+    "medicalDisclaimer": {
+      "title": "This is not medical advice",
+      "subtitle": "Discuss with your doctor the ideal nutrition and physical activity plan for your specific situation.",
+      "disclaimerText1": "The recommendations in this app are based on general principles of healthy eating and weight loss. They do not replace professional medical consultation.",
+      "disclaimerText2": "Before starting any weight loss program or changing your diet, we recommend consulting with a qualified medical professional, especially if you have any chronic conditions, allergies, or special nutritional needs.",
+      "consultTitle": "It's important to consult with a doctor if you:",
+      "conditions": {
+        "chronic": "Have chronic conditions (diabetes, cardiovascular disease, high blood pressure)",
+        "medications": "Take any medications that may affect weight or require a special diet",
+        "pregnancy": "Are pregnant, breastfeeding, or planning pregnancy",
+        "eatingDisorders": "Have a history of eating disorders or psychological problems related to food",
+        "weightIssues": "Have significant excess or insufficient weight"
+      },
+      "acknowledgement": "By continuing to use this app, you acknowledge that you understand our recommendations do not replace medical consultation, and you take responsibility for your health decisions."
+    },
+    "summaryPlan": {
+      "title": "Your plan is ready!",
+      "subtitle": "We've created a personalized nutrition and workout plan based on your data and preferences.",
+      "generating": "Generating plan...",
+      "planReady": "Plan successfully created!",
+      "planError": "Failed to create plan. Please try again.",
+      "share": "Share",
+      "regenerate": "Regenerate plan",
+      "whatsIncluded": "What's included in your plan:",
+      "features": {
+        "nutrition": "Nutrition recommendations",
+        "workouts": "Workout plan",
+        "calories": "Calorie and nutrient distribution",
+        "motivation": "Strategies for maintaining motivation"
+      },
+      "whatsNext": "What's next?",
+      "nextStepsDescription": "Complete the app setup and start using NutriChecker to track your nutrition and progress. You can find your plan in the \"Profile\" section at any time."
+    },
+    "generatingPlan": {
+      "title": "Generating Your Custom Plan...",
+      "variants": {
+        "stars": {
+          "main": "4.8 Stars",
+          "sub": "In the app store"
+        },
+        "pounds": {
+          "main": "145 Million+",
+          "sub": "pounds lost"
+        },
+        "foods": {
+          "main": "213 Million+",
+          "sub": "foods & exercises"
+        },
+        "members": {
+          "main": "53 Million+",
+          "sub": "members"
+        }
+      }
+    },
+    "paywall": {
+      "title": "Unlock Your Full Potential",
+      "premiumBadge": "PREMIUM",
+      "mainTitle": "Get Premium Access",
+      "mainSubtitle": "Join millions who have transformed their lives with our premium features",
+      "mostPopular": "MOST POPULAR",
+      "plans": {
+        "month1": {
+          "duration": "1 Month",
+          "price": "$19.99",
+          "period": "per month"
+        },
+        "month3": {
+          "duration": "3 Months",
+          "price": "$14.99",
+          "period": "per month",
+          "savings": "Save 25%"
+        },
+        "month12": {
+          "duration": "12 Months",
+          "price": "$9.99",
+          "period": "per month",
+          "savings": "Save 50%"
+        }
+      },
+      "benefits": {
+        "mealPlans": "Unlimited access to personalized meal plans",
+        "tracking": "Advanced nutrition tracking and insights",
+        "workouts": "Custom workout routines and exercise library",
+        "progress": "Progress photos and body measurement tracking",
+        "recipes": "Recipe recommendations based on your preferences",
+        "tips": "Expert tips and educational content",
+        "support": "24/7 customer support"
+      },
+      "startPremium": "Start My Premium Journey",
+      "restorePurchases": "Restore Purchases",
+      "termsText": "By subscribing, you agree to our Terms of Service and Privacy Policy. Subscription automatically renews unless cancelled 24 hours before renewal.",
+      "continueWithFree": "Continue with Free Version"
+    }
+  }
+}

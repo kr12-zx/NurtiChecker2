@@ -1,0 +1,1333 @@
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Image } from 'expo-image';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, Animated, Easing, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import * as Localization from 'expo-localization';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from '../../i18n/i18n';
+// Используем реальный Firebase для загрузки изображений
+import { uploadImage } from '../../app/firebase/storage';
+import NutrientBadge from '../../components/NutrientBadge';
+import { navigateToProductDetail } from '../../services/navigationService';
+import { saveScanToHistory } from '../../services/scanHistory';
+
+const styles = StyleSheet.create({
+  darkGeneralAllergenContainer: {
+    backgroundColor: '#8B6900', // тёмно-желтый для тёмной темы
+  },
+  container: {
+    flexGrow: 1,
+    padding: 20,
+    alignItems: 'center',
+  },
+  // Стиль для модального оверлея
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.75)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    padding: 24,
+    width: '85%',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  loadingIndicator: {
+    marginBottom: 16,
+  },
+  loadingText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  progressContainer: {
+    width: '100%',
+    height: 6,
+    backgroundColor: '#EEEEEE',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: '#4CD964',
+  },
+  disabledButton: {
+    opacity: 0.7,
+  },
+  imageContainer: {
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 20,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  // Стили для изображения в результатах анализа
+  resultImageContainer: {
+    width: '100%',
+    aspectRatio: 1.5,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 16,
+  },
+  resultImage: {
+    width: '100%',
+    height: '100%',
+  },
+  tipsContainer: {
+    width: '100%',
+    backgroundColor: '#E9ECEF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+  },
+  tipsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: '#212529',
+  },
+  tipsList: {
+    width: '100%',
+    marginTop: 6,
+  },
+  tipItem: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#495057',
+    marginBottom: 8,
+  },
+  fixedButtonsContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 20,
+    paddingBottom: 36,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+  },
+  button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#6C757D',
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    width: '48%',
+  },
+  primaryButton: {
+    backgroundColor: '#007BFF',
+  },
+  buttonText: {
+    color: '#FFF',
+    fontWeight: 'bold',
+    marginLeft: 8,
+    fontSize: 16,
+  },
+  resultsContainer: {
+    width: '100%',
+    alignItems: 'flex-start',
+  },
+  foodName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#212529',
+    marginBottom: 8,
+    alignSelf: 'flex-start',
+  },
+  portionContainer: {
+    width: '100%',
+    marginBottom: 16,
+  },
+  portionDescription: {
+    fontSize: 16,
+    color: '#6C757D',
+    marginBottom: 16,
+  },
+  allergenWarningContainer: {
+    width: '100%',
+    backgroundColor: '#FF4136',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  allergenWarningHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  allergenWarningTitle: {
+    color: '#FFF',
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginLeft: 8,
+  },
+  allergenWarningText: {
+    color: '#FFF',
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 8,
+  },
+  generalAllergenContainer: {
+    width: '100%',
+    backgroundColor: '#FFF59D',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  generalAllergenHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  generalAllergenTitle: {
+    color: '#7B5800',
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginLeft: 8,
+  },
+  generalAllergenText: {
+    color: '#7B5800',
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 8,
+  },
+  nutritionContainer: {
+    width: '100%',
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#212529',
+    marginBottom: 12,
+  },
+  nutritionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  nutritionLabel: {
+    fontSize: 16,
+    color: '#6C757D',
+  },
+  nutritionValue: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#212529',
+  },
+  badgesContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 16,
+  },
+  vitaminsContainer: {
+    width: '100%',
+    backgroundColor: '#E9ECEF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  mineralsContainer: {
+    width: '100%',
+    backgroundColor: '#E9ECEF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  scoreContainer: {
+    width: '100%',
+    backgroundColor: '#E9ECEF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  benefitsContainer: {
+    width: '100%',
+    backgroundColor: '#D1E7DD',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  benefitsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#0F5132',
+    marginBottom: 8,
+  },
+  benefitText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#0F5132',
+    marginBottom: 8,
+  },
+  concernsContainer: {
+    width: '100%',
+    backgroundColor: '#F8D7DA',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  concernsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#842029',
+    marginBottom: 8,
+  },
+  concernText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#842029',
+    marginBottom: 8,
+  },
+  recommendationContainer: {
+    width: '100%',
+    backgroundColor: '#CFE2FF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  recommendationsContainer: {
+    width: '100%',
+    backgroundColor: '#CFE2FF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  recommendationTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#084298',
+    marginBottom: 8,
+  },
+  recommendationText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#084298',
+    marginBottom: 8,
+  },
+  recommendationsText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#084298',
+    marginBottom: 8,
+  },
+  frequencyText: {
+    fontSize: 14,
+    fontStyle: 'italic',
+    color: '#084298',
+    marginTop: 4,
+  },
+  fullWidthButton: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#007BFF',
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginTop: 20,
+  },
+  ingredientsContainer: {
+    width: '100%',
+    backgroundColor: '#E9ECEF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  ingredientsText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#495057',
+  },
+});
+
+type PhotoAnalysisParams = {
+  imageUri: string;
+};
+
+// Интерфейс для результатов анализа
+interface AnalysisData {
+  foodName: string;
+  portionInfo: {
+    description: string;
+    estimatedWeight: number;
+    measurementUnit: string;
+  };
+  ingredients?: {
+    name: string;
+    allergenIds?: string[];
+  }[];
+  allergenAnalysis?: {
+    detectedAllergens?: {
+      allergenId: string;
+      name: string;
+      sourceIngredient?: string;
+      confidence?: string;
+      sources?: {
+        ingredient: string;
+        confidence: string;
+        type: string;
+      }[];
+    }[];
+    userAllergenWarnings?: {
+      allergenId: string;
+      allergenName: string;
+      message: string;
+    }[];
+    isSafeForUser?: boolean;
+  };
+  userContext?: {
+    allergenWarnings?: {
+      allergenId: string;
+      allergenName: string;
+      message: string;
+    }[];
+    isSafeForUser?: boolean;
+    language?: string;
+  };
+  nutritionInfo: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    sugars: number;
+    fat: number;
+    saturatedFat: number;
+    fiber: number;
+    sodium: number;
+    glycemicIndex: number | null;
+    vitamins: string[];
+    minerals: string[];
+  };
+  analysis: {
+    healthBenefits: string[];
+    healthConcerns: string[];
+    overallHealthScore: number;
+  };
+  recommendedIntake: {
+    description: string;
+    maxFrequency: string;
+  };
+}
+
+// Компонент для отображения прогресс-бара и сообщения о загрузке
+const LoadingOverlay = () => {
+  const progressAnim = useRef(new Animated.Value(0)).current;
+  const { t } = useTranslation();
+  const isDark = useColorScheme() === 'dark';
+  
+  useEffect(() => {
+    // Анимация прогресс-бара в течение примерно 30 секунд
+    Animated.timing(progressAnim, {
+      toValue: 0.95, // Не делаем 100%, чтобы показать, что процесс ещё идёт
+      duration: 30000, // 30 секунд
+      easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+      useNativeDriver: false,
+    }).start();
+  }, []);
+
+  const progressWidth = progressAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0%', '100%']
+  });
+
+  return (
+    // Используем Modal, который точно перекроет весь экран
+    <Modal
+      transparent={true}
+      visible={true}
+      animationType="fade"
+    >
+      <View style={styles.modalOverlay}>
+        <View style={[styles.loadingCard, isDark && {backgroundColor: '#2A2A2A'}]}>
+          <ActivityIndicator size="large" color="#4CD964" style={styles.loadingIndicator} />
+          <Text style={[styles.loadingText, isDark && {color: '#FFF'}]}>
+            {t('photoAnalysis.processingMessage') || 'Пожалуйста, подождите, анализируем вашу еду...'}
+          </Text>
+          <View style={styles.progressContainer}>
+            <Animated.View 
+              style={[
+                styles.progressBar,
+                { width: progressWidth }
+              ]} 
+            />
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
+export default function PhotoAnalysisScreen() {
+  const { imageUri } = useLocalSearchParams<PhotoAnalysisParams>();
+  const { t, locale } = useTranslation();
+  const isDark = useColorScheme() === 'dark';
+  
+  // Функция для получения общих аллергенов (не связаны с аллергенами пользователя)
+  const getGeneralAllergens = (data: AnalysisData) => {
+    if (!data?.allergenAnalysis?.detectedAllergens) return [];
+    
+    // Если есть данные о пользовательских аллергенах
+    const userAllergenIds = data.userContext?.allergenWarnings 
+      ? data.userContext.allergenWarnings.map((w: {allergenId: string; allergenName: string}) => w.allergenId || w.allergenName) 
+      : [];
+    
+    // Фильтруем только аллергены, которые не являются аллергенами пользователя
+    return data.allergenAnalysis.detectedAllergens
+      .filter((allergen: {allergenId: string; name: string}) => 
+        !userAllergenIds.includes(allergen.allergenId) && 
+        !userAllergenIds.includes(allergen.name)
+      )
+      .map((allergen: {allergenId: string; name: string; sourceIngredient?: string; sources?: {ingredient: string; confidence: string}[]}) => {
+        let message = '';
+        
+        if (allergen.sources && allergen.sources.length > 0) {
+          // Новый формат с sources
+          const sourceDetails = allergen.sources
+            .map((source: {ingredient: string; confidence: string}) => `${source.ingredient} (${source.confidence})`)
+            .join(', ');
+          message = `${allergen.name} found in ${sourceDetails}`;
+        } else if (allergen.sourceIngredient) {
+          // Старый формат с источником
+          message = `${allergen.name} detected in ${allergen.sourceIngredient}`;
+        } else {
+          // Простой формат без деталей
+          message = `${allergen.name || allergen.allergenId}`;
+        }
+        
+        return {
+          allergenId: allergen.allergenId,
+          allergenName: allergen.name,
+          message
+        };
+      });
+  };
+  
+  const [isLoading, setIsLoading] = useState(false);
+  const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
+  
+  // Если imageUri не определен, перенаправляем назад на экран сканирования
+  if (!imageUri) {
+    router.replace('/scan');
+    return null;
+  }
+
+  const handleTakeAnotherPhoto = () => {
+    router.back();
+  };
+
+  const handleAnalyze = async () => {
+    try {
+      setIsLoading(true);
+      
+      // 1. Загружаем изображение в Firebase Storage
+      const storagePath = 'food_analysis';
+      console.log('Начало загрузки изображения в Firebase:', imageUri);
+      
+      const downloadURL = await uploadImage(imageUri, storagePath);
+      
+      if (!downloadURL) {
+        throw new Error('Не удалось загрузить изображение');
+      }
+      
+      console.log('Изображение успешно загружено:', downloadURL);
+      
+      // 2. Формируем данные о пользователе (в будущем можно брать из профиля/настроек)
+      const userProfile = {
+        age: 30,
+        gender: 'not_specified',
+        weight: 70,
+        height: 170,
+        activityLevel: 2,
+        dietGoal: 'maintenance'
+      };
+      
+      // 3. Загружаем выбранные аллергены из AsyncStorage
+      // Объявляем тип для деталей аллергенов
+      interface AllergenDetail {
+        id: string;
+        englishName: string;
+      }
+      
+      const loadAllergenData = async () => {
+        const KEYS = {
+          USER_SETTINGS: '@nutrichecker:user_settings',
+          CUSTOM_ALLERGENS: '@nutrichecker:custom_allergens'
+        };
+        
+        try {
+          // Загружаем пользовательские аллергены
+          const customAllergensJSON = await AsyncStorage.getItem(KEYS.CUSTOM_ALLERGENS);
+          const customAllergens = customAllergensJSON ? JSON.parse(customAllergensJSON) : [];
+          
+          // Загружаем выбранные аллергены из настроек пользователя
+          const userSettingsJSON = await AsyncStorage.getItem(KEYS.USER_SETTINGS);
+          let selectedAllergenIds: string[] = [];
+          let allergenDetails: {id: string, englishName: string}[] = [];
+          
+          if (userSettingsJSON) {
+            const userSettings = JSON.parse(userSettingsJSON);
+            if (userSettings.selectedAllergenIds && Array.isArray(userSettings.selectedAllergenIds)) {
+              selectedAllergenIds = userSettings.selectedAllergenIds;
+              
+              // Загружаем все аллергены (стандартные + пользовательские)
+              // для получения английских названий выбранных аллергенов
+              const allAllergens = [];
+              
+              // Создаем базовый список аллергенов
+              const baseAllergens = [
+                { id: 'milk', englishName: 'Milk' },
+                { id: 'eggs', englishName: 'Eggs' },
+                { id: 'peanuts', englishName: 'Peanuts' },
+                { id: 'nuts', englishName: 'Tree Nuts' },
+                { id: 'fish', englishName: 'Fish' },
+                { id: 'shellfish', englishName: 'Shellfish' },
+                { id: 'wheat', englishName: 'Wheat' },
+                { id: 'soy', englishName: 'Soy' },
+                { id: 'sesame', englishName: 'Sesame' },
+                { id: 'gluten', englishName: 'Gluten' },
+                { id: 'crustaceans', englishName: 'Crustaceans' },
+                { id: 'celery', englishName: 'Celery' },
+                { id: 'mustard', englishName: 'Mustard' },
+                { id: 'lupin', englishName: 'Lupin' },
+                { id: 'lactose', englishName: 'Lactose' },
+                { id: 'fructose', englishName: 'Fructose' },
+                { id: 'histamine', englishName: 'Histamine' },
+                { id: 'sulfites', englishName: 'Sulfites' },
+                { id: 'nitrates', englishName: 'Nitrates' },
+                { id: 'msg', englishName: 'MSG' },
+                { id: 'carrageenan', englishName: 'Carrageenan' }
+              ];
+              
+              // Создаём карту базовых аллергенов по ID
+              const allergenMap = new Map(baseAllergens.map(a => [a.id, a]));
+              
+              // Добавляем пользовательские аллергены в карту
+              customAllergens.forEach((a: { id: string; name: string; englishName?: string }) => {
+                allergenMap.set(a.id, { id: a.id, englishName: a.englishName || a.name });
+              });
+              
+              // Фильтруем только выбранные аллергены
+              selectedAllergenIds.forEach(id => {
+                if (allergenMap.has(id)) {
+                  const allergenInfo = allergenMap.get(id);
+                  if (allergenInfo) {
+                    allergenDetails.push(allergenInfo);
+                  }
+                } else {
+                  // Если не нашли информацию об аллергене, используем только ID
+                  allergenDetails.push({ id, englishName: id });
+                }
+              });
+            }
+          }
+          
+          console.log('Загружены аллергены:', { 
+            selectedAllergenIds, 
+            allergenDetails,
+            customAllergensCount: customAllergens.length 
+          });
+          
+          return { selectedAllergenIds, customAllergens, allergenDetails };
+        } catch (error) {
+          console.error('Ошибка при загрузке данных об аллергенах:', error);
+          // В случае ошибки возвращаем пустые данные
+          return { selectedAllergenIds: [], customAllergens: [], allergenDetails: [] };
+        }
+      };
+
+      const allergenData = await loadAllergenData();
+      
+      // 4. Подготовка данных для отправки
+      const encodedUserProfile = encodeURIComponent(JSON.stringify(userProfile));
+      const encodedCustomAllergens = encodeURIComponent(JSON.stringify(allergenData.customAllergens));
+      // Теперь отправляем выбранные аллергены с их английскими названиями
+      const selectedAllergenIds = allergenData.selectedAllergenIds.join(',');
+      // Создаем строку с данными о выбранных аллергенах в формате JSON
+      const allergenDetailsJson = encodeURIComponent(JSON.stringify(allergenData.allergenDetails || []));
+      
+      // 5. Формируем URL для n8n вебхука
+      const n8nWebhookUrl = 'https://ttagent.website/webhook/445b7e5d-d5af-4d06-9096-155ed9b1c4bb1';
+      
+      // Используем текущий язык системы из хука useTranslation
+      
+      // Получаем реальный системный язык напрямую, а не через useTranslation
+      const systemLanguage = Localization.locale.split('-')[0]; // Например 'es' из 'es-419'
+      console.log('Системный язык устройства:', systemLanguage);
+      
+      const queryParams = `?imageUrl=${encodeURIComponent(downloadURL)}&language=${systemLanguage}&userProfile=${encodedUserProfile}&selectedAllergenIds=${selectedAllergenIds}&customAllergens=${encodedCustomAllergens}&allergenDetails=${allergenDetailsJson}`;
+      
+      console.log('Отправка запроса в n8n:', `${n8nWebhookUrl}${queryParams}`);
+      
+      // 5. Отправляем запрос в n8n
+      const response = await fetch(`${n8nWebhookUrl}${queryParams}`);
+      
+      if (!response.ok) {
+        throw new Error(`Ошибка запроса: ${response.status}`);
+      }
+      
+      // 6. Обрабатываем результат
+      const analysisResult = await response.json();
+      
+      console.log('Получен ответ от n8n:', analysisResult);
+      
+      setIsLoading(false);
+      
+      // 7. Проверяем наличие ошибки в ответе
+      if (analysisResult.error) {
+        Alert.alert(
+          t('common.error'),
+          t('photoAnalysis.nonFoodError'),
+          [{ 
+            text: t('photoAnalysis.takeAnother'), 
+            onPress: () => router.replace('/scan')
+          }]
+        );
+        return;
+      }
+      
+      // 8. Отображаем результаты пользователю
+      const { foodData } = analysisResult;
+      
+      // Проверка на случай, когда продукт неизвестен или имеет ошибку
+      if (foodData && foodData.error) {
+        Alert.alert(
+          t('common.error'),
+          t('photoAnalysis.nonFoodError'),
+          [{ 
+            text: t('photoAnalysis.takeAnother'), 
+            onPress: () => router.replace('/scan')
+          }]
+        );
+        return;
+      }
+      
+      // Проверка на отсутствие важных данных для отображения
+      if (!foodData || !foodData.nutritionInfo) {
+        Alert.alert(
+          t('common.error'),
+          t('photoAnalysis.analysisError'),
+          [{ 
+            text: t('photoAnalysis.takeAnother'), 
+            onPress: () => router.replace('/scan')
+          }]
+        );
+        return;
+      }
+      
+      // Проверка на случай, когда имя продукта 'Неизвестный продукт'
+      if (foodData.foodName === 'Неизвестный продукт' || foodData.foodName === 'Unknown product') {
+        Alert.alert(
+          t('common.error'),
+          t('photoAnalysis.nonFoodError'),
+          [{ 
+            text: t('photoAnalysis.takeAnother'), 
+            onPress: () => router.replace('/scan')
+          }]
+        );
+        return;
+      }
+      
+      // 9. Сохраняем результаты в историю сканирований
+      try {
+        // Сохраняем полные данные анализа в JSON формате
+        const fullAnalysisData = JSON.stringify(analysisResult);
+        
+        // Создаем запись в истории сканирований и получаем полный объект ScanHistoryItem
+        const savedScan = await saveScanToHistory({
+          name: foodData.foodName,
+          calories: foodData.nutritionInfo.calories,
+          protein: foodData.nutritionInfo.protein,
+          fat: foodData.nutritionInfo.fat,
+          carbs: foodData.nutritionInfo.carbs,
+          image: downloadURL, // URL изображения в Firebase Storage
+          fullData: fullAnalysisData // Сохраняем полный ответ от n8n
+        });
+        console.log('Результаты анализа сохранены в истории, ID:', savedScan.id);
+        
+        // Используем единый подход к навигации через функцию navigateToProductDetail
+        navigateToProductDetail(savedScan);
+      } catch (saveError) {
+        console.error('Ошибка при сохранении в историю:', saveError);
+        // В случае ошибки показываем результаты на текущем экране как запасной вариант
+        setAnalysisData(foodData);
+      }
+      
+    } catch (error) {
+      setIsLoading(false);
+      
+      Alert.alert(
+        'Ошибка',
+        'Не удалось проанализировать изображение. Пожалуйста, попробуйте снова.',
+        [{ text: 'OK' }]
+      );
+      
+      console.error('Ошибка анализа:', error);
+    }
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#121212' : '#F8F9FA' }}>
+      <Stack.Screen options={{ title: t('photoAnalysis.title') }} />
+      
+      {/* Отображаем прогресс-бар во время загрузки, размещаем вне ScrollView */}
+      {isLoading && <LoadingOverlay />}
+      
+      <ScrollView contentContainerStyle={[styles.container, { paddingBottom: 100 }]}>
+
+      {analysisData ? (
+          // Отображаем результаты анализа
+          <View style={styles.resultsContainer}>
+            {/* Добавляем фотографию в верхней части */}
+            <View style={styles.resultImageContainer}>
+              <Image 
+                source={{ uri: imageUri }} 
+                style={styles.resultImage} 
+                contentFit="cover"
+                cachePolicy="memory-disk"
+                transition={200}
+              />
+            </View>
+            
+            <Text style={[styles.foodName, isDark && { color: '#FFF' }]}>
+              {analysisData.foodName}
+            </Text>
+            
+            <View style={styles.portionContainer}>
+              <Text style={[styles.portionDescription, isDark && { color: '#CCC' }]}>
+                {analysisData.portionInfo.description} 
+                ({analysisData.portionInfo.estimatedWeight} {analysisData.portionInfo.measurementUnit})
+              </Text>
+            </View>
+            
+            {/* Блок предупреждений об аллергенах пользователя */}
+            {analysisData.userContext?.allergenWarnings && analysisData.userContext.allergenWarnings.length > 0 && (
+              <View style={styles.allergenWarningContainer}>
+                <View style={styles.allergenWarningHeader}>
+                  <Ionicons name="warning" size={24} color="#FFF" />
+                  <Text style={styles.allergenWarningTitle}>{t('allergens.warningTitle')}</Text>
+                </View>
+                {analysisData.userContext.allergenWarnings.map((warning: {allergenId: string; allergenName: string; message: string}, index: number) => (
+                  <Text key={`warning-${index}`} style={styles.allergenWarningText}>
+                    • {warning.message}
+                  </Text>
+                ))}
+                {analysisData.userContext.isSafeForUser === false && (
+                  <Text style={[styles.allergenWarningText, { fontWeight: 'bold', fontStyle: 'italic', marginTop: 10 }]}>
+                    {t('allergens.notSafeMessage')}
+                  </Text>
+                )}
+              </View>
+            )}
+            
+            {/* Отображаем информацию об ингредиентах, если они доступны */}
+            {analysisData.ingredients && analysisData.ingredients.length > 0 && (
+              <View style={[styles.ingredientsContainer, isDark && { backgroundColor: '#2A2A2A' }]}>
+                <Text style={[styles.sectionTitle, isDark && { color: '#FFF' }]}>
+                  {t('nutrition.ingredients')}:
+                </Text>
+                <Text style={[styles.ingredientsText, isDark && { color: '#CCC' }]}>
+                  {analysisData.ingredients.map((ing: {name: string}) => ing.name).join(', ')}
+                </Text>
+              </View>
+            )}
+            
+            {/* Блок общих предупреждений об аллергенах */}
+            {(() => {
+              const generalAllergens = getGeneralAllergens(analysisData);
+              if (generalAllergens && generalAllergens.length > 0) {
+                return (
+                  <View style={[styles.generalAllergenContainer, isDark && styles.darkGeneralAllergenContainer]}>
+                    <View style={styles.generalAllergenHeader}>
+                      <Ionicons name="information-circle" size={24} color="#7B5800" />
+                      <Text style={styles.generalAllergenTitle}>{t('allergens.allergenInformation')}</Text>
+                    </View>
+                    {generalAllergens.map((allergen: {allergenId: string; allergenName: string; message: string}, index: number) => (
+                      <Text key={`general-allergen-${index}`} style={styles.generalAllergenText}>
+                        • {allergen.message}
+                      </Text>
+                    ))}
+                  </View>
+                );
+              }
+              return null;
+            })()}
+            
+            <View style={styles.nutritionContainer}>
+              <Text style={[styles.sectionTitle, isDark && { color: '#FFF' }]}>
+                Питательная ценность:
+              </Text>
+              <View style={styles.nutritionRow}>
+                <Text style={[styles.nutritionLabel, isDark && { color: '#CCC' }]}>- Калорийность:</Text>
+                <Text style={[styles.nutritionValue, isDark && { color: '#FFF' }]}>{analysisData.nutritionInfo.calories} ккал</Text>
+              </View>
+              <View style={styles.nutritionRow}>
+                <Text style={[styles.nutritionLabel, isDark && { color: '#CCC' }]}>- Белки:</Text>
+                <Text style={[styles.nutritionValue, isDark && { color: '#FFF' }]}>{analysisData.nutritionInfo.protein} г</Text>
+              </View>
+              <View style={styles.nutritionRow}>
+                <Text style={[styles.nutritionLabel, isDark && { color: '#CCC' }]}>- Жиры:</Text>
+                <Text style={[styles.nutritionValue, isDark && { color: '#FFF' }]}>
+                  {analysisData.nutritionInfo.fat} г (насыщенные: {analysisData.nutritionInfo.saturatedFat} г)
+                </Text>
+              </View>
+              <View style={styles.nutritionRow}>
+                <Text style={[styles.nutritionLabel, isDark && { color: '#CCC' }]}>- Углеводы:</Text>
+                <Text style={[styles.nutritionValue, isDark && { color: '#FFF' }]}>
+                  {analysisData.nutritionInfo.carbs} г (сахара: {analysisData.nutritionInfo.sugars} г)
+                </Text>
+              </View>
+              <View style={styles.nutritionRow}>
+                <Text style={[styles.nutritionLabel, isDark && { color: '#CCC' }]}>- Пищевые волокна:</Text>
+                <Text style={[styles.nutritionValue, isDark && { color: '#FFF' }]}>{analysisData.nutritionInfo.fiber} г</Text>
+              </View>
+              
+              {/* Отображение витаминов */}
+              {analysisData.nutritionInfo.vitamins && analysisData.nutritionInfo.vitamins.length > 0 && (
+                <View style={styles.vitaminsContainer}>
+                  <Text style={[styles.sectionSubtitle, isDark && { color: '#FFF' }]}>Витамины:</Text>
+                  <View style={styles.badgesContainer}>
+                    {analysisData.nutritionInfo.vitamins.map((vitamin, index) => (
+                      <NutrientBadge
+                        key={`vitamin-${index}`}
+                        name={vitamin}
+                        type="vitamin"
+                      />
+                    ))}
+                  </View>
+                </View>
+              )}
+              
+              {/* Отображение минералов */}
+              {analysisData.nutritionInfo.minerals && analysisData.nutritionInfo.minerals.length > 0 && (
+                <View style={styles.mineralsContainer}>
+                  <Text style={[styles.sectionSubtitle, isDark && { color: '#FFF' }]}>Минералы:</Text>
+                  <View style={styles.badgesContainer}>
+                    {analysisData.nutritionInfo.minerals.map((mineral, index) => (
+                      <NutrientBadge
+                        key={`mineral-${index}`}
+                        name={mineral}
+                        type="mineral"
+                      />
+                    ))}
+                  </View>
+                </View>
+              )}
+            </View>
+            
+            <View style={styles.scoreContainer}>
+              <Text style={[styles.sectionTitle, isDark && { color: '#FFF' }]}>
+                Общая оценка здоровья: {analysisData.analysis.overallHealthScore}/100
+              </Text>
+            </View>
+            
+            <View style={styles.recommendationsContainer}>
+              <Text style={[styles.sectionTitle, isDark && { color: '#FFF' }]}>
+                Рекомендации:
+              </Text>
+              <Text style={[styles.recommendationsText, isDark && { color: '#CCC' }]}>
+                {analysisData.recommendedIntake.description}
+              </Text>
+              {analysisData.recommendedIntake.maxFrequency && (
+                <Text style={[styles.frequencyText, isDark && { color: '#CCC' }]}>
+                  <Text style={{fontWeight: 'bold'}}>Рекомендуемая частота:</Text> {analysisData.recommendedIntake.maxFrequency}
+                </Text>
+              )}
+            </View>
+            
+            <TouchableOpacity
+              style={[styles.button, styles.primaryButton, styles.fullWidthButton]}
+              onPress={handleTakeAnotherPhoto}
+            >
+              <Ionicons name="camera-outline" size={24} color="#FFF" />
+              <Text style={styles.buttonText}>Сделать другое фото</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          // Отображаем экран с фото и кнопками
+          <>
+            <View style={styles.imageContainer}>
+              <Image 
+                source={{ uri: imageUri }} 
+                style={styles.image} 
+                contentFit="cover"
+                cachePolicy="memory-disk"
+                transition={200}
+              />
+            </View>
+            
+            <View style={styles.tipsContainer}>
+              <Text style={[styles.tipsTitle, isDark && { color: '#FFF' }]}>
+                {t('photoAnalysis.tipsTitle')}
+              </Text>
+
+              <View style={styles.tipsList}>
+                <Text style={[styles.tipItem, isDark && { color: '#CCC' }]}>
+                  • {t('photoAnalysis.tip1')}
+                </Text>
+                <Text style={[styles.tipItem, isDark && { color: '#CCC' }]}>
+                  • {t('photoAnalysis.tip2')}
+                </Text>
+                <Text style={[styles.tipItem, isDark && { color: '#CCC' }]}>
+                  • {t('photoAnalysis.tip3')}
+                </Text>
+                <Text style={[styles.tipItem, isDark && { color: '#CCC' }]}>
+                  • {t('photoAnalysis.tip4')}
+                </Text>
+              </View>
+            </View>
+
+          </>
+        )}
+      </ScrollView>
+      
+      {/* Фиксированные кнопки внизу экрана */}
+      {!analysisData && (
+        <View style={styles.fixedButtonsContainer}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleTakeAnotherPhoto}
+            disabled={isLoading}
+          >
+            <Ionicons name="camera-outline" size={24} color="#FFF" />
+            <Text style={styles.buttonText}>{t('photoAnalysis.takeAnother')}</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[
+              styles.button, 
+              styles.primaryButton,
+              isLoading && styles.disabledButton
+            ]}
+            onPress={handleAnalyze}
+            disabled={isLoading}
+          >
+            <Ionicons name="nutrition-outline" size={24} color="#FFF" />
+            <Text style={styles.buttonText}>{t('photoAnalysis.analyze')}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      
+    </SafeAreaView>
+  );
+  
+
+const styles = StyleSheet.create({
+  darkGeneralAllergenContainer: {
+    backgroundColor: '#8B6900', // тёмно-желтый для тёмной темы
+  },
+  container: {
+    flexGrow: 1,
+    padding: 20,
+    alignItems: 'center',
+  },
+  // Стиль для модального оверлея
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.75)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    padding: 24,
+    width: '85%',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  loadingIndicator: {
+    marginBottom: 16,
+  },
+  loadingText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  progressContainer: {
+    width: '100%',
+    height: 6,
+    backgroundColor: '#EEEEEE',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: '#4CD964',
+  },
+  disabledButton: {
+    opacity: 0.7,
+  },
+  imageContainer: {
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 20,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  // Стили для изображения в результатах анализа
+  resultImageContainer: {
+    width: '100%',
+    aspectRatio: 1.5,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 16,
+  },
+  resultImage: {
+    width: '100%',
+    height: '100%',
+  },
+  tipsContainer: {
+    width: '100%',
+    backgroundColor: '#E9ECEF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+  },
+  tipsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: '#212529',
+  },
+
+  tipsList: {
+    width: '100%',
+    marginTop: 6,
+  },
+  tipItem: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#495057',
+    marginBottom: 6,
+    paddingLeft: 4,
+  },
+  buttonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 16,
+  },
+  fixedButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    position: 'absolute',
+    bottom: 30,
+    left: 20,
+    right: 20,
+    zIndex: 10,
+    backgroundColor: 'transparent',
+  },
+  button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#6C757D',
+    borderRadius: 8,
+    padding: 12,
+    flex: 1,
+    marginHorizontal: 6,
+  },
+  primaryButton: {
+    backgroundColor: '#0D6EFD',
+  },
+  secondaryButton: {
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#DEE2E6',
+  },
+  buttonText: {
+    color: '#FFF',
+    fontWeight: '600',
+    fontSize: 14,
+    marginLeft: 8,
+  },
+  allergenWarningContainer: {
+    backgroundColor: '#DC3545',
+    borderRadius: 8,
+    marginVertical: 10,
+    padding: 15,
+  },
+  generalAllergenContainer: {
+    backgroundColor: '#FFC107', 
+    borderRadius: 8,
+    marginVertical: 10,
+    padding: 15,
+  },
+  allergenWarningText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    lineHeight: 22,
+    marginBottom: 8,
+  },
+  generalAllergenText: {
+    color: '#7B5800', 
+    fontSize: 16,
+    lineHeight: 22,
+    marginBottom: 8,
+  },
+  allergenWarningTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginLeft: 10,
+  },
+  generalAllergenTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#7B5800', 
+    marginLeft: 10,
+  },
+  allergenWarningHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  generalAllergenHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  // Стили для отображения результатов анализа
+  resultsContainer: {
+    width: '100%',
+    alignItems: 'flex-start',
+  },
+  foodName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#212529',
+    marginBottom: 12,
+    alignSelf: 'center',
+    textAlign: 'center',
+  },
+  portionContainer: {
+    width: '100%',
+    marginBottom: 16,
+    backgroundColor: '#E9ECEF',
+    borderRadius: 8,
+    padding: 12,
+  },
+  portionDescription: {
+    fontSize: 16,
+    color: '#495057',
+    textAlign: 'center',
+  },
+  nutritionContainer: {
+    width: '100%',
+    marginBottom: 20,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 8,
+    padding: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#212529',
+    marginBottom: 12,
+  },
+  nutritionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  nutritionLabel: {
+    fontSize: 16,
+    color: '#495057',
+    flex: 1,
+  },
+  nutritionValue: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#212529',
+    flex: 1,
+    textAlign: 'right',
+  },
+  vitaminsContainer: {
+    marginTop: 15,
+  },
+  ingredientsContainer: {
+    width: '100%',
+    marginBottom: 16,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 8,
+    padding: 16,
+  },
+  ingredientsText: {
+    fontSize: 16,
+    color: '#495057',
+    lineHeight: 22,
+  },
+  mineralsContainer: {
+    marginTop: 15,
+  },
+  badgesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 8,
+  },
+  sectionSubtitle: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#444',
+    marginBottom: 4,
+  },
+  scoreContainer: {
+    width: '100%',
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  recommendationsContainer: {
+    width: '100%',
+    marginBottom: 24,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 8,
+    padding: 16,
+  },
+  recommendationsText: {
+    fontSize: 16,
+    color: '#495057',
+    lineHeight: 22,
+  },
+  frequencyText: {
+    fontSize: 14,
+    color: '#495057',
+    lineHeight: 20,
+    marginTop: 8,
+  },
+  fullWidthButton: {
+    marginHorizontal: 0,
+    marginTop: 16,
+  }
+});
