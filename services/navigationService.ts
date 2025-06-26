@@ -19,6 +19,7 @@ export const navigateToProductDetail = (item: ScanHistoryItem, dashboardData?: {
   actualSaturatedFat: number;
   servingMultiplier: number;
   baseWeight?: number; // Базовый вес продукта в граммах
+  actualWeight?: number; // Фактически съеденный вес в граммах
 }) => {
   // Сохраняем изображение во временное хранилище
   if (item.image) {
@@ -28,27 +29,46 @@ export const navigateToProductDetail = (item: ScanHistoryItem, dashboardData?: {
   // Подготовка данных для анализа (с приоритетом на полные данные)
   let analysisData;
 
+  console.log('🔍 ДЕБАГ navigationService - item:', {
+    id: item.id,
+    name: item.name,
+    hasFullData: !!item.fullData,
+    fullDataLength: item.fullData?.length || 0,
+    fullDataPreview: item.fullData?.substring(0, 100) || 'НЕТ ДАННЫХ'
+  });
+
   if (item.fullData) {
     try {
       // Используем полные данные, если они есть
       const parsedData = JSON.parse(item.fullData);
+      console.log('🔍 ДЕБАГ navigationService - parsedData структура:', {
+        hasFoodData: !!parsedData.foodData,
+        hasDirectPortionInfo: !!parsedData.portionInfo,
+        hasNutritionInfo: !!parsedData.nutritionInfo,
+        estimatedWeight: parsedData.portionInfo?.estimatedWeight,
+        topLevelKeys: Object.keys(parsedData)
+      });
       
       if (parsedData.foodData) {
         // Новая структура с foodData
         analysisData = parsedData.foodData;
+        console.log('✅ ДЕБАГ navigationService - Используем parsedData.foodData, вес:', analysisData.portionInfo?.estimatedWeight);
       } else if (parsedData.portionInfo && parsedData.nutritionInfo) {
-        // Старая структура - данные на верхнем уровне
+        // Старая структура - данные на верхнем уровне (КАК У НАС!)
         analysisData = parsedData;
+        console.log('✅ ДЕБАГ navigationService - Используем parsedData напрямую, вес:', analysisData.portionInfo?.estimatedWeight);
       } else {
         // Если структура не соответствует ожидаемой
+        console.log('❌ ДЕБАГ navigationService - Неизвестная структура, создаем базовые данные');
         analysisData = createBasicAnalysisData(item);
       }
     } catch (error) {
-      console.error('Ошибка парсинга fullData:', error);
+      console.error('❌ ДЕБАГ navigationService - Ошибка парсинга fullData:', error);
       analysisData = createBasicAnalysisData(item);
     }
   } else {
     // Создаем базовые данные анализа
+    console.log('❌ ДЕБАГ navigationService - НЕТ fullData, создаем базовые данные');
     analysisData = createBasicAnalysisData(item);
   }
 
@@ -85,7 +105,8 @@ export const navigateToProductDetail = (item: ScanHistoryItem, dashboardData?: {
     actualFiber: dashboardData.actualFiber.toString(),
     actualSaturatedFat: dashboardData.actualSaturatedFat.toString(),
     servingMultiplier: dashboardData.servingMultiplier.toString(),
-    baseWeight: dashboardData.baseWeight?.toString() || '100' // Передаем базовый вес
+    baseWeight: dashboardData.baseWeight?.toString() || '100', // Передаем базовый вес
+    actualWeight: dashboardData.actualWeight?.toString() || '100' // Передаем фактически съеденный вес
   } : baseParams;
 
   // Навигация на экран продукта

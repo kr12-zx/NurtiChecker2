@@ -225,7 +225,8 @@ const DashboardProductItem = ({ item, isDark, t, onDelete }: {
         actualFiber: item.fiber,
         actualSaturatedFat: item.saturatedFat,
         servingMultiplier: item.servingMultiplier,
-        baseWeight: item.baseWeight
+        baseWeight: item.baseWeight,
+        actualWeight: item.baseWeight ? Math.round(item.baseWeight * item.servingMultiplier) : undefined
       });
     }}>
       <View style={[itemStyles.productItem, isDark && itemStyles.darkProductItem]}>

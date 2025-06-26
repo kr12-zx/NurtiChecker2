@@ -30,6 +30,9 @@ export default function ProductDetailScreen() {
   
   // 🔍 ДЕБАГ: Проверяем все параметры которые приходят
   console.log('🔍 ВСЕ ПАРАМЕТРЫ:', JSON.stringify(params, null, 2));
+  console.log('🚀 ДЕБАГ fromDashboard:', params.fromDashboard);
+  console.log('🚀 ДЕБАГ servingMultiplier:', params.servingMultiplier);
+  console.log('🚀 ДЕБАГ actualCalories:', params.actualCalories);
   
   const { 
     id, 
@@ -1697,7 +1700,9 @@ export default function ProductDetailScreen() {
               </Text>
               
               <View style={styles.portionContainer}>
-                <Text style={styles.portionText}>{t('product.portion')}</Text>
+                <Text style={[styles.portionText, isDark && styles.darkText]}>
+                  {getDisplayPortionDescription()}
+                </Text>
               </View>
               <View style={styles.nutrientCard}>
                 <View style={styles.calorieSection}>
