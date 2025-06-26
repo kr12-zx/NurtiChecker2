@@ -4,7 +4,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from '../../../i18n/i18n';
 import { Gender } from '../../types/onboarding';
 import { OnboardingLayout } from './unifiedLayouts';
-import { gender as genderStyles, options, typography, usePalette } from './unifiedStyles';
+import { useContainerStyles, useOptionsStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface GenderScreenProps {
   onContinue: () => void;
@@ -22,8 +22,11 @@ const GenderScreen: React.FC<GenderScreenProps> = ({
   // Добавляем локальное состояние для мгновенного отклика
   const [localGender, setLocalGender] = React.useState<Gender>(gender);
   
-  // Используем хук для получения палитры в зависимости от текущей темы
+  // Используем хуки для получения динамических стилей в зависимости от текущей темы
   const palette = usePalette();
+  const containers = useContainerStyles();
+  const optionsStyles = useOptionsStyles();
+  const typography = useTypographyStyles();
   const { t } = useTranslation();
   
   // Обновляем локальное состояние при изменении пропсов
@@ -55,7 +58,7 @@ const GenderScreen: React.FC<GenderScreenProps> = ({
       onBack={onBack}
       disableScrollView={true} // Отключаем ScrollView для избежания возможных конфликтов с виртуализированными списками
     >
-      <View style={genderStyles.optionsContainer}>
+      <View style={containers.optionsList}>
         {genderOptions.map((option) => {
           // Используем локальное состояние для отображения выбранного варианта
           const isSelected = localGender === option.id;
@@ -64,15 +67,15 @@ const GenderScreen: React.FC<GenderScreenProps> = ({
             <TouchableOpacity
               key={option.id}
               style={[
-                options.optionContainer,
-                isSelected ? options.selectedOption : options.unselectedOption
+                optionsStyles.optionContainer,
+                isSelected ? optionsStyles.selectedOption : optionsStyles.unselectedOption
               ]}
               onPress={() => handleGenderSelect(option.id)}
               activeOpacity={0.5}
               // Увеличиваем область нажатия для лучшего отклика
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <View style={options.optionIconContainer}>
+              <View style={optionsStyles.optionIconContainer}>
                 <Ionicons
                   name={option.icon as any}
                   size={24}
@@ -80,15 +83,15 @@ const GenderScreen: React.FC<GenderScreenProps> = ({
                 />
               </View>
               
-              <View style={options.optionTextContainer}>
+              <View style={optionsStyles.optionTextContainer}>
                 <Text style={typography.optionTitle}>
                   {option.label}
                 </Text>
               </View>
 
               <View style={[
-                options.checkIconContainer,
-                isSelected ? options.selectedCheckIconContainer : options.unselectedCheckIconContainer
+                optionsStyles.checkIconContainer,
+                isSelected ? optionsStyles.selectedCheckIconContainer : optionsStyles.unselectedCheckIconContainer
               ]}>
                 {isSelected && (
                   <Ionicons name="checkmark" size={16} color={palette.text.white} />

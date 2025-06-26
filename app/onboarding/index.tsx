@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
     ActivityIndicator,
     Dimensions,
@@ -193,7 +193,7 @@ export default function OnboardingScreen() {
   if (loading) {
     return (
       <SafeAreaView style={[styles.container, isDark && styles.darkContainer, styles.loadingContainer]} edges={['top', 'left', 'right']}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color={isDark ? "#0A84FF" : "#007AFF"} />
         <Text style={[styles.loadingText, isDark && styles.darkText]}>
           Загрузка онбординга...
         </Text>

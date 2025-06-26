@@ -3,7 +3,7 @@ import { ScrollView, Text, View } from 'react-native';
 import { useTranslation } from '../../../i18n/i18n';
 import { UnitSettings, UserProfile } from '../../types/onboarding';
 import { OnboardingLayout } from './unifiedLayouts';
-import { summary, usePalette } from './unifiedStyles';
+import { usePalette } from './unifiedStyles';
 
 interface SummaryScreenProps {
   onComplete: () => void;
@@ -20,6 +20,109 @@ const SummaryScreen: React.FC<SummaryScreenProps> = ({
 }) => {
   const { t } = useTranslation();
   const palette = usePalette();
+
+  // Динамические стили для этого экрана
+  const summaryContainerStyle = {
+    padding: 20,
+  };
+
+  const sectionStyle = {
+    backgroundColor: palette.surface,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: palette.border.secondary,
+  };
+
+  const sectionTitleStyle = {
+    fontSize: 18,
+    fontWeight: '600' as const,
+    color: palette.text.primary,
+    marginBottom: 16,
+  };
+
+  const summaryItemStyle = {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'flex-start' as const,
+    marginBottom: 12,
+  };
+
+  const labelStyle = {
+    fontSize: 14,
+    color: palette.text.secondary,
+    flex: 1,
+    marginRight: 16,
+  };
+
+  const valueStyle = {
+    fontSize: 14,
+    fontWeight: '500' as const,
+    color: palette.text.primary,
+    flex: 2,
+    textAlign: 'right' as const,
+  };
+
+  const nutritionContainerStyle = {
+    alignItems: 'center' as const,
+    marginTop: 16,
+  };
+
+  const calorieDisplayStyle = {
+    fontSize: 32,
+    fontWeight: '700' as const,
+    color: palette.primary,
+    textAlign: 'center' as const,
+    marginBottom: 8,
+  };
+
+  const calorieSubtitleStyle = {
+    fontSize: 14,
+    color: palette.text.secondary,
+    textAlign: 'center' as const,
+    marginBottom: 20,
+  };
+
+  const macrosRowStyle = {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-around' as const,
+    width: '100%' as const,
+  };
+
+  const macroItemStyle = {
+    alignItems: 'center' as const,
+    flex: 1,
+  };
+
+  const macroValueStyle = {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: palette.text.primary,
+    marginBottom: 4,
+  };
+
+  const macroLabelStyle = {
+    fontSize: 12,
+    color: palette.text.secondary,
+  };
+
+  const disclaimerStyle = {
+    backgroundColor: palette.surface,
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: palette.border.secondary,
+  };
+
+  const disclaimerTextStyle = {
+    fontSize: 12,
+    color: palette.text.secondary,
+    fontStyle: 'italic' as const,
+    textAlign: 'center' as const,
+    lineHeight: 16,
+  };
 
   // Получаем возраст из даты рождения
   const getAge = () => {
@@ -284,120 +387,116 @@ const SummaryScreen: React.FC<SummaryScreenProps> = ({
       scrollRef={scrollViewRef}
     >
       {/* Основные данные */}
-      <View style={[summary!.section, { backgroundColor: palette.surface }]}>
-        <Text style={[summary!.sectionTitle, { color: palette.text.primary }]}>{t('onboarding.summary.basicInfo')}</Text>
-        <View style={[summary!.summaryItem, { borderBottomColor: palette.border.inactive }]}>
-          <Text style={[summary!.summaryLabel, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.age')}</Text>
-          <Text style={[summary!.summaryValue, { color: palette.text.primary }]}>
+      <View style={[sectionStyle, { backgroundColor: palette.surface }]}>
+        <Text style={[sectionTitleStyle, { color: palette.text.primary }]}>{t('onboarding.summary.basicInfo')}</Text>
+        <View style={[summaryItemStyle, { borderBottomColor: palette.border.inactive }]}>
+          <Text style={[labelStyle, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.age')}</Text>
+          <Text style={[valueStyle, { color: palette.text.primary }]}>
             {getAge() ? `${getAge()} ${t('onboarding.summary.labels.years')}` : t('onboarding.summary.labels.notSpecified')}
           </Text>
         </View>
-        <View style={[summary!.summaryItem, { borderBottomColor: palette.border.inactive }]}>
-          <Text style={[summary!.summaryLabel, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.gender')}</Text>
-          <Text style={[summary!.summaryValue, { color: palette.text.primary }]}>{getGenderText()}</Text>
+        <View style={[summaryItemStyle, { borderBottomColor: palette.border.inactive }]}>
+          <Text style={[labelStyle, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.gender')}</Text>
+          <Text style={[valueStyle, { color: palette.text.primary }]}>{getGenderText()}</Text>
         </View>
-        <View style={[summary!.summaryItem, { borderBottomColor: palette.border.inactive }]}>
-          <Text style={[summary!.summaryLabel, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.height')}</Text>
-          <Text style={[summary!.summaryValue, { color: palette.text.primary }]}>
+        <View style={[summaryItemStyle, { borderBottomColor: palette.border.inactive }]}>
+          <Text style={[labelStyle, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.height')}</Text>
+          <Text style={[valueStyle, { color: palette.text.primary }]}>
             {formatHeight(userProfile.height)}
           </Text>
         </View>
-        <View style={[summary!.summaryItem, { borderBottomColor: palette.border.inactive }]}>
-          <Text style={[summary!.summaryLabel, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.currentWeight')}</Text>
-          <Text style={[summary!.summaryValue, { color: palette.text.primary }]}>
+        <View style={[summaryItemStyle, { borderBottomColor: palette.border.inactive }]}>
+          <Text style={[labelStyle, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.currentWeight')}</Text>
+          <Text style={[valueStyle, { color: palette.text.primary }]}>
             {formatWeight(userProfile.weight)}
           </Text>
         </View>
         {userProfile.primaryGoal === 'lose-weight' && userProfile.goalWeight && (
-          <View style={[summary!.summaryItem, { borderBottomColor: palette.border.inactive }]}>
-            <Text style={[summary!.summaryLabel, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.targetWeight')}</Text>
-            <Text style={[summary!.summaryValue, { color: palette.text.primary }]}>
+          <View style={[summaryItemStyle, { borderBottomColor: palette.border.inactive }]}>
+            <Text style={[labelStyle, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.targetWeight')}</Text>
+            <Text style={[valueStyle, { color: palette.text.primary }]}>
               {formatWeight(userProfile.goalWeight)}
             </Text>
           </View>
         )}
-        <View style={[summary!.summaryItem, { borderBottomColor: palette.border.inactive }]}>
-          <Text style={[summary!.summaryLabel, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.primaryGoal')}</Text>
-          <Text style={[summary!.summaryValue, { color: palette.text.primary }]}>{getGoalText()}</Text>
+        <View style={[summaryItemStyle, { borderBottomColor: palette.border.inactive }]}>
+          <Text style={[labelStyle, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.primaryGoal')}</Text>
+          <Text style={[valueStyle, { color: palette.text.primary }]}>{getGoalText()}</Text>
         </View>
-        <View style={[summary!.summaryItem, { borderBottomColor: palette.border.inactive }]}>
-          <Text style={[summary!.summaryLabel, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.activityLevel')}</Text>
-          <Text style={[summary!.summaryValue, { color: palette.text.primary }]}>{getActivityLevelText()}</Text>
+        <View style={[summaryItemStyle, { borderBottomColor: palette.border.inactive }]}>
+          <Text style={[labelStyle, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.activityLevel')}</Text>
+          <Text style={[valueStyle, { color: palette.text.primary }]}>{getActivityLevelText()}</Text>
         </View>
       </View>
 
       {/* Предпочтения */}
-      <View style={[summary!.section, { backgroundColor: palette.surface }]}>
-        <Text style={[summary!.sectionTitle, { color: palette.text.primary }]}>{t('onboarding.summary.preferences')}</Text>
-        <View style={[summary!.summaryItem, { borderBottomColor: palette.border.inactive }]}>
-          <Text style={[summary!.summaryLabel, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.dietType')}</Text>
-          <Text style={[summary!.summaryValue, { color: palette.text.primary }]}>{getDietPreferenceText()}</Text>
+      <View style={[sectionStyle, { backgroundColor: palette.surface }]}>
+        <Text style={[sectionTitleStyle, { color: palette.text.primary }]}>{t('onboarding.summary.preferences')}</Text>
+        <View style={[summaryItemStyle, { borderBottomColor: palette.border.inactive }]}>
+          <Text style={[labelStyle, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.dietType')}</Text>
+          <Text style={[valueStyle, { color: palette.text.primary }]}>{getDietPreferenceText()}</Text>
         </View>
-        <View style={[summary!.summaryItem, { borderBottomColor: palette.border.inactive }]}>
-          <Text style={[summary!.summaryLabel, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.mealSchedule')}</Text>
-          <Text style={[summary!.summaryValue, { color: palette.text.primary }]}>{getMealFrequencyText()}</Text>
+        <View style={[summaryItemStyle, { borderBottomColor: palette.border.inactive }]}>
+          <Text style={[labelStyle, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.mealSchedule')}</Text>
+          <Text style={[valueStyle, { color: palette.text.primary }]}>{getMealFrequencyText()}</Text>
         </View>
       </View>
 
       {/* Психологический профиль */}
-      <View style={[summary!.section, { backgroundColor: palette.surface }]}>
-        <Text style={[summary!.sectionTitle, { color: palette.text.primary }]}>{t('onboarding.summary.psychologicalProfile')}</Text>
-        <View style={[summary!.summaryItem, { borderBottomColor: palette.border.inactive }]}>
-          <Text style={[summary!.summaryLabel, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.challenges')}</Text>
-          <Text style={[summary!.summaryValue, { color: palette.text.primary }]}>{getChallengesText()}</Text>
+      <View style={[sectionStyle, { backgroundColor: palette.surface }]}>
+        <Text style={[sectionTitleStyle, { color: palette.text.primary }]}>{t('onboarding.summary.psychologicalProfile')}</Text>
+        <View style={[summaryItemStyle, { borderBottomColor: palette.border.inactive }]}>
+          <Text style={[labelStyle, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.challenges')}</Text>
+          <Text style={[valueStyle, { color: palette.text.primary }]}>{getChallengesText()}</Text>
         </View>
-        <View style={[summary!.summaryItem, { borderBottomColor: palette.border.inactive }]}>
-          <Text style={[summary!.summaryLabel, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.stressResponse')}</Text>
-          <Text style={[summary!.summaryValue, { color: palette.text.primary }]}>{getStressResponseText()}</Text>
+        <View style={[summaryItemStyle, { borderBottomColor: palette.border.inactive }]}>
+          <Text style={[labelStyle, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.stressResponse')}</Text>
+          <Text style={[valueStyle, { color: palette.text.primary }]}>{getStressResponseText()}</Text>
         </View>
-        <View style={[summary!.summaryItem, { borderBottomColor: palette.border.inactive }]}>
-          <Text style={[summary!.summaryLabel, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.confidenceLevel')}</Text>
-          <Text style={[summary!.summaryValue, { color: palette.text.primary }]}>
+        <View style={[summaryItemStyle, { borderBottomColor: palette.border.inactive }]}>
+          <Text style={[labelStyle, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.confidenceLevel')}</Text>
+          <Text style={[valueStyle, { color: palette.text.primary }]}>
             {userProfile.confidenceLevel ? `${userProfile.confidenceLevel} ${t('onboarding.outOf5')}` : t('onboarding.summary.labels.notSpecified')}
           </Text>
         </View>
-        <View style={[summary!.summaryItem, { borderBottomColor: palette.border.inactive }]}>
-          <Text style={[summary!.summaryLabel, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.challengesView')}</Text>
-          <Text style={[summary!.summaryValue, { color: palette.text.primary }]}>{getChallengesViewText()}</Text>
+        <View style={[summaryItemStyle, { borderBottomColor: palette.border.inactive }]}>
+          <Text style={[labelStyle, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.challengesView')}</Text>
+          <Text style={[valueStyle, { color: palette.text.primary }]}>{getChallengesViewText()}</Text>
         </View>
-        <View style={[summary!.summaryItem, { borderBottomColor: palette.border.inactive }]}>
-          <Text style={[summary!.summaryLabel, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.decisionMaking')}</Text>
-          <Text style={[summary!.summaryValue, { color: palette.text.primary }]}>{getDecisionMakingText()}</Text>
+        <View style={[summaryItemStyle, { borderBottomColor: palette.border.inactive }]}>
+          <Text style={[labelStyle, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.decisionMaking')}</Text>
+          <Text style={[valueStyle, { color: palette.text.primary }]}>{getDecisionMakingText()}</Text>
         </View>
-        <View style={[summary!.summaryItem, { borderBottomColor: palette.border.inactive }]}>
-          <Text style={[summary!.summaryLabel, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.temptationResponse')}</Text>
-          <Text style={[summary!.summaryValue, { color: palette.text.primary }]}>{getTemptationResponseText()}</Text>
+        <View style={[summaryItemStyle, { borderBottomColor: palette.border.inactive }]}>
+          <Text style={[labelStyle, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.temptationResponse')}</Text>
+          <Text style={[valueStyle, { color: palette.text.primary }]}>{getTemptationResponseText()}</Text>
         </View>
-        <View style={[summary!.summaryItem, { borderBottomColor: palette.border.inactive }]}>
-          <Text style={[summary!.summaryLabel, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.setbacksResponse')}</Text>
-          <Text style={[summary!.summaryValue, { color: palette.text.primary }]}>{getSetbacksResponseText()}</Text>
+        <View style={[summaryItemStyle, { borderBottomColor: palette.border.inactive }]}>
+          <Text style={[labelStyle, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.setbacksResponse')}</Text>
+          <Text style={[valueStyle, { color: palette.text.primary }]}>{getSetbacksResponseText()}</Text>
         </View>
       </View>
 
       {/* Рекомендации по питанию */}
       {nutritionInfo && (
-        <View style={[summary!.section, { backgroundColor: palette.surface }]}>
-          <Text style={[summary!.sectionTitle, { color: palette.text.primary }]}>{t('onboarding.summary.nutritionRecommendations')}</Text>
-          <View style={summary!.nutritionContainer}>
-            <View style={summary!.calorieContainer}>
-              <Text style={[summary!.calorieValue, { color: palette.primary }]}>{nutritionInfo.calorieTarget}</Text>
-              <Text style={[summary!.calorieLabel, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.kcalPerDay')}</Text>
-            </View>
-            <View style={summary!.macrosContainer}>
-              <View style={summary!.macroItem}>
-                <View style={[summary!.macroIndicator, { backgroundColor: 'rgba(255, 107, 107, 0.85)' }]} />
-                <Text style={[summary!.macroValue, { color: palette.text.primary }]}>{nutritionInfo.proteinTarget}г</Text>
-                <Text style={[summary!.macroLabel, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.proteins')}</Text>
+        <View style={[sectionStyle, { backgroundColor: palette.surface }]}>
+          <Text style={[sectionTitleStyle, { color: palette.text.primary }]}>{t('onboarding.summary.nutritionRecommendations')}</Text>
+          <View style={nutritionContainerStyle}>
+            <Text style={calorieDisplayStyle}>{nutritionInfo.calorieTarget}</Text>
+            <Text style={calorieSubtitleStyle}>{t('onboarding.summary.labels.kcalPerDay')}</Text>
+            
+            <View style={macrosRowStyle}>
+              <View style={macroItemStyle}>
+                <Text style={macroValueStyle}>{nutritionInfo.proteinTarget}г</Text>
+                <Text style={macroLabelStyle}>{t('onboarding.summary.labels.proteins')}</Text>
               </View>
-              <View style={summary!.macroItem}>
-                <View style={[summary!.macroIndicator, { backgroundColor: 'rgba(255, 209, 102, 0.85)' }]} />
-                <Text style={[summary!.macroValue, { color: palette.text.primary }]}>{nutritionInfo.fatTarget}г</Text>
-                <Text style={[summary!.macroLabel, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.fats')}</Text>
+              <View style={macroItemStyle}>
+                <Text style={macroValueStyle}>{nutritionInfo.fatTarget}г</Text>
+                <Text style={macroLabelStyle}>{t('onboarding.summary.labels.fats')}</Text>
               </View>
-              <View style={summary!.macroItem}>
-                <View style={[summary!.macroIndicator, { backgroundColor: 'rgba(6, 214, 160, 0.85)' }]} />
-                <Text style={[summary!.macroValue, { color: palette.text.primary }]}>{nutritionInfo.carbTarget}г</Text>
-                <Text style={[summary!.macroLabel, { color: palette.text.secondary }]}>{t('onboarding.summary.labels.carbs')}</Text>
+              <View style={macroItemStyle}>
+                <Text style={macroValueStyle}>{nutritionInfo.carbTarget}г</Text>
+                <Text style={macroLabelStyle}>{t('onboarding.summary.labels.carbs')}</Text>
               </View>
             </View>
           </View>

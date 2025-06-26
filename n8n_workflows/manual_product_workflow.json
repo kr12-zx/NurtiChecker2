@@ -1,0 +1,335 @@
+{
+  "meta": {
+    "instanceId": "manual_product_analysis_workflow"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "a1b2c3d4-e5f6-7890-abcd-ef12345678901",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        1000,
+        -400
+      ],
+      "id": "webhook-manual-product",
+      "name": "Webhook Manual Product",
+      "webhookId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Извлекаем параметры из GET запроса\nconst queryParams = $input.item.json.query;\n\n// Проверяем обязательные параметры\nif (!queryParams.productName) {\n  throw new Error('Отсутствует название продукта (параметр productName)');\n}\n\nif (!queryParams.userId) {\n  throw new Error('Отсутствует ID пользователя (параметр userId)');\n}\n\n// Извлекаем код языка (по умолчанию русский)\nconst language = queryParams.language || 'ru';\n\n// Извлекаем размер порции (по умолчанию обычная)\nconst portionSize = queryParams.portionSize || 'regular';\n\n// Определяем множитель для размера порции\nlet multiplier = 1;\nswitch(portionSize) {\n  case 'small':\n    multiplier = 0.7;\n    break;\n  case 'regular':\n    multiplier = 1.0;\n    break;\n  case 'large':\n    multiplier = 1.5;\n    break;\n  default:\n    multiplier = 1.0;\n}\n\n// Формируем данные для обработки\nconst processedData = {\n  productName: queryParams.productName,\n  userId: queryParams.userId,\n  portionSize: portionSize,\n  multiplier: multiplier,\n  language: language,\n  timestamp: new Date().toISOString(),\n  originalQuery: queryParams\n};\n\nconsole.log('Обработка ручного ввода продукта:', processedData.productName);\n\nreturn processedData;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        -400
+      ],
+      "id": "process-manual-data",
+      "name": "Process Manual Data"
+    },
+    {
+      "parameters": {
+        "model": "gemini-1.5-flash",
+        "options": {
+          "temperature": 0.3
+        },
+        "text": "=You are an expert food analysis AI for the NutriChecker app. Your task is to analyze manually entered food data and provide detailed nutritional information and ingredient analysis.\n\nProduct to analyze: {{ $json.productName }}\nPortion size: {{ $json.portionSize }}\nTarget language: {{ $json.language }}\n\nYour task is to:\n1. Estimate likely ingredients based on the product name\n2. Provide realistic nutritional information for {{ $json.portionSize }} portion\n3. Give health analysis and recommendations\n4. Respond in {{ $json.language }} language\n\nIMPORTANT: Base your analysis ONLY on the product name \"{{ $json.productName }}\". Calculate realistic nutritional values for this specific food item.\n\nRETURN YOUR ANALYSIS IN THIS JSON FORMAT (with no explanations or additional text):\n\n```json\n{\n  \"foodName\": \"{{ $json.productName }}\",\n  \"imageType\": \"manual_entry\",\n  \"ingredients\": [\n    {\"name\": \"ingredient1\"},\n    {\"name\": \"ingredient2\"},\n    {\"name\": \"ingredient3\"}\n  ],\n  \"portionInfo\": {\n    \"description\": \"{{ $json.portionSize }} portion of {{ $json.productName }}\",\n    \"estimatedWeight\": \"[calculated weight in grams]\",\n    \"measurementUnit\": \"g\"\n  },\n  \"nutritionInfo\": {\n    \"calories\": \"[realistic calories for this food]\",\n    \"protein\": \"[realistic protein in grams]\",\n    \"carbs\": \"[realistic carbs in grams]\",\n    \"sugars\": \"[realistic sugars in grams]\",\n    \"fat\": \"[realistic fat in grams]\",\n    \"saturatedFat\": \"[realistic saturated fat in grams]\",\n    \"fiber\": \"[realistic fiber in grams]\",\n    \"sodium\": \"[realistic sodium in mg]\",\n    \"glycemicIndex\": \"[realistic GI 0-100]\",\n    \"vitamins\": [\"vitamin1\", \"vitamin2\", \"vitamin3\"],\n    \"minerals\": [\"mineral1\", \"mineral2\"]\n  },\n  \"analysis\": {\n    \"healthBenefits\": [\"benefit1\", \"benefit2\"],\n    \"healthConcerns\": [\"concern1\", \"concern2\"],\n    \"overallHealthScore\": \"[score 0-100]\"\n  },\n  \"recommendedIntake\": {\n    \"description\": \"[Consumption recommendations]\",\n    \"maxFrequency\": \"[frequency like daily, weekly, etc.]\"\n  },\n  \"targetLanguage\": \"{{ $json.language }}\"\n}\n```\n\nBased on the product name \"{{ $json.productName }}\", estimate realistic nutritional values, ingredients, health analysis and recommendations. All responses must be in {{ $json.language }} language."
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        -400
+      ],
+      "id": "gemini-food-analysis",
+      "name": "Gemini Food Analysis",
+      "credentials": {
+        "googleGeminiApi": {
+          "id": "wQjQoLVXqFOyEn8L",
+          "name": "Google Gemini API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Получаем ответ от Gemini\nconst geminiResponse = $input.item.json.response;\nconst userData = $node[\"Process Manual Data\"].json;\n\ntry {\n  // Извлекаем JSON из ответа Gemini\n  let jsonMatch = geminiResponse.match(/```json\\s*([\\s\\S]*?)\\s*```/);\n  if (!jsonMatch) {\n    // Если нет markdown блока, пробуем найти JSON напрямую\n    jsonMatch = geminiResponse.match(/{[\\s\\S]*}/);\n  }\n  \n  if (!jsonMatch) {\n    throw new Error('Не удалось извлечь JSON из ответа Gemini');\n  }\n  \n  const analysisData = JSON.parse(jsonMatch[1] || jsonMatch[0]);\n  \n  // Проверяем обязательные поля\n  if (!analysisData.foodName || !analysisData.nutritionInfo) {\n    throw new Error('Неполные данные анализа от Gemini');\n  }\n  \n  // Преобразуем данные в нужный формат\n  const processedData = {\n    foodName: analysisData.foodName,\n    ingredients: analysisData.ingredients || [],\n    portionDescription: analysisData.portionInfo?.description || `${userData.portionSize} portion of ${analysisData.foodName}`,\n    nutritionInfo: {\n      calories: parseInt(analysisData.nutritionInfo.calories) || 0,\n      protein: parseFloat(analysisData.nutritionInfo.protein) || 0,\n      carbs: parseFloat(analysisData.nutritionInfo.carbs) || 0,\n      sugars: parseFloat(analysisData.nutritionInfo.sugars) || 0,\n      fat: parseFloat(analysisData.nutritionInfo.fat) || 0,\n      saturatedFat: parseFloat(analysisData.nutritionInfo.saturatedFat) || 0,\n      fiber: parseFloat(analysisData.nutritionInfo.fiber) || 0,\n      sodium: parseFloat(analysisData.nutritionInfo.sodium) || 0,\n      glycemicIndex: parseInt(analysisData.nutritionInfo.glycemicIndex) || null,\n      vitamins: analysisData.nutritionInfo.vitamins || [],\n      minerals: analysisData.nutritionInfo.minerals || [],\n      estimatedWeight: parseInt(analysisData.portionInfo?.estimatedWeight) || 250\n    },\n    analysis: {\n      healthBenefits: analysisData.analysis?.healthBenefits || [],\n      healthConcerns: analysisData.analysis?.healthConcerns || [],\n      overallHealthScore: parseInt(analysisData.analysis?.overallHealthScore) || 50\n    },\n    recommendedIntake: {\n      description: analysisData.recommendedIntake?.description || 'Употребляйте в умеренных количествах',\n      maxFrequency: analysisData.recommendedIntake?.maxFrequency || 'по необходимости'\n    },\n    targetLanguage: analysisData.targetLanguage || userData.language\n  };\n  \n  // Применяем множитель порции к питательным веществам\n  const multiplier = userData.multiplier || 1;\n  \n  if (multiplier !== 1) {\n    const nutrition = processedData.nutritionInfo;\n    nutrition.calories = Math.round(nutrition.calories * multiplier);\n    nutrition.protein = Math.round((nutrition.protein * multiplier) * 10) / 10;\n    nutrition.carbs = Math.round((nutrition.carbs * multiplier) * 10) / 10;\n    nutrition.sugars = Math.round((nutrition.sugars * multiplier) * 10) / 10;\n    nutrition.fat = Math.round((nutrition.fat * multiplier) * 10) / 10;\n    nutrition.saturatedFat = Math.round((nutrition.saturatedFat * multiplier) * 10) / 10;\n    nutrition.fiber = Math.round((nutrition.fiber * multiplier) * 10) / 10;\n    nutrition.sodium = Math.round(nutrition.sodium * multiplier);\n    nutrition.estimatedWeight = Math.round(nutrition.estimatedWeight * multiplier);\n  }\n  \n  console.log('Успешно обработан анализ продукта:', processedData.foodName);\n  \n  return processedData;\n  \n} catch (error) {\n  console.error('Ошибка обработки ответа Gemini:', error.message);\n  \n  // Возвращаем базовые данные в случае ошибки\n  return {\n    foodName: userData.productName,\n    ingredients: [{\"name\": \"Неизвестно\"}],\n    portionDescription: `Обычная порция ${userData.productName}`,\n    nutritionInfo: {\n      calories: 100,\n      protein: 5,\n      carbs: 10,\n      sugars: 2,\n      fat: 3,\n      saturatedFat: 1,\n      fiber: 2,\n      sodium: 100,\n      glycemicIndex: 50,\n      vitamins: [],\n      minerals: [],\n      estimatedWeight: 250\n    },\n    analysis: {\n      healthBenefits: [\"Источник энергии\"],\n      healthConcerns: [\"Требуется дополнительный анализ\"],\n      overallHealthScore: 50\n    },\n    recommendedIntake: {\n      description: \"Употребляйте в умеренных количествах\",\n      maxFrequency: \"по необходимости\"\n    },\n    targetLanguage: userData.language\n  };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        -400
+      ],
+      "id": "parse-gemini-response",
+      "name": "Parse Gemini Response"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Получаем данные анализа и пользователя\nconst analysisData = $input.item.json;\nconst userData = $node[\"Process Manual Data\"].json;\n\n// Формируем финальный ответ в том же формате, что и основной workflow\nconst response = {\n  id: `food_analysis_${Date.now()}`,\n  timestamp: new Date().toISOString(),\n  foodData: {\n    ...analysisData,\n    // Добавляем ссылку на изображение-заглушку\n    imageUrl: \"https://darkcyan-wombat-824722.hostingersite.com/mokap.jpg\",\n    // Убираем аллергены для ручного ввода (будут обработаны отдельно если нужно)\n    allergenAnalysis: {\n      isSafeForUser: true,\n      detectedAllergens: [],\n      userAllergenWarnings: []\n    }\n  },\n  userContext: {\n    language: analysisData.targetLanguage || userData.language,\n    allergenWarnings: null,\n    isSafeForUser: true\n  },\n  personalizedRecommendations: null,\n  metadata: {\n    apiVersion: \"1.0\",\n    source: \"NutriChecker Manual Entry\",\n    entryType: \"manual\",\n    portionSize: userData.portionSize,\n    multiplier: userData.multiplier\n  }\n};\n\nconsole.log('Создан финальный ответ для продукта:', analysisData.foodName);\n\nreturn response;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1800,
+        -400
+      ],
+      "id": "create-final-response",
+      "name": "Create Final Response"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        2000,
+        -400
+      ],
+      "id": "respond-to-webhook",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "tableId": "meals_scan",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "imageUrl",
+              "fieldValue": "manual_entry"
+            },
+            {
+              "fieldId": "dish",
+              "fieldValue": "={{ $json.foodData.foodName }}"
+            },
+            {
+              "fieldId": "description",
+              "fieldValue": "={{ $json.foodData.portionDescription }}"
+            },
+            {
+              "fieldId": "ingridients",
+              "fieldValue": "={{ $json.foodData.ingredients[0]?.name || 'Manual entry' }}"
+            },
+            {
+              "fieldId": "kcal",
+              "fieldValue": "={{ $json.foodData.nutritionInfo.calories }}"
+            },
+            {
+              "fieldId": "prot",
+              "fieldValue": "={{ $json.foodData.nutritionInfo.protein }}"
+            },
+            {
+              "fieldId": "carb",
+              "fieldValue": "={{ $json.foodData.nutritionInfo.carbs }}"
+            },
+            {
+              "fieldId": "fat",
+              "fieldValue": "={{ $json.foodData.nutritionInfo.fat }}"
+            },
+            {
+              "fieldId": "sugar",
+              "fieldValue": "={{ $json.foodData.nutritionInfo.sugars }}"
+            },
+            {
+              "fieldId": "mailid",
+              "fieldValue": "={{ $('Process Manual Data').item.json.userId }}"
+            },
+            {
+              "fieldId": "fiber",
+              "fieldValue": "={{ $json.foodData.nutritionInfo.fiber }}"
+            },
+            {
+              "fieldId": "sodium",
+              "fieldValue": "={{ $json.foodData.nutritionInfo.sodium }}"
+            },
+            {
+              "fieldId": "glycemicIndex",
+              "fieldValue": "={{ $json.foodData.nutritionInfo.glycemicIndex }}"
+            },
+            {
+              "fieldId": "minerals",
+              "fieldValue": "={{ $json.foodData.nutritionInfo.minerals }}"
+            },
+            {
+              "fieldId": "healthBenefits",
+              "fieldValue": "={{ $json.foodData.analysis.healthBenefits }}"
+            },
+            {
+              "fieldId": "healthConcerns",
+              "fieldValue": "={{ $json.foodData.analysis.healthConcerns }}"
+            },
+            {
+              "fieldId": "overallHealthScore",
+              "fieldValue": "={{ $json.foodData.analysis.overallHealthScore }}"
+            },
+            {
+              "fieldId": "vitamins",
+              "fieldValue": "={{ $json.foodData.nutritionInfo.vitamins }}"
+            },
+            {
+              "fieldId": "targetLanguage",
+              "fieldValue": "={{ $json.foodData.targetLanguage }}"
+            },
+            {
+              "fieldId": "recommendedIntakeDescr",
+              "fieldValue": "={{ $json.foodData.recommendedIntake.description }}"
+            },
+            {
+              "fieldId": "recommendedIntakeMaxFrequency",
+              "fieldValue": "={{ $json.foodData.recommendedIntake.maxFrequency }}"
+            },
+            {
+              "fieldId": "grams",
+              "fieldValue": "={{ $json.foodData.nutritionInfo.estimatedWeight || 250 }}"
+            },
+            {
+              "fieldId": "portionSize",
+              "fieldValue": "={{ $('Process Manual Data').item.json.portionSize }}"
+            },
+            {
+              "fieldId": "multiplier",
+              "fieldValue": "={{ $('Process Manual Data').item.json.multiplier }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        -600
+      ],
+      "id": "save-to-database",
+      "name": "Save to Database",
+      "credentials": {
+        "supabaseApi": {
+          "id": "8RKkUwkeVmyvS58y",
+          "name": "Supabase account NutriCheker"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "profiles",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "locale",
+              "fieldValue": "={{ $json.language }}"
+            },
+            {
+              "fieldId": "mailid",
+              "fieldValue": "={{ $json.userId }}"
+            },
+            {
+              "fieldId": "ip",
+              "fieldValue": "={{ $('Webhook Manual Product').item.json.headers['x-real-ip'] }}"
+            },
+            {
+              "fieldId": "country",
+              "fieldValue": "={{ $('Webhook Manual Product').item.json.headers['cf-ipcountry'] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        -600
+      ],
+      "id": "update-profile",
+      "name": "Update Profile",
+      "credentials": {
+        "supabaseApi": {
+          "id": "8RKkUwkeVmyvS58y",
+          "name": "Supabase account NutriCheker"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Webhook Manual Product": {
+      "main": [
+        [
+          {
+            "node": "Process Manual Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Manual Data": {
+      "main": [
+        [
+          {
+            "node": "Gemini Food Analysis",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Food Analysis": {
+      "main": [
+        [
+          {
+            "node": "Parse Gemini Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Gemini Response": {
+      "main": [
+        [
+          {
+            "node": "Create Final Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Final Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save to Database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-01-15T22:50:00.000Z",
+  "versionId": "manual-product-v2"
+} 

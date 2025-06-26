@@ -3,7 +3,12 @@ import React, { ReactNode } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ButtonFooter from './components/ButtonFooter';
-import { containers, typography, usePalette } from './unifiedStyles';
+import {
+    useContainerStyles,
+    useOptionsStyles,
+    usePalette,
+    useTypographyStyles
+} from './unifiedStyles';
 
 /**
  * Унифицированный макет для всех экранов онбординга
@@ -35,6 +40,8 @@ export const OnboardingLayout: React.FC<{
   headerIcon
 }) => {
   const palette = usePalette();
+  const containers = useContainerStyles();
+  const typography = useTypographyStyles();
   
   return (
     <SafeAreaView edges={['top']} style={containers.safeArea}>
@@ -89,11 +96,10 @@ export const OptionsGroup: React.FC<{
   onSelect: (id: string | number) => void;
   renderIcon?: (option: any, isSelected: boolean) => React.ReactNode;
 }> = ({ options, selectedId, onSelect, renderIcon }) => {
-  const palette = usePalette();
-  const styles = getStyles(palette);
+  const containers = useContainerStyles();
   
   return (
-    <View style={styles.optionsContainer}>
+    <View style={containers.optionsList}>
       {options.map((option) => {
         const isSelected = selectedId === option.id;
         
@@ -126,15 +132,14 @@ export const OptionItem: React.FC<{
   renderIcon?: (option: any, isSelected: boolean) => React.ReactNode;
 }> = ({ option, isSelected, onSelect, renderIcon }) => {
   const palette = usePalette();
-  
-  // Используем функцию получения стилей с текущей палитрой
-  const styles = getStyles(palette);
+  const optionsStyles = useOptionsStyles();
+  const typography = useTypographyStyles();
 
   return (
     <TouchableOpacity
       style={[
-        styles.optionContainer,
-        isSelected ? styles.selectedOption : styles.unselectedOption
+        optionsStyles.optionContainer,
+        isSelected ? optionsStyles.selectedOption : optionsStyles.unselectedOption
       ]}
       onPress={onSelect}
       activeOpacity={0.7}
@@ -142,7 +147,7 @@ export const OptionItem: React.FC<{
       {renderIcon ? (
         renderIcon(option, isSelected)
       ) : option.icon ? (
-        <View style={styles.optionIconContainer}>
+        <View style={optionsStyles.optionIconContainer}>
           <Ionicons
             name={option.icon as any}
             size={24}
@@ -151,20 +156,20 @@ export const OptionItem: React.FC<{
         </View>
       ) : null}
       
-      <View style={styles.optionTextContainer}>
-        <Text style={styles.optionTitle}>
+      <View style={optionsStyles.optionTextContainer}>
+        <Text style={typography.optionTitle}>
           {option.label}
         </Text>
         {option.description && (
-          <Text style={styles.optionDescription}>
+          <Text style={typography.optionDescription}>
             {option.description}
           </Text>
         )}
       </View>
       
       <View style={[
-        styles.checkIconContainer,
-        isSelected ? styles.selectedCheckIconContainer : styles.unselectedCheckIconContainer
+        optionsStyles.checkIconContainer,
+        isSelected ? optionsStyles.selectedCheckIconContainer : optionsStyles.unselectedCheckIconContainer
       ]}>
         {isSelected && (
           <Ionicons name="checkmark" size={16} color={palette.text.white} />
@@ -174,67 +179,5 @@ export const OptionItem: React.FC<{
   );
 };
 
-// Локальные стили, использующие палитру
-// Создаем функцию для стилей, использующих палитру
-const getStyles = (palette: any) => ({
-  optionsContainer: {
-    marginTop: 20,
-  },
-  optionContainer: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-  },
-  selectedOption: {
-    borderColor: palette.option.selectedBorder,
-    backgroundColor: palette.option.selectedBackground,
-  },
-  unselectedOption: {
-    borderColor: palette.option.unselectedBorder,
-    backgroundColor: palette.option.unselectedBackground,
-  },
-  optionIconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: palette.background,
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-    marginRight: 16,
-  },
-  optionTextContainer: {
-    flex: 1,
-  },
-  optionTitle: {
-    fontSize: 18,
-    fontWeight: '600' as const,
-    color: palette.text.primary,
-    marginBottom: 4,
-  },
-  optionDescription: {
-    fontSize: 14,
-    fontWeight: '400' as const,
-    color: palette.text.secondary,
-  },
-  checkIconContainer: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-  },
-  selectedCheckIconContainer: {
-    backgroundColor: palette.primary,
-  },
-  unselectedCheckIconContainer: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: palette.border.inactive,
-  },
-});
-
-// Исправление для недостающего импорта
+// Все стили перенесены в unifiedStyles.ts для централизованного управления
 

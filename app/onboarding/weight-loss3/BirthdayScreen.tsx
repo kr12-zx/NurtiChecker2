@@ -3,7 +3,7 @@ import { ScrollView, Text, View } from 'react-native';
 import SimplePicker from '../../../components/SimplePicker';
 import { useTranslation } from '../../../i18n/i18n';
 import { OnboardingLayout } from './unifiedLayouts';
-import { birthday as birthdayStyles, usePalette } from './unifiedStyles';
+import { usePalette, usePickerStyles } from './unifiedStyles';
 
 interface BirthdayScreenProps {
   onContinue: () => void;
@@ -19,6 +19,7 @@ const BirthdayScreen: React.FC<BirthdayScreenProps> = ({
   onBirthdayChange
 }) => {
   const palette = usePalette();
+  const pickerStyles = usePickerStyles();
   const { t } = useTranslation();
   const scrollViewRef = useRef<ScrollView>(null);
   
@@ -78,7 +79,7 @@ const BirthdayScreen: React.FC<BirthdayScreenProps> = ({
       onBack={onBack}
       disableScrollView={true}
     >
-      <View style={birthdayStyles.pickerContainer}>
+      <View style={pickerStyles.pickerContainer}>
         {/* Селектор дня */}
         <SimplePicker
           values={days}
@@ -110,7 +111,7 @@ const BirthdayScreen: React.FC<BirthdayScreenProps> = ({
         />
       </View>
       
-      <Text style={birthdayStyles.ageText}>
+      <Text style={pickerStyles.ageText}>
         {t('onboarding.birthday.yourAge', { age: getAge() })}
       </Text>
     </OnboardingLayout>

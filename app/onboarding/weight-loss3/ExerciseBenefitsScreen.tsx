@@ -3,7 +3,7 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import { useTranslation } from '../../../i18n/i18n';
 import { OnboardingLayout } from './unifiedLayouts';
-import { exerciseBenefits, palette } from './unifiedStyles';
+import { useCardStyles, usePalette } from './unifiedStyles';
 
 interface ExerciseBenefitsScreenProps {
   onContinue: () => void;
@@ -17,6 +17,10 @@ const ExerciseBenefitsScreen: React.FC<ExerciseBenefitsScreenProps> = ({
   exerciseIntent
 }) => {
   const { t } = useTranslation();
+  
+  // Получаем динамические стили
+  const palette = usePalette();
+  const cardStyles = useCardStyles();
   
   // Определяем контент в зависимости от выбора пользователя
   const title = exerciseIntent 
@@ -61,28 +65,32 @@ const ExerciseBenefitsScreen: React.FC<ExerciseBenefitsScreenProps> = ({
       onContinue={onContinue}
       onBack={onBack}
     >
-      <View style={exerciseBenefits.benefitsContainer}>
+      <View style={{ marginTop: 20 }}>
         {benefitItems.map((item, index) => (
-          <View key={index} style={exerciseBenefits.benefitItem}>
-            <View style={exerciseBenefits.benefitIconContainer}>
-              <Ionicons name={item.icon as any} size={24} color={palette.primary} />
+          <View key={index} style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 20, paddingHorizontal: 16 }}>
+            <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: palette.primary, justifyContent: 'center', alignItems: 'center', marginRight: 16 }}>
+              <Ionicons name={item.icon as any} size={24} color={palette.white} />
             </View>
-            <View style={exerciseBenefits.benefitTextContainer}>
-              <Text style={exerciseBenefits.benefitTitle}>{item.title}</Text>
-              <Text style={exerciseBenefits.benefitDescription}>{item.description}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 16, fontWeight: '600', color: palette.text.primary, marginBottom: 4 }}>
+                {item.title}
+              </Text>
+              <Text style={{ fontSize: 14, color: palette.text.secondary, lineHeight: 20 }}>
+                {item.description}
+              </Text>
             </View>
           </View>
         ))}
       </View>
       
-      <View style={exerciseBenefits.recommendationContainer}>
-        <Text style={exerciseBenefits.recommendationText}>
+      <View style={[cardStyles.infoContainer, { marginTop: 20 }]}>
+        <Text style={cardStyles.infoText}>
           {recommendationText}
         </Text>
       </View>
       
-      <View style={exerciseBenefits.noteContainer}>
-        <Text style={exerciseBenefits.noteText}>
+      <View style={[cardStyles.noteContainer, { marginTop: 16 }]}>
+        <Text style={cardStyles.noteText}>
           {t('onboarding.exerciseBenefits.note')}
         </Text>
       </View>

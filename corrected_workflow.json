@@ -1,0 +1,324 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "add-meal",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "998ef98a-43ea-43a5-83d2-306c1de7096c",
+      "name": "Webhook - Smart Notification",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        920,
+        660
+      ],
+      "webhookId": "smart-notification"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition1",
+              "leftValue": "={{ $json.body.userId }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists"
+              }
+            },
+            {
+              "id": "condition2",
+              "leftValue": "={{ $json.body.dish }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists"
+              }
+            },
+            {
+              "id": "condition3",
+              "leftValue": "={{ $json.body.userId }}",
+              "rightValue": "@nutrichecker.top",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "validation-node",
+      "name": "Validate Data",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "meals_added",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "mailid",
+              "fieldValue": "={{ $json.body.userId }}"
+            },
+            {
+              "fieldId": "dish",
+              "fieldValue": "={{ $json.body.dish }}"
+            },
+            {
+              "fieldId": "grams",
+              "fieldValue": "={{ $json.body.grams }}"
+            },
+            {
+              "fieldId": "kcal",
+              "fieldValue": "={{ $json.body.kcal }}"
+            },
+            {
+              "fieldId": "prot",
+              "fieldValue": "={{ $json.body.prot }}"
+            },
+            {
+              "fieldId": "fat",
+              "fieldValue": "={{ $json.body.fat }}"
+            },
+            {
+              "fieldId": "carb",
+              "fieldValue": "={{ $json.body.carb }}"
+            },
+            {
+              "fieldId": "sugar",
+              "fieldValue": "={{ $json.body.sugar || 0 }}"
+            },
+            {
+              "fieldId": "fiber",
+              "fieldValue": "={{ $json.body.fiber || 0 }}"
+            },
+            {
+              "fieldId": "sodium",
+              "fieldValue": "={{ $json.body.sodium || 0 }}"
+            },
+            {
+              "fieldId": "saturatedFat",
+              "fieldValue": "={{ $json.body.saturatedFat || 0 }}"
+            },
+            {
+              "fieldId": "glycemicIndex",
+              "fieldValue": "={{ $json.body.glycemicIndex || 0 }}"
+            },
+            {
+              "fieldId": "vitamins",
+              "fieldValue": "={{ JSON.stringify($json.body.vitamins || []) }}"
+            },
+            {
+              "fieldId": "minerals",
+              "fieldValue": "={{ JSON.stringify($json.body.minerals || []) }}"
+            },
+            {
+              "fieldId": "healthBenefits",
+              "fieldValue": "={{ JSON.stringify($json.body.healthBenefits || []) }}"
+            },
+            {
+              "fieldId": "healthConcerns",
+              "fieldValue": "={{ JSON.stringify($json.body.healthConcerns || []) }}"
+            },
+            {
+              "fieldId": "ingridients",
+              "fieldValue": "={{ JSON.stringify($json.body.ingredients || []) }}"
+            },
+            {
+              "fieldId": "overallHealthScore",
+              "fieldValue": "={{ $json.body.overallHealthScore || 0 }}"
+            },
+            {
+              "fieldId": "recommendedIntakeDescr",
+              "fieldValue": "={{ $json.body.recommendedIntakeDescr || '' }}"
+            },
+            {
+              "fieldId": "recommendedIntakeMaxFrequency",
+              "fieldValue": "={{ $json.body.recommendedIntakeMaxFrequency || '' }}"
+            },
+            {
+              "fieldId": "targetLanguage",
+              "fieldValue": "={{ $json.body.targetLanguage || 'ru' }}"
+            },
+            {
+              "fieldId": "imageUrl",
+              "fieldValue": "={{ $json.body.imageUrl || '' }}"
+            },
+            {
+              "fieldId": "isSafeForUser",
+              "fieldValue": "={{ $json.body.isSafeForUser || true }}"
+            },
+            {
+              "fieldId": "description",
+              "fieldValue": "={{ $json.body.description || '' }}"
+            },
+            {
+              "fieldId": "scan_id",
+              "fieldValue": "={{ $json.body.originalResult.fullData.id || '' }}"
+            },
+            {
+              "fieldId": "portionsize",
+              "fieldValue": "={{ $json.body.portionDetails.portionSize || '' }}"
+            },
+            {
+              "fieldId": "quantity",
+              "fieldValue": "={{ $json.body.portionDetails.quantity || 1 }}"
+            },
+            {
+              "fieldId": "quantityeaten",
+              "fieldValue": "={{ $json.body.portionDetails.quantityEaten || '' }}"
+            },
+            {
+              "fieldId": "totalmultiplier",
+              "fieldValue": "={{ $json.body.portionDetails.totalMultiplier || 1 }}"
+            },
+            {
+              "fieldId": "basegrams",
+              "fieldValue": "={{ $json.body.portionDetails.baseGrams || 100 }}"
+            },
+            {
+              "fieldId": "addon_sauce",
+              "fieldValue": "={{ $json.body.portionDetails.addons.sauce || 0 }}"
+            },
+            {
+              "fieldId": "addon_sugar",
+              "fieldValue": "={{ $json.body.portionDetails.addons.sugar || 0 }}"
+            },
+            {
+              "fieldId": "addon_oil",
+              "fieldValue": "={{ $json.body.portionDetails.addons.oil || 0 }}"
+            },
+            {
+              "fieldId": "addon_cream",
+              "fieldValue": "={{ $json.body.portionDetails.addons.cream || 0 }}"
+            },
+            {
+              "fieldId": "addon_cheese",
+              "fieldValue": "={{ $json.body.portionDetails.addons.cheese || 0 }}"
+            },
+            {
+              "fieldId": "addon_nuts",
+              "fieldValue": "={{ $json.body.portionDetails.addons.nuts || 0 }}"
+            },
+            {
+              "fieldId": "eaten_at",
+              "fieldValue": "={{ $json.body.eaten_at || new Date().toISOString() }}"
+            },
+            {
+              "fieldId": "eaten_day",
+              "fieldValue": "={{ $json.body.eaten_day || new Date().toISOString().split('T')[0] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1260,
+        580
+      ],
+      "id": "8f97e788-848b-4643-8dcb-3ba9c8070dcf",
+      "name": "Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "8RKkUwkeVmyvS58y",
+          "name": "Supabase account NutriCheker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Meal data saved successfully\",\n  \"data\": {\n    \"dish\": \"{{ $json.body.dish }}\",\n    \"kcal\": {{ $json.body.kcal }},\n    \"grams\": {{ $json.body.grams }},\n    \"userId\": \"{{ $json.body.userId }}\",\n    \"timestamp\": \"{{ new Date().toISOString() }}\"\n  }\n}",
+        "options": {}
+      },
+      "id": "577dafea-f616-4cbd-83bc-7ce8c54bb006",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1480,
+        580
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": false,\n  \"error\": \"Invalid data\",\n  \"message\": \"Missing required fields or invalid userId format\",\n  \"received\": {\n    \"userId\": \"{{ $json.body.userId || 'missing' }}\",\n    \"dish\": \"{{ $json.body.dish || 'missing' }}\"\n  }\n}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "error-response",
+      "name": "Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1260,
+        740
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook - Smart Notification": {
+      "main": [
+        [
+          {
+            "node": "Validate Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Data": {
+      "main": [
+        [
+          {
+            "node": "Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3f98e65bbc53fb913ce632c695b32ab3b2d3d92ced38c3d4d86ebd2965460fa1"
+  }
+} 

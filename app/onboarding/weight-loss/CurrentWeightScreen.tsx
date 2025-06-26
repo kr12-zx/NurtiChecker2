@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import SimplePicker from '../../../components/SimplePicker';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import OnboardingNavButtons from '../../../components/OnboardingNavButtons';
+import SimplePicker from '../../../components/SimplePicker';
+import { useTranslation } from '../../../i18n/i18n';
 
 interface CurrentWeightScreenProps {
   onContinue: () => void;
@@ -23,6 +23,7 @@ const CurrentWeightScreen: React.FC<CurrentWeightScreenProps> = ({
 }) => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+  const { t } = useTranslation();
 
   // Генерация значений для выбора веса
   const generateWeightValues = () => {
@@ -30,13 +31,13 @@ const CurrentWeightScreen: React.FC<CurrentWeightScreenProps> = ({
       // от 40 кг до 180 кг
       return Array.from({ length: 141 }, (_, i) => {
         const value = i + 40;
-        return `${value} кг`;
+        return `${value} ${t('onboarding.heightWeight.units.kg')}`;
       });
     } else {
       // от 88 фунтов до 396 фунтов (40-180 кг)
       return Array.from({ length: 309 }, (_, i) => {
         const value = i + 88;
-        return `${value} lb`;
+        return `${value} ${t('onboarding.heightWeight.units.lb')}`;
       });
     }
   };
@@ -55,9 +56,9 @@ const CurrentWeightScreen: React.FC<CurrentWeightScreenProps> = ({
   // Получаем текущее значение в правильных единицах и формате для отображения
   const getCurrentDisplayValue = (): string => {
     if (units === 'kg') {
-      return `${currentWeight} кг`;
+      return `${currentWeight} ${t('onboarding.heightWeight.units.kg')}`;
     } else {
-      return `${kgToLb(currentWeight)} lb`;
+      return `${kgToLb(currentWeight)} ${t('onboarding.heightWeight.units.lb')}`;
     }
   };
 
@@ -80,7 +81,7 @@ const CurrentWeightScreen: React.FC<CurrentWeightScreenProps> = ({
 
   return (
     <View style={[styles.container, isDark && styles.darkContainer]}>
-      <Text style={[styles.title, isDark && styles.darkTextPrimary]}>Какой у вас текущий вес?</Text>
+      <Text style={[styles.title, isDark && styles.darkTextPrimary]}>{t('onboarding.heightWeight.weightTitle')}</Text>
 
       <View style={styles.unitsContainer}>
         <TouchableOpacity
@@ -99,7 +100,7 @@ const CurrentWeightScreen: React.FC<CurrentWeightScreenProps> = ({
               units === 'kg' && styles.activeUnitButtonText
             ]}
           >
-            кг
+            {t('onboarding.heightWeight.units.kg')}
           </Text>
         </TouchableOpacity>
         
@@ -119,7 +120,7 @@ const CurrentWeightScreen: React.FC<CurrentWeightScreenProps> = ({
               units === 'lb' && styles.activeUnitButtonText
             ]}
           >
-            lb
+            {t('onboarding.heightWeight.units.lb')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -137,7 +138,7 @@ const CurrentWeightScreen: React.FC<CurrentWeightScreenProps> = ({
       </View>
       
       <Text style={[styles.infoText, isDark && styles.darkTextSecondary]}>
-        Ваш текущий вес помогает установить отправную точку для создания эффективного плана по достижению ваших целей
+        {t('onboarding.heightWeight.weightSubtitle')}
       </Text>
 
       <OnboardingNavButtons

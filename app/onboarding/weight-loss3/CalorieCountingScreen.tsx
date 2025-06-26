@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from '../../../i18n/i18n';
 import { OnboardingLayout } from './unifiedLayouts';
-import { options, tutorials, typography, usePalette } from './unifiedStyles';
+import { useCardStyles, useOptionsStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface CalorieCountingScreenProps {
   onContinue: () => void;
@@ -18,8 +18,11 @@ const CalorieCountingScreen: React.FC<CalorieCountingScreenProps> = ({
   showTutorial,
   onShowTutorialChange
 }) => {
-  // Получаем палитру цветов
+  // Получаем динамические стили
   const palette = usePalette();
+  const options = useOptionsStyles();
+  const typography = useTypographyStyles();
+  const cardStyles = useCardStyles();
   const { t } = useTranslation();
   
   // Используем локальный state для синхронизации с UI
@@ -80,7 +83,7 @@ const CalorieCountingScreen: React.FC<CalorieCountingScreenProps> = ({
           </View>
           
           <View style={options.optionTextContainer}>
-            <Text style={typography.optionTitle}>
+            <Text style={[typography.optionTitle, { color: palette.text.primary }]}>
               {t('onboarding.caloriesCounting.options.yes')}
             </Text>
           </View>
@@ -90,7 +93,7 @@ const CalorieCountingScreen: React.FC<CalorieCountingScreenProps> = ({
             localShowTutorial ? options.selectedCheckIconContainer : options.unselectedCheckIconContainer
           ]}>
             {localShowTutorial && (
-              <Ionicons name="checkmark" size={16} color={palette.text.white} />
+              <Ionicons name="checkmark" size={16} color={palette.white} />
             )}
           </View>
         </TouchableOpacity>
@@ -112,7 +115,7 @@ const CalorieCountingScreen: React.FC<CalorieCountingScreenProps> = ({
           </View>
           
           <View style={options.optionTextContainer}>
-            <Text style={typography.optionTitle}>
+            <Text style={[typography.optionTitle, { color: palette.text.primary }]}>
               {t('onboarding.caloriesCounting.options.no')}
             </Text>
           </View>
@@ -122,57 +125,57 @@ const CalorieCountingScreen: React.FC<CalorieCountingScreenProps> = ({
             localShowTutorial === false ? options.selectedCheckIconContainer : options.unselectedCheckIconContainer
           ]}>
             {localShowTutorial === false && (
-              <Ionicons name="checkmark" size={16} color={palette.text.white} />
+              <Ionicons name="checkmark" size={16} color={palette.white} />
             )}
           </View>
         </TouchableOpacity>
       </View>
       
       {localShowTutorial && (
-        <View style={tutorials.container}>
-          <Text style={tutorials.title}>
+        <View style={[cardStyles.infoContainer, { marginTop: 20 }]}>
+          <Text style={[cardStyles.infoTitle, { marginBottom: 16 }]}>
             {t('onboarding.caloriesCounting.tutorial.title')}
           </Text>
           
-          <View style={tutorials.item}>
-            <View style={tutorials.iconContainer}>
-              <Text style={tutorials.iconText}>1</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16 }}>
+            <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: palette.primary, justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+              <Text style={{ fontSize: 16, fontWeight: 'bold', color: palette.white }}>1</Text>
             </View>
-            <Text style={tutorials.text}>
+            <Text style={[cardStyles.infoText, { flex: 1 }]}>
               {t('onboarding.caloriesCounting.tutorial.step1')}
             </Text>
           </View>
           
-          <View style={tutorials.item}>
-            <View style={tutorials.iconContainer}>
-              <Text style={tutorials.iconText}>2</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16 }}>
+            <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: palette.primary, justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+              <Text style={{ fontSize: 16, fontWeight: 'bold', color: palette.white }}>2</Text>
             </View>
-            <Text style={tutorials.text}>
+            <Text style={[cardStyles.infoText, { flex: 1 }]}>
               {t('onboarding.caloriesCounting.tutorial.step2')}
             </Text>
           </View>
           
-          <View style={tutorials.item}>
-            <View style={tutorials.iconContainer}>
-              <Text style={tutorials.iconText}>3</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16 }}>
+            <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: palette.primary, justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+              <Text style={{ fontSize: 16, fontWeight: 'bold', color: palette.white }}>3</Text>
             </View>
-            <Text style={tutorials.text}>
+            <Text style={[cardStyles.infoText, { flex: 1 }]}>
               {t('onboarding.caloriesCounting.tutorial.step3')}
             </Text>
           </View>
           
-          <View style={tutorials.item}>
-            <View style={tutorials.iconContainer}>
-              <Text style={tutorials.iconText}>4</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16 }}>
+            <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: palette.primary, justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+              <Text style={{ fontSize: 16, fontWeight: 'bold', color: palette.white }}>4</Text>
             </View>
-            <Text style={tutorials.text}>
+            <Text style={[cardStyles.infoText, { flex: 1 }]}>
               {t('onboarding.caloriesCounting.tutorial.step4')}
             </Text>
           </View>
           
-          <View style={tutorials.tip}>
-            <Ionicons name="bulb-outline" size={24} color={palette.primary} style={tutorials.tipIcon} />
-            <Text style={tutorials.tipText}>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 20, padding: 16, backgroundColor: 'rgba(0, 122, 255, 0.1)', borderRadius: 12 }}>
+            <Ionicons name="bulb-outline" size={24} color={palette.primary} style={{ marginRight: 12 }} />
+            <Text style={[cardStyles.infoText, { flex: 1, fontStyle: 'italic' }]}>
               {t('onboarding.caloriesCounting.tutorial.tip')}
             </Text>
           </View>

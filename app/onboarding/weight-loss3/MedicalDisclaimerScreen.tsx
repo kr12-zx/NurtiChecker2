@@ -1,9 +1,9 @@
 import React from 'react';
-import { ScrollView, Text, useColorScheme, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from '../../../i18n/i18n';
 import ButtonFooter from './components/ButtonFooter';
-import { containers, medicalDisclaimer, typography } from './unifiedStyles';
+import { useCardStyles, useContainerStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface MedicalDisclaimerScreenProps {
   onContinue: () => void;
@@ -15,8 +15,44 @@ const MedicalDisclaimerScreen: React.FC<MedicalDisclaimerScreenProps> = ({
   onBack
 }) => {
   const { t } = useTranslation();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  
+  // Получаем динамические стили
+  const palette = usePalette();
+  const containers = useContainerStyles();
+  const typography = useTypographyStyles();
+  const cards = useCardStyles();
+
+  // Дополнительные динамические стили для этого экрана
+  const disclaimerTextStyle = {
+    fontSize: 16,
+    lineHeight: 24,
+    color: palette.text.primary,
+    marginBottom: 16,
+  };
+
+  const infoTitleStyle = {
+    fontSize: 18,
+    fontWeight: '600' as const,
+    color: palette.text.primary,
+    marginBottom: 16,
+  };
+
+  const infoItemStyle = {
+    marginBottom: 12,
+  };
+
+  const infoTextStyle = {
+    fontSize: 16,
+    lineHeight: 22,
+    color: palette.text.primary,
+  };
+
+  const acknowledgementTextStyle = {
+    fontSize: 14,
+    lineHeight: 20,
+    color: palette.text.secondary,
+    textAlign: 'center' as const,
+  };
 
   return (
     <SafeAreaView edges={['top']} style={containers.safeArea}>
@@ -36,56 +72,58 @@ const MedicalDisclaimerScreen: React.FC<MedicalDisclaimerScreenProps> = ({
               {t('onboarding.medicalDisclaimer.subtitle')}
             </Text>
             
-            <View style={medicalDisclaimer.disclaimerCard}>
-              <Text style={medicalDisclaimer.disclaimerText}>
+            {/* Используем cards.section вместо inline стилей */}
+            <View style={[cards.section, { marginTop: 20 }]}>
+              <Text style={disclaimerTextStyle}>
                 {t('onboarding.medicalDisclaimer.disclaimerText1')}
               </Text>
               
-              <View style={medicalDisclaimer.divider} />
+              <View style={cards.divider} />
               
-              <Text style={medicalDisclaimer.disclaimerText}>
+              <Text style={disclaimerTextStyle}>
                 {t('onboarding.medicalDisclaimer.disclaimerText2')}
               </Text>
             </View>
             
-            <View style={medicalDisclaimer.infoContainer}>
-              <Text style={medicalDisclaimer.infoTitle}>
+            <View style={{ marginTop: 10 }}>
+              <Text style={infoTitleStyle}>
                 {t('onboarding.medicalDisclaimer.consultTitle')}
               </Text>
               
-              <View style={medicalDisclaimer.infoItem}>
-                <Text style={medicalDisclaimer.infoText}>
+              <View style={infoItemStyle}>
+                <Text style={infoTextStyle}>
                   {t('onboarding.medicalDisclaimer.conditions.chronic')}
                 </Text>
               </View>
               
-              <View style={medicalDisclaimer.infoItem}>
-                <Text style={medicalDisclaimer.infoText}>
+              <View style={infoItemStyle}>
+                <Text style={infoTextStyle}>
                   {t('onboarding.medicalDisclaimer.conditions.medications')}
                 </Text>
               </View>
               
-              <View style={medicalDisclaimer.infoItem}>
-                <Text style={medicalDisclaimer.infoText}>
+              <View style={infoItemStyle}>
+                <Text style={infoTextStyle}>
                   {t('onboarding.medicalDisclaimer.conditions.pregnancy')}
                 </Text>
               </View>
               
-              <View style={medicalDisclaimer.infoItem}>
-                <Text style={medicalDisclaimer.infoText}>
+              <View style={infoItemStyle}>
+                <Text style={infoTextStyle}>
                   {t('onboarding.medicalDisclaimer.conditions.eatingDisorders')}
                 </Text>
               </View>
               
-              <View style={medicalDisclaimer.infoItem}>
-                <Text style={medicalDisclaimer.infoText}>
+              <View style={infoItemStyle}>
+                <Text style={infoTextStyle}>
                   {t('onboarding.medicalDisclaimer.conditions.weightIssues')}
                 </Text>
               </View>
             </View>
             
-            <View style={medicalDisclaimer.acknowledgementContainer}>
-              <Text style={medicalDisclaimer.acknowledgementText}>
+            {/* Используем cards.section для acknowledgement контейнера */}
+            <View style={[cards.section, { marginTop: 20, padding: 16 }]}>
+              <Text style={acknowledgementTextStyle}>
                 {t('onboarding.medicalDisclaimer.acknowledgement')}
               </Text>
             </View>
@@ -103,7 +141,5 @@ const MedicalDisclaimerScreen: React.FC<MedicalDisclaimerScreenProps> = ({
     </SafeAreaView>
   );
 };
-
-// Локальных стилей больше нет - все стили вынесены в унифицированный модуль unifiedStyles.ts
 
 export default MedicalDisclaimerScreen;

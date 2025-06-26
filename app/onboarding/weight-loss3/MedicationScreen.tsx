@@ -3,7 +3,7 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from '../../../i18n/i18n';
 import { OnboardingLayout } from './unifiedLayouts';
-import { medication as medicationStyles, options, typography, usePalette } from './unifiedStyles';
+import { useOptionsStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface MedicationScreenProps {
   onContinue: () => void;
@@ -24,6 +24,8 @@ const MedicationScreen: React.FC<MedicationScreenProps> = ({
   
   // Получаем палитру цветов
   const palette = usePalette();
+  const options = useOptionsStyles();
+  const typography = useTypographyStyles();
   
   // Обновляем локальное состояние при изменении пропсов
   React.useEffect(() => {
@@ -79,7 +81,7 @@ const MedicationScreen: React.FC<MedicationScreenProps> = ({
       onContinue={onContinue}
       onBack={onBack}
     >
-      <View style={medicationStyles.optionsContainer}>
+      <View style={{ marginTop: 20 }}>
         {medicationOptions.map((option) => {
           // Используем локальное состояние для отображения выбранного варианта
           const isSelected = localMedication === option.id;
@@ -90,7 +92,7 @@ const MedicationScreen: React.FC<MedicationScreenProps> = ({
               style={[
                 options.optionContainer,
                 isSelected ? options.selectedOption : options.unselectedOption,
-                medicationStyles.medicationOption
+                { marginBottom: 16 }
               ]}
               onPress={() => handleMedicationSelect(option.id)}
               activeOpacity={0.5}
@@ -105,11 +107,11 @@ const MedicationScreen: React.FC<MedicationScreenProps> = ({
                 />
               </View>
               
-              <View style={[options.optionTextContainer, medicationStyles.medicationTextContainer]}>
+              <View style={[options.optionTextContainer, { flex: 1 }]}>
                 <Text style={typography.optionTitle}>
                   {option.label}
                 </Text>
-                <Text style={medicationStyles.descriptionText}>
+                <Text style={[typography.optionDescription, { marginTop: 4 }]}>
                   {option.description}
                 </Text>
               </View>
@@ -119,7 +121,7 @@ const MedicationScreen: React.FC<MedicationScreenProps> = ({
                 isSelected ? options.selectedCheckIconContainer : options.unselectedCheckIconContainer
               ]}>
                 {isSelected && (
-                  <Ionicons name="checkmark" size={16} color={palette.text.white} />
+                  <Ionicons name="checkmark" size={16} color={palette.white} />
                 )}
               </View>
             </TouchableOpacity>
@@ -127,7 +129,7 @@ const MedicationScreen: React.FC<MedicationScreenProps> = ({
         })}
       </View>
       
-      <Text style={medicationStyles.disclaimerText}>
+      <Text style={[typography.caption, { textAlign: 'center', marginTop: 20, paddingHorizontal: 20 }]}>
         {t('onboarding.medication.disclaimer')}
       </Text>
     </OnboardingLayout>

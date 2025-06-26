@@ -3,7 +3,7 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from '../../../i18n/i18n';
 import { OnboardingLayout } from './unifiedLayouts';
-import { options, palette } from './unifiedStyles';
+import { useOptionsStyles, usePalette } from './unifiedStyles';
 
 interface ExerciseIntentScreenProps {
   onContinue: () => void;
@@ -18,6 +18,10 @@ const ExerciseIntentScreen: React.FC<ExerciseIntentScreenProps> = ({
   exerciseIntent,
   onExerciseIntentChange
 }) => {
+  // Получаем динамические стили
+  const palette = usePalette();
+  const options = useOptionsStyles();
+  
   // Добавляем локальное состояние для мгновенного отклика
   const [localExerciseIntent, setLocalExerciseIntent] = React.useState<boolean | null>(exerciseIntent);
   const { t } = useTranslation();
@@ -74,7 +78,7 @@ const ExerciseIntentScreen: React.FC<ExerciseIntentScreenProps> = ({
               </View>
               
               <View style={options.optionTextContainer}>
-                <Text style={{ fontSize: 18, fontWeight: '600', color: palette.text.primary, marginBottom: 4 }}>
+                <Text style={[{ fontSize: 18, fontWeight: '600', color: palette.text.primary }]}>
                   {option.label}
                 </Text>
               </View>
@@ -84,7 +88,7 @@ const ExerciseIntentScreen: React.FC<ExerciseIntentScreenProps> = ({
                 isSelected ? options.selectedCheckIconContainer : options.unselectedCheckIconContainer
               ]}>
                 {isSelected && (
-                  <Ionicons name="checkmark" size={16} color={palette.text.white} />
+                  <Ionicons name="checkmark" size={16} color={palette.white} />
                 )}
               </View>
             </TouchableOpacity>

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 import { useTranslation } from '../../../i18n/i18n';
 import { OnboardingLayout } from './unifiedLayouts';
-import { generatingPlan, palette } from './unifiedStyles';
+import { usePalette } from './unifiedStyles';
 
 interface GeneratingPlanScreenProps {
   onContinue: () => void;
@@ -16,6 +16,61 @@ const GeneratingPlanScreen: React.FC<GeneratingPlanScreenProps> = ({
 }) => {
   const { t } = useTranslation();
   const [currentVariant, setCurrentVariant] = useState(0);
+  
+  // Получаем динамические стили
+  const palette = usePalette();
+
+  // Динамические стили для этого экрана
+  const loadingContainerStyle = {
+    flex: 1,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    paddingVertical: 60,
+  };
+
+  const loadingIconContainerStyle = {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: palette.surface,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    marginBottom: 32,
+    borderWidth: 1,
+    borderColor: palette.border.secondary,
+  };
+
+  const socialProofTitleStyle = {
+    fontSize: 24,
+    fontWeight: '700' as const,
+    color: palette.text.primary,
+    textAlign: 'center' as const,
+    marginBottom: 8,
+    paddingHorizontal: 20,
+  };
+
+  const socialProofSubtitleStyle = {
+    fontSize: 16,
+    color: palette.text.secondary,
+    textAlign: 'center' as const,
+    lineHeight: 22,
+    paddingHorizontal: 20,
+    marginBottom: 40,
+  };
+
+  const loadingIndicatorContainerStyle = {
+    flexDirection: 'row' as const,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    gap: 8,
+  };
+
+  const loadingDotStyle = {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: palette.primary,
+  };
   
   const variants = [
     {
@@ -66,9 +121,9 @@ const GeneratingPlanScreen: React.FC<GeneratingPlanScreenProps> = ({
       onContinue={onContinue}
       onBack={onBack}
     >
-      <View style={generatingPlan.loadingContainer}>
+      <View style={loadingContainerStyle}>
         {/* Иконка загрузки */}
-        <View style={generatingPlan.loadingIconContainer}>
+        <View style={loadingIconContainerStyle}>
           <Ionicons 
             name={currentVariantData.icon} 
             size={36} 
@@ -77,21 +132,21 @@ const GeneratingPlanScreen: React.FC<GeneratingPlanScreenProps> = ({
         </View>
 
         {/* Социальное доказательство */}
-        <Text style={generatingPlan.socialProofTitle}>
+        <Text style={socialProofTitleStyle}>
           {currentVariantData.mainText}
         </Text>
         
-        <Text style={generatingPlan.socialProofSubtitle}>
+        <Text style={socialProofSubtitleStyle}>
           {currentVariantData.subText}
         </Text>
 
         {/* Индикатор загрузки */}
-        <View style={generatingPlan.loadingIndicatorContainer}>
+        <View style={loadingIndicatorContainerStyle}>
           {[0, 1, 2].map((i) => (
             <View
               key={i}
               style={[
-                generatingPlan.loadingDot,
+                loadingDotStyle,
                 { opacity: (currentVariant % 3) === i ? 1 : 0.3 }
               ]}
             />

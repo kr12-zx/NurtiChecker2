@@ -1,22 +1,22 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useState } from 'react';
 import {
+    ActivityIndicator,
     Alert,
+    Platform,
     ScrollView,
     StyleSheet,
     Switch,
     Text,
     TextInput,
+    ToastAndroid,
     TouchableOpacity,
     useColorScheme,
-    View,
-    ToastAndroid,
-    Platform,
-    ActivityIndicator
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from '../../i18n/i18n';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Интерфейс для аллергена
 interface Allergen {
@@ -364,7 +364,7 @@ export default function AllergensScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F2F2F7',
     padding: 16,
   },
   loadingContainer: {
@@ -440,15 +440,10 @@ const styles = StyleSheet.create({
   },
   addAllergenContainer: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
     borderRadius: 12,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-    overflow: 'hidden',
+    alignItems: 'center',
   },
   allergenInput: {
     flex: 1,
@@ -456,16 +451,26 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
     color: '#000000',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 12,
+    marginRight: 1,
   },
   darkInput: {
     color: '#FFFFFF',
     backgroundColor: '#1C1C1E',
+    borderColor: '#3A3A3C',
   },
   addButton: {
     backgroundColor: '#007AFF',
     paddingHorizontal: 16,
+    paddingVertical: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 12,
+    marginLeft: 8,
+    minWidth: 48,
   },
   disabledButton: {
     backgroundColor: '#A0A0A0', 

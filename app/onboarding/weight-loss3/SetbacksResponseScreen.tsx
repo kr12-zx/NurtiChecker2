@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { ScrollView, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from '../../../i18n/i18n';
 import ButtonFooter from './components/ButtonFooter';
-import { containers, options, palette, setbacksResponseStyles, typography } from './unifiedStyles';
+import { useContainerStyles, useOptionsStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface SetbacksResponseScreenProps {
   onContinue: () => void;
@@ -29,8 +29,11 @@ const SetbacksResponseScreen: React.FC<SetbacksResponseScreenProps> = ({
     setLocalSetbacksResponse(setbacksResponse);
   }, [setbacksResponse]);
   
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  // Получаем динамические стили
+  const palette = usePalette();
+  const containers = useContainerStyles();
+  const options = useOptionsStyles();
+  const typography = useTypographyStyles();
   
   // Функция обработки выбора реакции на неудачи
   const handleSetbacksResponseSelect = (response: string) => {
@@ -97,7 +100,7 @@ const SetbacksResponseScreen: React.FC<SetbacksResponseScreenProps> = ({
                     style={[
                       options.optionContainer,
                       isSelected ? options.selectedOption : options.unselectedOption,
-                      setbacksResponseStyles.responseOption
+                      { marginBottom: 16 }
                     ]}
                     onPress={() => handleSetbacksResponseSelect(option.id)}
                     activeOpacity={0.5}
@@ -112,11 +115,11 @@ const SetbacksResponseScreen: React.FC<SetbacksResponseScreenProps> = ({
                       />
                     </View>
                     
-                    <View style={[options.optionTextContainer, setbacksResponseStyles.responseTextContainer]}>
+                    <View style={[options.optionTextContainer, { flex: 1 }]}>
                       <Text style={typography.optionTitle}>
                         {option.label}
                       </Text>
-                      <Text style={setbacksResponseStyles.descriptionText}>
+                      <Text style={[typography.optionDescription, { marginTop: 4 }]}>
                         {option.description}
                       </Text>
                     </View>
@@ -146,7 +149,5 @@ const SetbacksResponseScreen: React.FC<SetbacksResponseScreenProps> = ({
     </SafeAreaView>
   );
 };
-
-// Локальных стилей больше нет - все стили вынесены в унифицированный модуль unifiedStyles.ts
 
 export default SetbacksResponseScreen;

@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { ScrollView, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from '../../../i18n/i18n';
 import ButtonFooter from './components/ButtonFooter';
-import { containers, decisionMaking, options, palette, typography } from './unifiedStyles';
+import { useContainerStyles, useOptionsStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface DecisionMakingScreenProps {
   onContinue: () => void;
@@ -29,8 +29,11 @@ const DecisionMakingScreen: React.FC<DecisionMakingScreenProps> = ({
     setLocalDecisionConfidence(decisionConfidence);
   }, [decisionConfidence]);
   
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  // Получаем динамические стили
+  const palette = usePalette();
+  const containers = useContainerStyles();
+  const options = useOptionsStyles();
+  const typography = useTypographyStyles();
   
   // Функция обработки выбора уверенности в решениях
   const handleDecisionConfidenceSelect = (confidence: string) => {
@@ -97,7 +100,7 @@ const DecisionMakingScreen: React.FC<DecisionMakingScreenProps> = ({
                     style={[
                       options.optionContainer,
                       isSelected ? options.selectedOption : options.unselectedOption,
-                      decisionMaking.confidenceOption
+                      { marginBottom: 16 }
                     ]}
                     onPress={() => handleDecisionConfidenceSelect(option.id)}
                     activeOpacity={0.5}
@@ -112,11 +115,11 @@ const DecisionMakingScreen: React.FC<DecisionMakingScreenProps> = ({
                       />
                     </View>
                     
-                    <View style={[options.optionTextContainer, decisionMaking.confidenceTextContainer]}>
+                    <View style={[options.optionTextContainer, { flex: 1 }]}>
                       <Text style={typography.optionTitle}>
                         {option.label}
                       </Text>
-                      <Text style={decisionMaking.descriptionText}>
+                      <Text style={[typography.optionDescription, { marginTop: 4 }]}>
                         {option.description}
                       </Text>
                     </View>
@@ -146,7 +149,5 @@ const DecisionMakingScreen: React.FC<DecisionMakingScreenProps> = ({
     </SafeAreaView>
   );
 };
-
-// Локальных стилей больше нет - все стили вынесены в унифицированный модуль unifiedStyles.ts
 
 export default DecisionMakingScreen;

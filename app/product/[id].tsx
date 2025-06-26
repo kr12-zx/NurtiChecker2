@@ -2,11 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
 import PortionSizeModal, { PortionData } from '../../components/PortionSizeModal';
-import { useTranslation } from '../../i18n/i18n';
+import i18n, { useTranslation } from '../../i18n/i18n';
 import { addProductToDay } from '../../services/dailyNutrition';
-import { getScanById } from '../../services/scanHistory';
+import { updateScanById } from '../../services/scanHistory';
 import { getTempData } from '../../services/tempStore';
 
 // Mock nutrient data for cases when real data is not available
@@ -27,6 +27,10 @@ const USER_ALLERGENS = ['Milk', 'Soy', 'Nuts', 'Gluten'];
 
 export default function ProductDetailScreen() {
   const params = useLocalSearchParams();
+  
+  // 🔍 ДЕБАГ: Проверяем все параметры которые приходят
+  console.log('🔍 ВСЕ ПАРАМЕТРЫ:', JSON.stringify(params, null, 2));
+  
   const { 
     id, 
     productName, 
@@ -40,28 +44,193 @@ export default function ProductDetailScreen() {
     useRealData, 
     analysisData: analysisDataString, 
     originalData, 
-    fullData: fullDataString 
+    fullData: fullDataString,
+    // Параметры для продуктов из дашборда (фактически съеденные значения)
+    fromDashboard,
+    actualCalories,
+    actualProtein,
+    actualFat,
+    actualCarbs,
+    actualSugar,
+    actualFiber,
+    actualSaturatedFat,
+    servingMultiplier
   } = params;
+  
+  // 🔍 ДЕБАГ: Проверяем каждый параметр на тип
+  Object.entries(params).forEach(([key, value]) => {
+    if (typeof value === 'object' && value !== null) {
+      console.log(`🔍 НАЙДЕН ОБЪЕКТ В ПАРАМЕТРАХ: ${key} =`, value);
+    }
+  });
   const { t } = useTranslation();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [isAdding, setIsAdding] = useState(false); // Состояние загрузки при добавлении продукта
+
+  // Состояния для редактирования продукта
+  const [isEditingProduct, setIsEditingProduct] = useState(false);
+  const [editedProductData, setEditedProductData] = useState({
+    name: '',
+    weight: '',
+    calories: '',
+    protein: '',
+    fat: '',
+    carbs: '',
+    sugars: '',
+    fiber: '',
+    saturatedFat: '',
+    calcium: '',
+    vitamins: '',
+    ingredients: '',
+    allergens: ''
+  });
+  
+  // Базовые значения для пересчёта (всегда для 100г)
+  const [baseProductData, setBaseProductData] = useState({
+    name: '',
+    calories: 0,
+    protein: 0,
+    fat: 0,
+    carbs: 0,
+    sugars: 0,
+    fiber: 0,
+    saturatedFat: 0
+  });
+  
+  const [isAIAnalyzing, setIsAIAnalyzing] = useState(false);
+  const [shouldAutoEdit, setShouldAutoEdit] = useState(false);
+  
+  // Состояние для управления данными анализа
+  const [analysisData, setAnalysisData] = useState<any>(null);
+  
+  // Состояние для нутриентов (используется в getDisplay функциях)
+  const [nutrients, setNutrients] = useState({
+    protein: Number(proteinParam) || 0,
+    fat: Number(fatParam) || 0,
+    carbs: Number(carbsParam) || 0,
+    sugar: 0,
+    fiber: 0,
+    calcium: 0,
+    vitamins: [] as string[], // Всегда только строки
+    ingredients: '',
+    allergens: [] as string[], // Всегда только строки
+  });
+
+  // Инициализация данных анализа
+  useEffect(() => {
+    let parsedData: any = null; 
+    try {
+      if (fullDataString) {
+        // Используем безопасное декодирование
+        const rawFullData = safeDecodeURIComponent(fullDataString as string);
+        try {
+          const tempParsedFullData = JSON.parse(rawFullData);
+          if (tempParsedFullData && tempParsedFullData.foodData) {
+            parsedData = tempParsedFullData.foodData;
+          }
+        } catch (parseError) {
+          console.error('Ошибка при парсинге JSON после декодирования:', parseError);
+        }
+      }
+      if (!parsedData && analysisDataString) {
+        parsedData = JSON.parse(analysisDataString as string);
+      }
+    } catch (error) {
+      console.error('Error parsing analysis data:', error);
+    }
+    
+    // ДЕБАГ: Логируем все данные что приходят
+    console.log('🔍 ДЕБАГ: productName тип и значение:', typeof productName, productName);
+    console.log('🔍 ДЕБАГ: parsedData:', parsedData);
+    
+    if (parsedData) {
+      setAnalysisData({ ...parsedData }); // Создаем копию для безопасного изменения
+      console.log('📊 Инициализированы данные анализа:', parsedData);
+      
+      // Обновляем nutrients данными из analysisData
+      if (parsedData.nutritionInfo) {
+        // Безопасно обрабатываем массивы витаминов и аллергенов
+        const safeVitamins = (parsedData.nutritionInfo.vitamins || []).map((vitamin: any) => 
+          typeof vitamin === 'string' ? vitamin : vitamin?.name || vitamin?.title || 'Unknown vitamin'
+        );
+        const safeAllergens = (parsedData.allergens || []).map((allergen: any) => 
+          typeof allergen === 'string' ? allergen : allergen?.name || allergen?.title || 'Unknown allergen'
+        );
+        
+        // Безопасно обрабатываем ingredients (может быть массивом объектов)
+        let safeIngredients = '';
+        if (parsedData.ingredients) {
+          if (typeof parsedData.ingredients === 'string') {
+            safeIngredients = parsedData.ingredients;
+          } else if (Array.isArray(parsedData.ingredients)) {
+            safeIngredients = parsedData.ingredients.map((ingredient: any) => 
+              typeof ingredient === 'string' ? ingredient : ingredient?.name || ingredient?.title || 'Unknown ingredient'
+            ).join(', ');
+          }
+        }
+
+        setNutrients({
+          protein: parsedData.nutritionInfo.protein || 0,
+          fat: parsedData.nutritionInfo.fat || 0,
+          carbs: parsedData.nutritionInfo.carbs || 0,
+          sugar: parsedData.nutritionInfo.sugars || 0, // Важно: sugars из API → sugar в состоянии
+          fiber: parsedData.nutritionInfo.fiber || 0,
+          calcium: parsedData.nutritionInfo.calcium || 0,
+          vitamins: safeVitamins,
+          ingredients: safeIngredients,
+          allergens: safeAllergens,
+        });
+        console.log('🍯 Обновлены nutrients:', {
+          protein: parsedData.nutritionInfo.protein,
+          fat: parsedData.nutritionInfo.fat,
+          carbs: parsedData.nutritionInfo.carbs,
+          sugar: parsedData.nutritionInfo.sugars,
+          fiber: parsedData.nutritionInfo.fiber,
+          calcium: parsedData.nutritionInfo.calcium,
+          vitamins: parsedData.nutritionInfo.vitamins,
+          ingredients: parsedData.ingredients,
+          allergens: parsedData.allergens,
+        });
+      }
+    }
+  }, [fullDataString, analysisDataString]);
 
   // Обработчик подтверждения выбора размера порции и добавок
   const handlePortionConfirm = async (portionData: PortionData) => {
     try {
       setIsAdding(true);
       
-      // Получаем актуальные данные о продукте из истории сканирований
-      const productData = await getScanById(id as string);
-      
-      if (!productData) {
-        console.error('Не удалось найти продукт');
-        Alert.alert('Ошибка', 'Не удалось найти продукт');
-        setIsAdding(false);
-        setModalVisible(false);
-        return;
+      // Автоматически сохраняем изменения если продукт в режиме редактирования
+      if (isEditingProduct) {
+        console.log('💾 Автоматически сохраняем изменения перед добавлением продукта');
+        await handleSaveEditingProduct();
       }
+      
+      // Получаем актуальные данные о продукте из текущего состояния (с учетом редактирования)
+      const productData = {
+        id: id as string,
+        name: getDisplayName(),
+        calories: Number(getDisplayCalories()) || 0,
+        protein: Number(getDisplayProtein()) || 0,
+        fat: Number(getDisplayFat()) || 0,
+        carbs: Number(getDisplayCarbs()) || 0,
+        sugar: Number(getDisplaySugar()) || 0,
+        // Дополнительные поля для совместимости
+        timestamp: Date.now(),
+        date: new Date().toLocaleTimeString(),
+        scanDate: new Date().toLocaleDateString(),
+      };
+      
+      console.log('📦 Используем актуальные данные продукта для добавления:', productData);
+      console.log('🍯 Отладка сахара при добавлении продукта:', {
+        getDisplaySugar: getDisplaySugar(),
+        productDataSugar: productData.sugar,
+        nutrientsSugar: nutrients.sugar,
+        analysisDataSugars: analysisData?.nutritionInfo?.sugars,
+        isEditingProduct: isEditingProduct,
+        editedSugars: isEditingProduct ? editedProductData.sugars : 'не в режиме редактирования'
+      });
       
       // Коэффициент порции в зависимости от выбранного размера
       let portionMultiplier = 1.0;
@@ -83,16 +252,40 @@ export default function ProductDetailScreen() {
         case 'all':
           quantityMultiplier = 1.0;
           break;
+        case 'three_quarters':
+          quantityMultiplier = 0.75;
+          break;
         case 'half':
           quantityMultiplier = 0.5;
           break;
+        case 'third':
+          quantityMultiplier = 0.33;
+          break;
         case 'quarter':
           quantityMultiplier = 0.25;
+          break;
+        case 'tenth':
+          quantityMultiplier = 0.1;
+          break;
+        case 'sip':
+          quantityMultiplier = 0.05;
+          break;
+        default:
+          quantityMultiplier = 1.0;
           break;
       }
       
       // Общий коэффициент (порция * количество * кол-во единиц)
       const totalMultiplier = portionMultiplier * quantityMultiplier * portionData.quantity;
+      
+      console.log('📏 Расчет коэффициента порции:', {
+        portionSize: portionData.portionSize,
+        portionMultiplier,
+        quantityEaten: portionData.quantityEaten,
+        quantityMultiplier,
+        quantity: portionData.quantity,
+        totalMultiplier
+      });
       
       // Дополнительные калории и нутриенты от добавок
       
@@ -120,6 +313,17 @@ export default function ProductDetailScreen() {
       const totalAddonProtein = sauceProtein + sugarProtein + oilProtein;
       const totalAddonFat = sauceFat + sugarFat + oilFat;
       const totalAddonCarbs = sauceCarbs + sugarCarbs + oilCarbs;
+      
+      console.log('🍯 Добавки к продукту:', {
+        sauce: portionData.addons.sauce,
+        sugar: portionData.addons.sugar,
+        oil: portionData.addons.oil,
+        totalAddonCalories,
+        totalAddonProtein,
+        totalAddonFat,
+        totalAddonCarbs,
+        hiddenSugar
+      });
       
       // Добавляем продукт с учетом добавок
       let productWithAddons = { ...productData };
@@ -159,25 +363,27 @@ export default function ProductDetailScreen() {
             productWithAddons.sugar = hiddenSugar;
           }
         }
+        
+        console.log('📊 Продукт с добавками:', productWithAddons);
       }
       
-      // Добавляем продукт в дневную статистику
-      await addProductToDay(productWithAddons, totalMultiplier);
+      // Добавляем недостающие поля для совместимости с ScanHistoryItem
+      const scanHistoryItem = {
+        ...productWithAddons,
+        // Добавляем обязательные поля для ScanHistoryItem
+        brand: analysisData?.brand || undefined,
+        image: imageUrl || undefined,
+        fullData: analysisData ? JSON.stringify(analysisData) : undefined
+      };
       
-      // Показываем уведомление об успешном добавлении
-      Alert.alert(
-        t('common.success'), 
-        t('common.foodAddedToJournal', { foodName: productName }),
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              // Переход на дашборд после добавления продукта
-              router.push('/(tabs)/main01');
-            }
-          }
-        ]
-      );
+      console.log('📋 Полный объект для добавления в дневник:', scanHistoryItem);
+      
+      // Добавляем продукт в дневную статистику
+      await addProductToDay(scanHistoryItem, totalMultiplier);
+      
+      // Переход на дашборд после добавления продукта (без уведомления)
+      console.log('✅ Продукт успешно добавлен в дневник:', productData.name);
+      router.push('/(tabs)/main01');
       
       // Закрываем модальное окно
       setModalVisible(false);
@@ -187,6 +393,492 @@ export default function ProductDetailScreen() {
     } finally {
       setIsAdding(false);
     }
+  };
+
+  // Функции для объединенного редактирования продукта
+  const handleStartEditingProduct = () => {
+    // Получаем текущие значения из всех источников
+    const currentName = analysisData?.foodName || productName || '';
+    const currentWeight = String(analysisData?.portionInfo?.estimatedWeight || analysisData?.estimatedWeight || 100);
+    const currentCalories = analysisData?.nutritionInfo?.calories ?? calories;
+    const currentProtein = nutrients.protein;
+    const currentFat = nutrients.fat;
+    const currentCarbs = nutrients.carbs;
+    const currentSugar = nutrients.sugar;
+    const currentFiber = nutrients.fiber;
+    const currentSaturatedFat = analysisData?.nutritionInfo?.saturatedFat || 0;
+
+    // ИСПРАВЛЕНИЕ: Данные от N8N уже приходят для конкретной порции (estimatedWeight)
+    // Пересчитываем к базе 100г для корректного пересчета
+    const weightNum = parseFloat(currentWeight);
+    const baseMultiplier = 100 / weightNum; // Коэффициент для пересчета к 100г
+    
+    console.log('🔍 Данные для редактирования:', {
+      currentWeight: weightNum,
+      currentCalories,
+      currentProtein,
+      currentCarbs,
+      currentSugar,
+      baseMultiplier,
+      calculatedCarbsPer100g: Math.round((Number(currentCarbs || 0)) * baseMultiplier * 10) / 10,
+      calculatedSugarPer100g: Math.round((Number(currentSugar || 0)) * baseMultiplier * 10) / 10
+    });
+    
+    // Сохраняем базовые значения для пересчёта (всегда для 100г)
+    setBaseProductData({
+      name: String(currentName),
+      calories: Math.round((Number(currentCalories || 0)) * baseMultiplier),
+      protein: Math.round((Number(currentProtein || 0)) * baseMultiplier * 10) / 10,
+      fat: Math.round((Number(currentFat || 0)) * baseMultiplier * 10) / 10,
+      carbs: Math.round((Number(currentCarbs || 0)) * baseMultiplier * 10) / 10,
+      sugars: Math.round((Number(currentSugar || 0)) * baseMultiplier * 10) / 10,
+      fiber: Math.round((Number(currentFiber || 0)) * baseMultiplier * 10) / 10,
+      saturatedFat: Math.round((Number(currentSaturatedFat || 0)) * baseMultiplier * 10) / 10
+    });
+
+    setEditedProductData({
+      name: String(currentName),
+      weight: String(currentWeight),
+      calories: String(currentCalories || 0),
+      protein: String(currentProtein || 0),
+      fat: String(currentFat || 0),
+      carbs: String(currentCarbs || 0),
+      sugars: String(currentSugar || 0),
+      fiber: String(currentFiber || 0),
+      saturatedFat: String(currentSaturatedFat || 0),
+      calcium: String(nutrients.calcium || 0),
+      vitamins: Array.isArray(nutrients.vitamins) ? nutrients.vitamins.join(', ') : '',
+      ingredients: nutrients.ingredients || '',
+      allergens: Array.isArray(nutrients.allergens) ? nutrients.allergens.join(', ') : ''
+    });
+    setIsEditingProduct(true);
+    console.log('🔄 Начинаем объединенное редактирование продукта');
+  };
+
+  const handleSaveEditingProduct = async () => {
+    // Валидация
+    if (!editedProductData.name.trim()) {
+      Alert.alert(t('common.error'), 'Название продукта не может быть пустым');
+      return;
+    }
+
+    try {
+      // Сохраняем изменения в состояние данных анализа
+      if (analysisData) {
+        setAnalysisData((prev: any) => ({
+          ...prev,
+          foodName: editedProductData.name,
+          estimatedWeight: Number(editedProductData.weight) || 100,
+          portionInfo: {
+            ...prev.portionInfo,
+            estimatedWeight: Number(editedProductData.weight) || 100
+          },
+          nutritionInfo: {
+            ...prev.nutritionInfo,
+            calories: Number(editedProductData.calories) || 0,
+            protein: Number(editedProductData.protein) || 0,
+            fat: Number(editedProductData.fat) || 0,
+            carbs: Number(editedProductData.carbs) || 0,
+            sugars: Number(editedProductData.sugars) || 0,
+            fiber: Number(editedProductData.fiber) || 0,
+            saturatedFat: Number(editedProductData.saturatedFat) || 0
+          }
+        }));
+      }
+
+      // Обновляем nutrients
+      setNutrients(prev => ({
+        ...prev,
+        protein: Number(editedProductData.protein) || 0,
+        fat: Number(editedProductData.fat) || 0,
+        carbs: Number(editedProductData.carbs) || 0,
+        sugar: Number(editedProductData.sugars) || 0,
+        fiber: Number(editedProductData.fiber) || 0,
+        calcium: Number(editedProductData.calcium) || 0,
+        vitamins: editedProductData.vitamins ? editedProductData.vitamins.split(',').map((vitamin: string) => vitamin.trim()).filter(Boolean) : [],
+        ingredients: editedProductData.ingredients,
+        allergens: editedProductData.allergens ? editedProductData.allergens.split(',').map((allergen: string) => allergen.trim()).filter(Boolean) : [],
+      }));
+
+      // Обновляем базовые данные для будущих пересчетов
+      setBaseProductData(prev => ({
+        ...prev,
+        name: editedProductData.name,
+        calories: Number(editedProductData.calories) || 0,
+        protein: Number(editedProductData.protein) || 0,
+        fat: Number(editedProductData.fat) || 0,
+        carbs: Number(editedProductData.carbs) || 0,
+        sugars: Number(editedProductData.sugars) || 0,
+        fiber: Number(editedProductData.fiber) || 0,
+        saturatedFat: Number(editedProductData.saturatedFat) || 0
+      }));
+
+      // Сохраняем в AsyncStorage (история сканирований)
+      if (id) {
+        // Создаем обновленные fullData с новыми значениями
+        const updatedFullData = analysisData ? JSON.stringify({
+          foodData: {
+            ...analysisData,
+            foodName: editedProductData.name,
+            estimatedWeight: Number(editedProductData.weight) || 100,
+            portionInfo: {
+              ...analysisData.portionInfo,
+              estimatedWeight: Number(editedProductData.weight) || 100
+            },
+            nutritionInfo: {
+              ...analysisData.nutritionInfo,
+              calories: Number(editedProductData.calories) || 0,
+              protein: Number(editedProductData.protein) || 0,
+              fat: Number(editedProductData.fat) || 0,
+              carbs: Number(editedProductData.carbs) || 0,
+              sugars: Number(editedProductData.sugars) || 0,
+              fiber: Number(editedProductData.fiber) || 0,
+              saturatedFat: Number(editedProductData.saturatedFat) || 0
+            }
+          }
+        }) : undefined;
+
+        // Обновляем запись в истории сканирований
+        await updateScanById(id as string, {
+          name: editedProductData.name,
+          calories: Number(editedProductData.calories) || 0,
+          protein: Number(editedProductData.protein) || 0,
+          fat: Number(editedProductData.fat) || 0,
+          carbs: Number(editedProductData.carbs) || 0,
+          sugar: Number(editedProductData.sugars) || 0,
+          fullData: updatedFullData
+        });
+
+        console.log('💾 Данные сохранены в AsyncStorage для ID:', id);
+      }
+
+      setIsEditingProduct(false);
+      console.log('✅ Сохраняем изменения продукта:', editedProductData);
+      
+      // Alert.alert('Успех', 'Изменения сохранены'); // Убираем уведомление
+      console.log('✅ Изменения сохранены успешно');
+    } catch (error) {
+      console.error('Ошибка при сохранении:', error);
+      Alert.alert('Ошибка', 'Не удалось сохранить изменения');
+    }
+  };
+
+  // Сохранение без уведомления (для кнопки галочки)
+  const handleSaveEditingProductSilent = async () => {
+    // Валидация (тихая - без уведомлений)
+    if (!editedProductData.name.trim()) {
+      console.log('❌ Тихая валидация: название продукта пустое');
+      return;
+    }
+
+    try {
+      // Сохраняем изменения в состояние данных анализа
+      if (analysisData) {
+        setAnalysisData((prev: any) => ({
+          ...prev,
+          foodName: editedProductData.name,
+          estimatedWeight: Number(editedProductData.weight) || 100,
+          portionInfo: {
+            ...prev.portionInfo,
+            estimatedWeight: Number(editedProductData.weight) || 100
+          },
+          nutritionInfo: {
+            ...prev.nutritionInfo,
+            calories: Number(editedProductData.calories) || 0,
+            protein: Number(editedProductData.protein) || 0,
+            fat: Number(editedProductData.fat) || 0,
+            carbs: Number(editedProductData.carbs) || 0,
+            sugars: Number(editedProductData.sugars) || 0,
+            fiber: Number(editedProductData.fiber) || 0,
+            saturatedFat: Number(editedProductData.saturatedFat) || 0
+          }
+        }));
+      }
+
+      // Обновляем nutrients
+      setNutrients(prev => ({
+        ...prev,
+        protein: Number(editedProductData.protein) || 0,
+        fat: Number(editedProductData.fat) || 0,
+        carbs: Number(editedProductData.carbs) || 0,
+        sugar: Number(editedProductData.sugars) || 0,
+        fiber: Number(editedProductData.fiber) || 0,
+        calcium: Number(editedProductData.calcium) || 0,
+        vitamins: editedProductData.vitamins ? editedProductData.vitamins.split(',').map((vitamin: string) => vitamin.trim()).filter(Boolean) : [],
+        ingredients: editedProductData.ingredients,
+        allergens: editedProductData.allergens ? editedProductData.allergens.split(',').map((allergen: string) => allergen.trim()).filter(Boolean) : [],
+      }));
+
+      // Обновляем базовые данные для будущих пересчетов
+      setBaseProductData(prev => ({
+        ...prev,
+        name: editedProductData.name,
+        calories: Number(editedProductData.calories) || 0,
+        protein: Number(editedProductData.protein) || 0,
+        fat: Number(editedProductData.fat) || 0,
+        carbs: Number(editedProductData.carbs) || 0,
+        sugars: Number(editedProductData.sugars) || 0,
+        fiber: Number(editedProductData.fiber) || 0,
+        saturatedFat: Number(editedProductData.saturatedFat) || 0
+      }));
+
+      // Сохраняем в AsyncStorage (история сканирований)
+      if (id) {
+        // Создаем обновленные fullData с новыми значениями
+        const updatedFullData = analysisData ? JSON.stringify({
+          foodData: {
+            ...analysisData,
+            foodName: editedProductData.name,
+            estimatedWeight: Number(editedProductData.weight) || 100,
+            portionInfo: {
+              ...analysisData.portionInfo,
+              estimatedWeight: Number(editedProductData.weight) || 100
+            },
+            nutritionInfo: {
+              ...analysisData.nutritionInfo,
+              calories: Number(editedProductData.calories) || 0,
+              protein: Number(editedProductData.protein) || 0,
+              fat: Number(editedProductData.fat) || 0,
+              carbs: Number(editedProductData.carbs) || 0,
+              sugars: Number(editedProductData.sugars) || 0,
+              fiber: Number(editedProductData.fiber) || 0,
+              saturatedFat: Number(editedProductData.saturatedFat) || 0
+            }
+          }
+        }) : undefined;
+
+        // Обновляем запись в истории сканирований
+        await updateScanById(id as string, {
+          name: editedProductData.name,
+          calories: Number(editedProductData.calories) || 0,
+          protein: Number(editedProductData.protein) || 0,
+          fat: Number(editedProductData.fat) || 0,
+          carbs: Number(editedProductData.carbs) || 0,
+          sugar: Number(editedProductData.sugars) || 0,
+          fullData: updatedFullData
+        });
+
+        console.log('💾 Данные автоматически сохранены в AsyncStorage для ID:', id);
+      }
+
+      setIsEditingProduct(false);
+      console.log('✅ Автоматически сохраняем изменения продукта (без уведомления):', editedProductData);
+      
+      // НЕ показываем Alert для автоматического сохранения
+    } catch (error) {
+      console.error('Ошибка при автоматическом сохранении:', error);
+      // НЕ показываем Alert даже при ошибке для тихого сохранения
+    }
+  };
+
+  const handleCancelEditingProduct = () => {
+    setIsEditingProduct(false);
+    // Не сбрасываем editedProductData, чтобы сохранить текущие значения
+    console.log('❌ Отменяем редактирование продукта');
+  };
+
+  const handleAIAnalyzeProduct = async () => {
+    if (!editedProductData.name.trim()) {
+      Alert.alert(t('common.error'), 'Введите название продукта для AI анализа');
+      return;
+    }
+
+    setIsAIAnalyzing(true);
+    try {
+      console.log('🤖 Отправляем на AI анализ:', editedProductData.name);
+      
+      // Получаем userId и язык
+      const { getUserId } = await import('../../services/userService');
+      const userId = await getUserId();
+      const currentLanguage = i18n.locale || 'en';
+      
+      // Подготавливаем данные для webhook
+      const requestData = {
+        productName: editedProductData.name.trim(),
+        userId: userId,
+        portionSize: 'regular', // Стандартная порция
+        language: currentLanguage
+      };
+
+      console.log('Отправляем запрос к AI:', requestData);
+
+      // URL webhook для анализа продуктов по названию
+      const webhookUrl = 'https://ttagent.website/webhook/a1b2c3d4-e5f6-7890-abcd-ef12345678901';
+      
+      // Формируем URL с параметрами для GET запроса
+      const urlParams = new URLSearchParams();
+      Object.entries(requestData).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          urlParams.append(key, String(value));
+        }
+      });
+      
+      const fullUrl = `${webhookUrl}?${urlParams.toString()}`;
+      console.log(`Отправляем запрос к: ${webhookUrl}`);
+      
+      const response = await fetch(fullUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const responseText = await response.text();
+      console.log('Получен ответ от AI:', responseText.substring(0, 500));
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        throw new Error(`Ошибка парсинга ответа: ${parseError}`);
+      }
+
+      // Проверяем структуру ответа
+      if (data && data.foodData) {
+        const foodData = data.foodData;
+        
+        // ОБНОВЛЯЕМ СОСТОЯНИЕ analysisData НОВЫМИ ДАННЫМИ ОТ AI
+        setAnalysisData({
+          ...foodData,
+          // Обновляем структуру для совместимости
+          nutritionInfo: {
+            ...foodData.nutritionInfo,
+            estimatedWeight: foodData.estimatedWeight || 100
+          }
+        });
+
+        // Обновляем поля с данными от AI
+        setEditedProductData(prev => ({
+          ...prev,
+          name: foodData.foodName || prev.name,
+          weight: String(foodData.estimatedWeight || 100),
+          calories: String(foodData.nutritionInfo?.calories || 0),
+          protein: String(foodData.nutritionInfo?.protein || 0),
+          fat: String(foodData.nutritionInfo?.fat || 0),
+          carbs: String(foodData.nutritionInfo?.carbs || 0),
+          sugars: String(foodData.nutritionInfo?.sugars || 0),
+          fiber: String(foodData.nutritionInfo?.fiber || 0),
+          saturatedFat: String(foodData.nutritionInfo?.saturatedFat || 0)
+        }));
+
+        // Обновляем базовые данные для пересчета (приводим к 100г)
+        const estimatedWeight = foodData.estimatedWeight || 100;
+        const baseMultiplier = 100 / estimatedWeight;
+        
+        setBaseProductData({
+          name: foodData.foodName || editedProductData.name,
+          calories: Math.round((foodData.nutritionInfo?.calories || 0) * baseMultiplier),
+          protein: Math.round((foodData.nutritionInfo?.protein || 0) * baseMultiplier * 10) / 10,
+          fat: Math.round((foodData.nutritionInfo?.fat || 0) * baseMultiplier * 10) / 10,
+          carbs: Math.round((foodData.nutritionInfo?.carbs || 0) * baseMultiplier * 10) / 10,
+          sugars: Math.round((foodData.nutritionInfo?.sugars || 0) * baseMultiplier * 10) / 10,
+          fiber: Math.round((foodData.nutritionInfo?.fiber || 0) * baseMultiplier * 10) / 10,
+          saturatedFat: Math.round((foodData.nutritionInfo?.saturatedFat || 0) * baseMultiplier * 10) / 10
+        });
+
+        // Обновляем nutrients напрямую для немедленного отображения
+        const currentAllergens = Array.isArray(foodData.allergens) 
+          ? foodData.allergens 
+          : [];
+        const currentVitamins = (foodData.nutritionInfo && Array.isArray(foodData.nutritionInfo.vitamins)) 
+          ? foodData.nutritionInfo.vitamins 
+          : [];
+        
+        // Обработка ингредиентов - поддержка как нового (массив объектов), так и старого (строка) формата
+        let processedIngredients = '';
+        if (foodData.ingredients) {
+          if (Array.isArray(foodData.ingredients)) {
+            // Новый формат: массив объектов {name: string}
+            processedIngredients = foodData.ingredients
+              .map((item: any) => item && typeof item === 'object' && item.name ? item.name : item)
+              .filter(Boolean)
+              .join(', ');
+          } else if (typeof foodData.ingredients === 'string') {
+            // Старый формат: строка
+            processedIngredients = foodData.ingredients;
+          }
+        }
+        
+        setNutrients({
+          carbs: foodData.nutritionInfo?.carbs || 0,
+          fat: foodData.nutritionInfo?.fat || 0,
+          protein: foodData.nutritionInfo?.protein || 0,
+          fiber: foodData.nutritionInfo?.fiber || 0,
+          sugar: foodData.nutritionInfo?.sugars || 0,
+          calcium: foodData.nutritionInfo?.calcium || 0,
+          vitamins: currentVitamins,
+          ingredients: processedIngredients,
+          allergens: currentAllergens,
+        });
+
+        console.log('✅ AI анализ завершен, данные обновлены');
+        console.log('🔄 Новый вес от AI:', foodData.estimatedWeight);
+        console.log('🔄 Новые нутриенты от AI:', {
+          calories: foodData.nutritionInfo?.calories,
+          protein: foodData.nutritionInfo?.protein,
+          fat: foodData.nutritionInfo?.fat,
+          carbs: foodData.nutritionInfo?.carbs
+        });
+        console.log('🔄 Новые ингредиенты от AI:', processedIngredients);
+        console.log('🔄 Новые витамины от AI:', currentVitamins);
+        // Alert.alert('Успех', 'AI анализ завершен, данные обновлены'); // Убираем уведомление
+        console.log('✅ AI анализ завершен, данные обновлены');
+        
+      } else if (data && data.error) {
+        throw new Error(data.error.message || data.error.details || 'Ошибка AI анализа');
+      } else {
+        throw new Error('Неожиданный формат ответа от сервера');
+      }
+      
+    } catch (error) {
+      console.error('Ошибка AI анализа:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+      Alert.alert(t('common.error'), `Ошибка AI анализа: ${errorMessage}`);
+    } finally {
+      setIsAIAnalyzing(false);
+    }
+  };
+
+  const handleWeightChange = (newWeight: string) => {
+    // Не пересчитываем если вес пустой или некорректный
+    if (!newWeight || newWeight.trim() === '') {
+      setEditedProductData(prev => ({
+        ...prev,
+        weight: newWeight
+      }));
+      return;
+    }
+
+    const weightNum = parseFloat(newWeight);
+    if (isNaN(weightNum) || weightNum <= 0) {
+      setEditedProductData(prev => ({
+        ...prev,
+        weight: newWeight
+      }));
+      return;
+    }
+
+    const baseWeight = 100; // Базовый вес для пересчета
+    const multiplier = weightNum / baseWeight;
+
+    // Пересчитываем все нутриенты от базовых значений
+    setEditedProductData(prev => ({
+      ...prev,
+      weight: newWeight,
+      calories: String(Math.round(baseProductData.calories * multiplier)),
+      protein: String(Math.round(baseProductData.protein * multiplier * 10) / 10),
+      fat: String(Math.round(baseProductData.fat * multiplier * 10) / 10),
+      carbs: String(Math.round(baseProductData.carbs * multiplier * 10) / 10),
+      sugars: String(Math.round(baseProductData.sugars * multiplier * 10) / 10),
+      fiber: String(Math.round(baseProductData.fiber * multiplier * 10) / 10),
+      saturatedFat: String(Math.round(baseProductData.saturatedFat * multiplier * 10) / 10)
+    }));
+
+    console.log('⚖️ Пересчитываем нутриенты для веса:', newWeight, 'г от базовых значений');
   };
 
   const imageUrl = imgKey ? getTempData(imgKey as string) : '';
@@ -205,116 +897,41 @@ export default function ProductDetailScreen() {
     }
   };
 
-  let parsedAnalysisData: any = null; 
-  try {
-    if (fullDataString) {
-      // Используем безопасное декодирование
-      const rawFullData = safeDecodeURIComponent(fullDataString as string);
-      try {
-        const tempParsedFullData = JSON.parse(rawFullData);
-        if (tempParsedFullData && tempParsedFullData.foodData) {
-          parsedAnalysisData = tempParsedFullData.foodData;
-        }
-      } catch (parseError) {
-        console.error('Ошибка при парсинге JSON после декодирования:', parseError);
-      }
-    }
-    if (!parsedAnalysisData && analysisDataString) {
-      parsedAnalysisData = JSON.parse(analysisDataString as string);
-    }
-  } catch (error) {
-    console.error('Error parsing analysis data:', error);
-  }
-
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const isRealData = useRealData === 'true';
-
-  const [nutrients, setNutrients] = useState(() => {
-    if (isRealData && parsedAnalysisData) {
-        const currentAllergens = Array.isArray(parsedAnalysisData.allergens) 
-            ? parsedAnalysisData.allergens 
-            : [];
-        const currentVitamins = (parsedAnalysisData.nutritionInfo && Array.isArray(parsedAnalysisData.nutritionInfo.vitamins)) 
-            ? parsedAnalysisData.nutritionInfo.vitamins 
-            : [];
-        
-        if (!Array.isArray(parsedAnalysisData.allergens) && parsedAnalysisData.allergens) {
-            console.warn('[ProductDetailScreen] parsedAnalysisData.allergens was truthy but not an array:', parsedAnalysisData.allergens);
-        }
-        if (parsedAnalysisData.nutritionInfo && !Array.isArray(parsedAnalysisData.nutritionInfo.vitamins) && parsedAnalysisData.nutritionInfo.vitamins) {
-            console.warn('[ProductDetailScreen] parsedAnalysisData.nutritionInfo.vitamins was truthy but not an array:', parsedAnalysisData.nutritionInfo.vitamins);
-        }
-
-        // Обработка ингредиентов - поддержка как нового (массив объектов), так и старого (строка) формата
-        let processedIngredients = '';
-        if (parsedAnalysisData.ingredients) {
-            if (Array.isArray(parsedAnalysisData.ingredients)) {
-                // Новый формат: массив объектов {name: string}
-                processedIngredients = parsedAnalysisData.ingredients
-                    .map((item: any) => item && typeof item === 'object' && item.name ? item.name : item)
-                    .filter(Boolean)
-                    .join(', ');
-            } else if (typeof parsedAnalysisData.ingredients === 'string') {
-                // Старый формат: строка
-                processedIngredients = parsedAnalysisData.ingredients;
-            }
-        }
-        
-        return {
-            carbs: (parsedAnalysisData.nutritionInfo && parsedAnalysisData.nutritionInfo.carbs) || parseInt(carbsParam as string) || 0,
-            fat: (parsedAnalysisData.nutritionInfo && parsedAnalysisData.nutritionInfo.fat) || parseInt(fatParam as string) || 0,
-            protein: (parsedAnalysisData.nutritionInfo && parsedAnalysisData.nutritionInfo.protein) || parseInt(proteinParam as string) || 0,
-            fiber: (parsedAnalysisData.nutritionInfo && parsedAnalysisData.nutritionInfo.fiber) || 0,
-            sugar: (parsedAnalysisData.nutritionInfo && parsedAnalysisData.nutritionInfo.sugars) || 0, 
-            calcium: (parsedAnalysisData.nutritionInfo && parsedAnalysisData.nutritionInfo.calcium) || 0,
-            vitamins: currentVitamins,
-            ingredients: processedIngredients,
-            allergens: currentAllergens,
-        };
-    } else if (isRealData) { // parsedAnalysisData is falsy
-        return {
-            carbs: parseInt(carbsParam as string) || 0,
-            fat: parseInt(fatParam as string) || 0,
-            protein: parseInt(proteinParam as string) || 0,
-            fiber: 0, sugar: 0, calcium: 0, vitamins: [], ingredients: '', allergens: []
-        };
-    } else { // not isRealData
-        return MOCK_NUTRIENTS;
-    }
-  });
 
   const [isAllergic, setIsAllergic] = useState(false);
 
   useEffect(() => {
     // Отладочное логирование для аллергенов
     console.log('Данные аллергенов:', {
-      userContextIsSafe: parsedAnalysisData?.userContext?.isSafeForUser,
-      allergenAnalysisIsSafe: parsedAnalysisData?.allergenAnalysis?.isSafeForUser,
-      userContextWarnings: parsedAnalysisData?.userContext?.allergenWarnings,
-      allergenAnalysisWarnings: parsedAnalysisData?.allergenAnalysis?.userAllergenWarnings,
-      detectedAllergens: parsedAnalysisData?.allergenAnalysis?.detectedAllergens,
+      userContextIsSafe: analysisData?.userContext?.isSafeForUser,
+      allergenAnalysisIsSafe: analysisData?.allergenAnalysis?.isSafeForUser,
+      userContextWarnings: analysisData?.userContext?.allergenWarnings,
+      allergenAnalysisWarnings: analysisData?.allergenAnalysis?.userAllergenWarnings,
+      detectedAllergens: analysisData?.allergenAnalysis?.detectedAllergens,
     });
 
     // Проверяем аллерген по данным из API или по локальным данным, если API данных нет
-    if (parsedAnalysisData?.userContext?.isSafeForUser === false || parsedAnalysisData?.allergenAnalysis?.isSafeForUser === false) {
+    if (analysisData?.userContext?.isSafeForUser === false || analysisData?.allergenAnalysis?.isSafeForUser === false) {
       // Если API явно указывает, что продукт небезопасен
       console.log('Продукт отмечен как небезопасный (isSafeForUser: false)');  
       setIsAllergic(true);
     } else if (
       // Проверяем предупреждения в userContext (новый формат)
-      (parsedAnalysisData?.userContext?.allergenWarnings && 
-       Array.isArray(parsedAnalysisData.userContext.allergenWarnings) && 
-       parsedAnalysisData.userContext.allergenWarnings.length > 0) ||
+      (analysisData?.userContext?.allergenWarnings && 
+       Array.isArray(analysisData.userContext.allergenWarnings) && 
+       analysisData.userContext.allergenWarnings.length > 0) ||
       // Проверяем предупреждения в allergenAnalysis (старый формат)
-      (parsedAnalysisData?.allergenAnalysis?.userAllergenWarnings && 
-       Array.isArray(parsedAnalysisData.allergenAnalysis.userAllergenWarnings) && 
-       parsedAnalysisData.allergenAnalysis.userAllergenWarnings.length > 0)
+      (analysisData?.allergenAnalysis?.userAllergenWarnings && 
+       Array.isArray(analysisData.allergenAnalysis.userAllergenWarnings) && 
+       analysisData.allergenAnalysis.userAllergenWarnings.length > 0)
     ) {
       // Если есть предупреждения об аллергенах
       console.log('Найдены предупреждения об аллергенах:', 
-        parsedAnalysisData?.userContext?.allergenWarnings || 
-        parsedAnalysisData?.allergenAnalysis?.userAllergenWarnings
+        analysisData?.userContext?.allergenWarnings || 
+        analysisData?.allergenAnalysis?.userAllergenWarnings
       );
       setIsAllergic(true);
     } else if (nutrients && nutrients.allergens && Array.isArray(nutrients.allergens)) {
@@ -330,17 +947,212 @@ export default function ProductDetailScreen() {
     }
   }, [nutrients]);
 
-  const displayCalories = parsedAnalysisData?.nutritionInfo?.calories ?? calories;
-  // Use nutrients state for display as it reflects the single source of truth after initialization
-  const displayProtein = nutrients.protein;
-  const displayFat = nutrients.fat;
-  const displayCarbs = nutrients.carbs;
+  // Автоматический вход в режим редактирования после AI анализа
+  useEffect(() => {
+    if (analysisData && !isEditingProduct && !shouldAutoEdit) {
+      setShouldAutoEdit(true);
+      handleStartEditingProduct();
+      console.log('🚀 Автоматически входим в режим редактирования после AI анализа');
+    }
+  }, [analysisData]);
+
+  // Функции для получения актуальных значений для отображения
+  const getDisplayCalories = () => {
+    if (isEditingProduct) {
+      return editedProductData.calories;
+    }
+    // Если это продукт из дашборда, показываем фактически съеденные значения
+    if (fromDashboard && actualCalories) {
+      return Math.round(Number(actualCalories));
+    }
+    // В режиме просмотра показываем значения из analysisData
+    const value = analysisData?.nutritionInfo?.calories ?? calories;
+    console.log('🔍 getDisplayCalories:', { 
+      isEditingProduct, 
+      fromDashboard, 
+      actualCalories,
+      analysisDataCalories: analysisData?.nutritionInfo?.calories, 
+      fallbackCalories: calories, 
+      finalValue: fromDashboard && actualCalories ? Math.round(Number(actualCalories)) : value 
+    });
+    return value;
+  };
+
+  const getDisplayProtein = () => {
+    if (isEditingProduct) {
+      return editedProductData.protein;
+    }
+    // Если это продукт из дашборда, показываем фактически съеденные значения
+    if (fromDashboard && actualProtein) {
+      return Number(actualProtein).toFixed(1);
+    }
+    // В режиме просмотра показываем значения из analysisData
+    const value = analysisData?.nutritionInfo?.protein ?? nutrients.protein;
+    console.log('🔍 getDisplayProtein:', { 
+      isEditingProduct, 
+      fromDashboard, 
+      actualProtein,
+      analysisDataProtein: analysisData?.nutritionInfo?.protein, 
+      nutrientsProtein: nutrients.protein, 
+      finalValue: fromDashboard && actualProtein ? Number(actualProtein).toFixed(1) : value 
+    });
+    return value;
+  };
+
+  const getDisplayFat = () => {
+    if (isEditingProduct) {
+      return editedProductData.fat;
+    }
+    // Если это продукт из дашборда, показываем фактически съеденные значения
+    if (fromDashboard && actualFat) {
+      return Number(actualFat).toFixed(1);
+    }
+    // В режиме просмотра показываем значения из analysisData
+    const value = analysisData?.nutritionInfo?.fat ?? nutrients.fat;
+    console.log('🔍 getDisplayFat:', { 
+      isEditingProduct, 
+      fromDashboard, 
+      actualFat,
+      analysisDataFat: analysisData?.nutritionInfo?.fat, 
+      nutrientsFat: nutrients.fat, 
+      finalValue: fromDashboard && actualFat ? Number(actualFat).toFixed(1) : value 
+    });
+    return value;
+  };
+
+  const getDisplayCarbs = () => {
+    if (isEditingProduct) {
+      return editedProductData.carbs;
+    }
+    // Если это продукт из дашборда, показываем фактически съеденные значения
+    if (fromDashboard && actualCarbs) {
+      return Number(actualCarbs).toFixed(1);
+    }
+    // В режиме просмотра показываем значения из analysisData
+    const value = analysisData?.nutritionInfo?.carbs ?? nutrients.carbs;
+    console.log('🔍 getDisplayCarbs:', { 
+      isEditingProduct, 
+      fromDashboard, 
+      actualCarbs,
+      analysisDataCarbs: analysisData?.nutritionInfo?.carbs, 
+      nutrientsCarbs: nutrients.carbs, 
+      finalValue: fromDashboard && actualCarbs ? Number(actualCarbs).toFixed(1) : value 
+    });
+    return value;
+  };
+
+  const getDisplaySugar = () => {
+    if (isEditingProduct) {
+      return editedProductData.sugars || '0';
+    }
+    // Если это продукт из дашборда, показываем фактически съеденные значения
+    if (fromDashboard && actualSugar) {
+      return Math.round(Number(actualSugar));
+    }
+    
+    const result = Math.round(analysisData?.nutritionInfo?.sugars ?? nutrients.sugar);
+    
+    console.log('🍯 getDisplaySugar отладка:', {
+      isEditingProduct,
+      fromDashboard,
+      actualSugar,
+      editedSugars: editedProductData.sugars,
+      analysisDataSugars: analysisData?.nutritionInfo?.sugars,
+      nutrientsSugar: nutrients.sugar,
+      finalResult: fromDashboard && actualSugar ? Math.round(Number(actualSugar)) : result
+    });
+    
+    return result;
+  };
+
+  const getDisplayFiber = () => {
+    if (isEditingProduct) {
+      return editedProductData.fiber || '0';
+    }
+    // Если это продукт из дашборда, показываем фактически съеденные значения
+    if (fromDashboard && actualFiber) {
+      return Math.round(Number(actualFiber));
+    }
+    // В режиме просмотра показываем значения из analysisData
+    return Math.round(analysisData?.nutritionInfo?.fiber ?? nutrients.fiber);
+  };
+
+  const getDisplaySaturatedFat = () => {
+    if (isEditingProduct) {
+      return editedProductData.saturatedFat || '0';
+    }
+    // Если это продукт из дашборда, показываем фактически съеденные значения
+    if (fromDashboard && actualSaturatedFat) {
+      return Number(actualSaturatedFat).toFixed(1);
+    }
+    // В режиме просмотра показываем значения из analysisData
+    return Math.round(analysisData?.nutritionInfo?.saturatedFat ?? 0);
+  };
+
+  // Функция для получения отображаемого названия
+  const getDisplayName = () => {
+    if (isEditingProduct) {
+      return editedProductData.name;
+    }
+    // Безопасно обрабатываем foodName если это объект
+    const foodName = analysisData?.foodName;
+    if (typeof foodName === 'string') {
+      return foodName;
+    } else if (foodName && typeof foodName === 'object') {
+      return foodName.name || foodName.title || foodName.value || '';
+    }
+    return productName || '';
+  };
+
+  const getDisplayWeight = () => {
+    if (isEditingProduct) {
+      return editedProductData.weight;
+    }
+    // Если это продукт из дашборда, вычисляем фактически съеденный вес
+    if (fromDashboard && servingMultiplier) {
+      const baseWeight = analysisData?.portionInfo?.estimatedWeight || 100;
+      const actualWeight = Math.round(baseWeight * Number(servingMultiplier));
+      console.log('🔍 getDisplayWeight от дашборда:', { 
+        fromDashboard, 
+        servingMultiplier, 
+        baseWeight, 
+        actualWeight 
+      });
+      return String(actualWeight);
+    }
+    return String(analysisData?.portionInfo?.estimatedWeight || analysisData?.estimatedWeight || 100);
+  };
+
+  const getDisplayPortionDescription = () => {
+    // Если это продукт из дашборда, показываем фактически съеденную порцию
+    if (fromDashboard && servingMultiplier) {
+      const baseWeight = analysisData?.portionInfo?.estimatedWeight || 100;
+      const actualWeight = Math.round(baseWeight * Number(servingMultiplier));
+      const baseDescription = analysisData?.portionInfo?.description || t('nutrition.portion');
+      
+      // Если фактический вес отличается от базового, показываем что это измененная порция
+      if (Math.abs(actualWeight - baseWeight) > 1) {
+        return `${t('nutrition.eatenPortion')} (${actualWeight} ${t('nutrition.gram')})`;
+      } else {
+        return `${baseDescription} (${actualWeight} ${t('nutrition.gram')})`;
+      }
+    }
+    
+    // Оригинальная логика для обычных продуктов
+    return analysisData?.portionDescription || 
+           (analysisData?.portionInfo?.description ? 
+             `${analysisData.portionInfo.description} ${analysisData?.portionInfo?.estimatedWeight ? 
+               `(${analysisData.portionInfo.estimatedWeight} ${analysisData.portionInfo.measurementUnit || t('nutrition.gram')})` : 
+               `(100 ${t('nutrition.gram')})`}` :
+             `${t('nutrition.portion')} (100 ${t('nutrition.gram')})`
+           );
+  };
 
   return (
     <>
       <Stack.Screen
         options={{
-          title: productName as string,
+          title: typeof productName === 'string' ? productName : (productName as any)?.name || 'Product',
           headerLeft: () => (
             <TouchableOpacity 
               style={[styles.headerButton, { marginLeft: 8 }]}
@@ -372,8 +1184,8 @@ export default function ProductDetailScreen() {
         </TouchableOpacity>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent}>
-          {parsedAnalysisData ? (
-            // Display based on parsedAnalysisData (from n8n or direct scan)
+          {analysisData ? (
+            // Display based on analysisData (from n8n or direct scan)
             <View style={styles.analysisContainer}>
               <View style={styles.resultImageContainer}>
                 {imageUrl ? (
@@ -391,42 +1203,271 @@ export default function ProductDetailScreen() {
                 )}
               </View>
               
-              <Text 
-                style={[styles.foodName, isDark && { color: '#FFF' }]}
-                numberOfLines={2}
-                ellipsizeMode="tail"
-              >
-                {parsedAnalysisData.foodName || productName}
-              </Text>
-              
-              <View style={[styles.portionContainer, isDark && styles.darkPortionContainer]}>
-                <Text style={[styles.portionText, isDark && styles.darkText]}>
-                  {parsedAnalysisData?.portionDescription || 
-                   (parsedAnalysisData?.portionInfo?.description ? 
-                     `${parsedAnalysisData.portionInfo.description} ${parsedAnalysisData?.portionInfo?.estimatedWeight ? 
-                       `(${parsedAnalysisData.portionInfo.estimatedWeight} ${parsedAnalysisData.portionInfo.measurementUnit || t('nutrition.gram')})` : 
-                       `(100 ${t('nutrition.gram')})`}` :
-                     `${t('nutrition.portion')} (100 ${t('nutrition.gram')})`
-                   )
-                  }
+              {/* Объединенный блок редактирования продукта */}
+              <View style={[
+                styles.nutrientCard, 
+                isDark && styles.darkCard,
+                isEditingProduct && styles.unifiedProductCardEditing
+              ]}>
+                {/* Иконка редактирования или кнопки управления */}
+                {isEditingProduct ? (
+                  <View style={styles.editControlButtons}>
+                    <TouchableOpacity
+                      style={[styles.editButton, isDark && styles.darkEditButton]}
+                      onPress={handleSaveEditingProductSilent}
+                    >
+                      <Ionicons name="checkmark" size={16} color={isDark ? "#888888" : "#666666"} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.editButton, isDark && styles.darkEditButton]}
+                      onPress={handleAIAnalyzeProduct}
+                      disabled={isAIAnalyzing}
+                    >
+                      {isAIAnalyzing ? (
+                        <ActivityIndicator size="small" color={isDark ? "#888888" : "#666666"} />
+                      ) : (
+                        <Ionicons name="sparkles" size={16} color={isDark ? "#888888" : "#666666"} />
+                      )}
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.editButton, isDark && styles.darkEditButton]}
+                      onPress={handleCancelEditingProduct}
+                    >
+                      <Ionicons name="close" size={16} color={isDark ? "#888888" : "#666666"} />
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.editControlButtons}
+                    onPress={handleStartEditingProduct}
+                  >
+                    <View style={[styles.editButton, isDark && styles.darkEditButton]}>
+                      <Ionicons name="pencil" size={16} color={isDark ? "#888888" : "#666666"} />
+                    </View>
+                  </TouchableOpacity>
+                )}
+
+                {/* Название продукта */}
+                <View style={styles.productNameSection}>
+                  {isEditingProduct ? (
+                    <TextInput
+                      style={[styles.nameInput, isDark && styles.darkInput]}
+                      value={editedProductData.name}
+                      onChangeText={(text) => setEditedProductData(prev => ({ ...prev, name: text }))}
+                      placeholder="Название продукта"
+                      placeholderTextColor={isDark ? '#666' : '#999'}
+                    />
+                  ) : (
+                    <Text 
+                      style={[styles.foodName, isDark && { color: '#FFF' }]}
+                      numberOfLines={2}
+                      ellipsizeMode="tail"
+                    >
+                      {getDisplayName()}
+                    </Text>
+                  )}
+                </View>
+
+                {/* Описание порции */}
+                <View style={[styles.portionContainer, isDark && styles.darkPortionContainer]}>
+                  <Text style={[styles.portionText, isDark && styles.darkText]}>
+                    {getDisplayPortionDescription()}
+                  </Text>
+                </View>
+
+                {/* Поле веса */}
+                <View style={styles.weightContainer}>
+                  <Text style={[styles.weightLabel, isDark && styles.darkText]}>
+                    {t('nutrition.estimatedWeight')}:
+                  </Text>
+                  {isEditingProduct ? (
+                    <View style={styles.weightInputContainer}>
+                      <TextInput
+                        style={[styles.weightInput, isDark && styles.darkInput]}
+                        value={editedProductData.weight}
+                        onChangeText={handleWeightChange}
+                        keyboardType="numeric"
+                        placeholder="100"
+                        placeholderTextColor={isDark ? '#666' : '#999'}
+                      />
+                      <Text style={[styles.weightUnit, isDark && styles.darkText]}>{t('nutrition.gram')}</Text>
+                    </View>
+                  ) : (
+                    <Text style={[styles.weightValue, isDark && styles.darkText]}>
+                      {getDisplayWeight()} {t('nutrition.gram')}
+                    </Text>
+                  )}
+                </View>
+
+                {/* Заголовок пищевой ценности */}
+                <View style={styles.cardHeader}>
+                  <Ionicons name="nutrition-outline" size={22} color={isDark ? '#FFFFFF' : '#FF9500'} />
+                  <Text style={[styles.sectionTitle, isDark && styles.darkText, styles.sectionTitleWithIcon]}>
+                    {t('nutrition.nutritionalValue')}
+                  </Text>
+                </View>
+
+                {/* Нутриенты с возможностью редактирования */}
+                {/* Калории */}
+                <View style={[styles.nutritionItem, isDark && styles.darkNutritionItem]}>
+                  <Text style={[styles.nutritionLabel, isDark && styles.darkText]}>{t('nutrition.calories')}:</Text>
+                  {isEditingProduct ? (
+                    <TextInput
+                      style={[styles.nutritionInput, isDark && styles.darkInput]}
+                      value={editedProductData.calories}
+                      onChangeText={(text) => setEditedProductData(prev => ({ ...prev, calories: text }))}
+                      keyboardType="numeric"
+                      placeholder="0"
+                      placeholderTextColor={isDark ? '#666' : '#999'}
+                    />
+                  ) : (
+                    <Text style={[styles.nutritionValue, isDark && styles.darkText]}>
+                      {getDisplayCalories()} {t('nutrition.kcal')}
+                    </Text>
+                  )}
+                </View>
+
+                {/* Белки */}
+                <View style={[styles.nutritionItem, isDark && styles.darkNutritionItem]}>
+                  <Text style={[styles.nutritionLabel, isDark && styles.darkText]}>{t('nutrition.protein')}:</Text>
+                  {isEditingProduct ? (
+                    <TextInput
+                      style={[styles.nutritionInput, isDark && styles.darkInput]}
+                      value={editedProductData.protein}
+                      onChangeText={(text) => setEditedProductData(prev => ({ ...prev, protein: text }))}
+                      keyboardType="numeric"
+                      placeholder="0"
+                      placeholderTextColor={isDark ? '#666' : '#999'}
+                    />
+                  ) : (
+                    <Text style={[styles.nutritionValue, isDark && styles.darkText]}>
+                      {getDisplayProtein()} {t('nutrition.gram')}
+                    </Text>
+                  )}
+                </View>
+
+                {/* Жиры */}
+                <View style={[styles.nutritionItem, isDark && styles.darkNutritionItem]}>
+                  <Text style={[styles.nutritionLabel, isDark && styles.darkText]}>{t('nutrition.fats')}:</Text>
+                  {isEditingProduct ? (
+                    <TextInput
+                      style={[styles.nutritionInput, isDark && styles.darkInput]}
+                      value={editedProductData.fat}
+                      onChangeText={(text) => setEditedProductData(prev => ({ ...prev, fat: text }))}
+                      keyboardType="numeric"
+                      placeholder="0"
+                      placeholderTextColor={isDark ? '#666' : '#999'}
+                    />
+                  ) : (
+                    <Text style={[styles.nutritionValue, isDark && styles.darkText]}>
+                      {getDisplayFat()} {t('nutrition.gram')}
+                    </Text>
+                  )}
+                </View>
+
+                {/* Углеводы */}
+                <View style={[styles.nutritionItem, isDark && styles.darkNutritionItem]}>
+                  <Text style={[styles.nutritionLabel, isDark && styles.darkText]}>{t('nutrition.carbs')}:</Text>
+                  {isEditingProduct ? (
+                    <TextInput
+                      style={[styles.nutritionInput, isDark && styles.darkInput]}
+                      value={editedProductData.carbs}
+                      onChangeText={(text) => setEditedProductData(prev => ({ ...prev, carbs: text }))}
+                      keyboardType="numeric"
+                      placeholder="0"
+                      placeholderTextColor={isDark ? '#666' : '#999'}
+                    />
+                  ) : (
+                    <Text style={[styles.nutritionValue, isDark && styles.darkText]}>
+                      {getDisplayCarbs()} {t('nutrition.gram')}
+                    </Text>
+                  )}
+                </View>
+
+                {/* Сахара */}
+                {(nutrients.sugar > 0 || isEditingProduct) && (
+                  <View style={[styles.nutritionItem, isDark && styles.darkNutritionItem]}>
+                    <Text style={[styles.nutritionLabel, isDark && styles.darkText]}>{t('nutrition.sugars')}:</Text>
+                    {isEditingProduct ? (
+                      <TextInput
+                        style={[styles.nutritionInput, isDark && styles.darkInput]}
+                        value={editedProductData.sugars}
+                        onChangeText={(text) => setEditedProductData(prev => ({ ...prev, sugars: text }))}
+                        keyboardType="numeric"
+                        placeholder="0"
+                        placeholderTextColor={isDark ? '#666' : '#999'}
+                      />
+                    ) : (
+                      <Text style={[styles.nutritionValue, isDark && styles.darkText]}>
+                        {getDisplaySugar()} {t('nutrition.gram')}
+                      </Text>
+                    )}
+                  </View>
+                )}
+
+                {/* Клетчатка */}
+                {(nutrients.fiber > 0 || isEditingProduct) && (
+                  <View style={[styles.nutritionItem, isDark && styles.darkNutritionItem]}>
+                    <Text style={[styles.nutritionLabel, isDark && styles.darkText]}>{t('nutrition.fiber')}:</Text>
+                    {isEditingProduct ? (
+                      <TextInput
+                        style={[styles.nutritionInput, isDark && styles.darkInput]}
+                        value={editedProductData.fiber}
+                        onChangeText={(text) => setEditedProductData(prev => ({ ...prev, fiber: text }))}
+                        keyboardType="numeric"
+                        placeholder="0"
+                        placeholderTextColor={isDark ? '#666' : '#999'}
+                      />
+                    ) : (
+                      <Text style={[styles.nutritionValue, isDark && styles.darkText]}>
+                        {getDisplayFiber()} {t('nutrition.gram')}
+                      </Text>
+                    )}
+                  </View>
+                )}
+
+                {/* Насыщенные жиры */}
+                {(analysisData?.nutritionInfo?.saturatedFat > 0 || isEditingProduct) && (
+                  <View style={[styles.nutritionItem, isDark && styles.darkNutritionItem]}>
+                    <Text style={[styles.nutritionLabel, isDark && styles.darkText]}>{t('nutrition.saturatedFat')}:</Text>
+                    {isEditingProduct ? (
+                      <TextInput
+                        style={[styles.nutritionInput, isDark && styles.darkInput]}
+                        value={editedProductData.saturatedFat}
+                        onChangeText={(text) => setEditedProductData(prev => ({ ...prev, saturatedFat: text }))}
+                        keyboardType="numeric"
+                        placeholder="0"
+                        placeholderTextColor={isDark ? '#666' : '#999'}
+                      />
+                    ) : (
+                      <Text style={[styles.nutritionValue, isDark && styles.darkText]}>
+                        {getDisplaySaturatedFat()} {t('nutrition.gram')}
+                      </Text>
+                    )}
+                  </View>
+                )}
+
+                {/* Дисклеймер о стандартной порции */}
+                <Text style={[styles.disclaimerText, isDark && styles.darkTextSecondary]}>
+                  {t('nutrition.disclaimerPortionStandard')}
                 </Text>
               </View>
               
               {/* Компонент предупреждения об аллергенах на основе данных из API */}
-              {((parsedAnalysisData?.userContext?.allergenWarnings && parsedAnalysisData.userContext.allergenWarnings.length > 0) || 
-                (parsedAnalysisData?.allergenAnalysis?.userAllergenWarnings && parsedAnalysisData.allergenAnalysis.userAllergenWarnings.length > 0)) ? (
+              {((analysisData?.userContext?.allergenWarnings && analysisData.userContext.allergenWarnings.length > 0) || 
+                (analysisData?.allergenAnalysis?.userAllergenWarnings && analysisData.allergenAnalysis.userAllergenWarnings.length > 0)) ? (
                 <View style={[styles.allergenWarningContainer, isDark && styles.darkAllergenWarningContainer, {marginTop: 18}]}>
                   <View style={styles.allergenWarningHeader}>
                     <Ionicons name="alert-circle" size={24} color="#FFFFFF" />
                     <Text style={styles.allergenWarningTitle}>{t('allergens.warningTitle')}</Text>
                   </View>
                   {/* Проверяем оба возможных места хранения предупреждений */}
-                  {parsedAnalysisData?.userContext?.allergenWarnings && parsedAnalysisData.userContext.allergenWarnings.map((warning: {message?: string, allergenName?: string, allergenId?: string}, index: number) => (
+                  {analysisData?.userContext?.allergenWarnings && analysisData.userContext.allergenWarnings.map((warning: {message?: string, allergenName?: string, allergenId?: string}, index: number) => (
                     <Text key={`ctx-${index}`} style={styles.allergenWarningText}>
                       • {warning.message || `${t('allergens.contains')} ${warning.allergenName || warning.allergenId}`}
                     </Text>
                   ))}
-                  {parsedAnalysisData?.allergenAnalysis?.userAllergenWarnings && parsedAnalysisData.allergenAnalysis.userAllergenWarnings.map((warning: {message?: string, allergenName?: string, allergenId?: string}, index: number) => (
+                  {analysisData?.allergenAnalysis?.userAllergenWarnings && analysisData.allergenAnalysis.userAllergenWarnings.map((warning: {message?: string, allergenName?: string, allergenId?: string}, index: number) => (
                     <Text key={`analysis-${index}`} style={styles.allergenWarningText}>
                       • {warning.message || `${t('allergens.contains')} ${warning.allergenName || warning.allergenId}`}
                     </Text>
@@ -447,70 +1488,6 @@ export default function ProductDetailScreen() {
                 </View>
               )}
 
-              <View style={[styles.nutrientCard, isDark && styles.darkCard,{marginTop: 18}]}>
-                <View style={styles.cardHeader}>
-                  <Ionicons name="nutrition-outline" size={22} color={isDark ? '#FFFFFF' : '#FF9500'} />
-                  <Text style={[styles.sectionTitle, isDark && styles.darkText, styles.sectionTitleWithIcon]}>
-                    {t('nutrition.nutritionalValue')}
-                  </Text>
-                </View>
-                
-                <View style={[styles.nutritionItem, isDark && styles.darkNutritionItem]}>
-                <Text style={[styles.nutritionLabel, isDark && styles.darkText]}>{t('nutrition.calories')}:</Text>
-                <Text style={[styles.nutritionValue, isDark && styles.darkText]}>
-                  {displayCalories} {t('nutrition.kcal')}
-                </Text>
-              </View>
-              <View style={styles.nutritionItem}>
-                <Text style={[styles.nutritionLabel, isDark && styles.darkText]}>{t('nutrition.protein')}:</Text>
-                <Text style={[styles.nutritionValue, isDark && styles.darkText]}>
-                  {displayProtein} {t('nutrition.gram')}
-                </Text>
-              </View>
-              <View style={styles.nutritionItem}>
-                <Text style={[styles.nutritionLabel, isDark && styles.darkText]}>{t('nutrition.fats')}:</Text>
-                <Text style={[styles.nutritionValue, isDark && styles.darkText]}>
-                  {displayFat} {t('nutrition.gram')}
-                </Text>
-              </View>
-              <View style={styles.nutritionItem}>
-                <Text style={[styles.nutritionLabel, isDark && styles.darkText]}>{t('nutrition.carbs')}:</Text>
-                <Text style={[styles.nutritionValue, isDark && styles.darkText]}>
-                  {displayCarbs} {t('nutrition.gram')}
-                </Text>
-              </View>
-              {/* Все нутриенты отображаем в унифицированном виде */}
-              {nutrients.sugar > 0 && (
-                <View style={[styles.nutritionItem, isDark && styles.darkNutritionItem]}>
-                  <Text style={[styles.nutritionLabel, isDark && styles.darkText]}>{t('nutrition.sugars')}:</Text>
-                  <Text style={[styles.nutritionValue, isDark && styles.darkText]}>
-                    {Math.round(nutrients.sugar)} {t('nutrition.gram')}
-                  </Text>
-                </View>
-              )}
-              {nutrients.fiber > 0 && (
-                <View style={[styles.nutritionItem, isDark && styles.darkNutritionItem]}>
-                  <Text style={[styles.nutritionLabel, isDark && styles.darkText]}>{t('nutrition.fiber')}:</Text>
-                  <Text style={[styles.nutritionValue, isDark && styles.darkText]}>
-                    {Math.round(nutrients.fiber)} {t('nutrition.gram')}
-                  </Text>
-                </View>
-              )}
-              {parsedAnalysisData?.nutritionInfo?.saturatedFat > 0 && (
-                <View style={[styles.nutritionItem, isDark && styles.darkNutritionItem]}>
-                  <Text style={[styles.nutritionLabel, isDark && styles.darkText]}>{t('nutrition.saturatedFat')}:</Text>
-                  <Text style={[styles.nutritionValue, isDark && styles.darkText]}>
-                    {Math.round(parsedAnalysisData.nutritionInfo.saturatedFat)} {t('nutrition.gram')}
-                  </Text>
-                </View>
-              )}
-              
-              {/* Дисклеймер о стандартной порции */}
-              <Text style={[styles.disclaimerText, isDark && styles.darkTextSecondary]}>
-                {t('nutrition.disclaimerPortionStandard')}
-              </Text>
-              </View>
-              
               {/* Ингредиенты в современном дизайне */}
               {nutrients.ingredients && (
                   <View style={[styles.nutrientCard, isDark && styles.darkCard,{marginTop: 18}]}>
@@ -527,8 +1504,8 @@ export default function ProductDetailScreen() {
               )}
               
               {/* Компонент с общей информацией об аллергенах */}
-              {parsedAnalysisData?.allergenAnalysis?.detectedAllergens && 
-               parsedAnalysisData.allergenAnalysis.detectedAllergens.length > 0 && (
+              {analysisData?.allergenAnalysis?.detectedAllergens && 
+               analysisData.allergenAnalysis.detectedAllergens.length > 0 && (
                 <View style={[styles.generalAllergenInfoContainer, isDark && styles.darkGeneralAllergenInfoContainer, {marginTop: 18}]}>
                   <View style={styles.generalAllergenInfoHeader}>
                     <Ionicons name="information-circle" size={24} color="#FFFFFF" />
@@ -538,28 +1515,34 @@ export default function ProductDetailScreen() {
                     {t('allergens.generalInfoMessage') || 'This product contains the following allergens:'}
                   </Text>
                   <View style={styles.allergensListContainer}>
-                    {parsedAnalysisData.allergenAnalysis.detectedAllergens
+                    {analysisData.allergenAnalysis.detectedAllergens
                       .filter((allergen: any) => 
                         // Фильтруем, показываем только аллергены, которые не вызвали предупреждения для пользователя
-                        !parsedAnalysisData?.userContext?.allergenWarnings?.some(
+                        !analysisData?.userContext?.allergenWarnings?.some(
                           (warning: any) => warning.allergenId === allergen.allergenId
                         )
                       )
-                      .map((allergen: any, index: number) => (
-                        <Text key={index} style={styles.generalAllergenInfoText}>
-                          • {allergen.name} {allergen.sourceIngredient ? 
-                            `(${t('allergens.foundIn') || 'found in'} ${allergen.sourceIngredient})` : ''}
-                        </Text>
-                      ))}
+                      .map((allergen: any, index: number) => {
+                        const allergenName = typeof allergen.name === 'string' ? allergen.name : 
+                          (allergen.name?.name || allergen.name?.title || 'Unknown allergen');
+                        const sourceIngredient = typeof allergen.sourceIngredient === 'string' ? allergen.sourceIngredient :
+                          (allergen.sourceIngredient?.name || allergen.sourceIngredient?.title || '');
+                        return (
+                          <Text key={index} style={styles.generalAllergenInfoText}>
+                            • {allergenName} {sourceIngredient ? 
+                              `(${t('allergens.foundIn') || 'found in'} ${sourceIngredient})` : ''}
+                          </Text>
+                        );
+                      })}
                   </View>
                 </View>
               )}
               
               {/* особенности продукта - Компонент с информацией о возможных проблемах со здоровьем */}
-              {((parsedAnalysisData?.analysis?.healthConcerns && 
-                parsedAnalysisData.analysis.healthConcerns.length > 0) || 
-                (parsedAnalysisData?.analysis?.healthBenefits && 
-                parsedAnalysisData.analysis.healthBenefits.length > 0)) && (
+              {((analysisData?.analysis?.healthConcerns && 
+                analysisData.analysis.healthConcerns.length > 0) || 
+                (analysisData?.analysis?.healthBenefits && 
+                analysisData.analysis.healthBenefits.length > 0)) && (
                 <View style={[styles.nutrientCard, isDark && styles.darkCard, {marginTop: 18}]}>
                   <View style={styles.cardHeader}>
                     <Ionicons name="information-circle-outline" size={22} color={isDark ? '#FFFFFF' : '#333333'} />
@@ -568,25 +1551,25 @@ export default function ProductDetailScreen() {
                     </Text>
                   </View>
                   <View style={styles.allergensListContainer}>
-                    {parsedAnalysisData?.analysis?.healthConcerns?.map((concern: string, index: number) => {
+                    {analysisData?.analysis?.healthConcerns?.map((concern: any, index: number) => {
                       console.log(`Health Concern ${index}:`, concern);
                       return (
                         <View key={`concern-${index}`} style={styles.featureItem}>
                           <Ionicons name="alert-outline" size={16} color={isDark ? '#FF6B6B' : '#FF4040'} style={{marginRight: 6}} />
                           <Text style={[styles.ingredientsText, isDark && styles.darkTextSecondary]}>
-                            {concern}
+                            {typeof concern === 'string' ? concern : concern?.name || concern?.description || 'Unknown concern'}
                           </Text>
                         </View>
                       );
                     })}
                     
-                    {parsedAnalysisData?.analysis?.healthBenefits?.map((benefit: string, index: number) => {
+                    {analysisData?.analysis?.healthBenefits?.map((benefit: any, index: number) => {
                       console.log(`Health Benefit ${index}:`, benefit);
                       return (
                         <View key={`benefit-${index}`} style={styles.featureItem}>
                           <Ionicons name="checkmark-circle-outline" size={16} color={isDark ? '#06D6A0' : '#00A36C'} style={{marginRight: 6}} />
                           <Text style={[styles.ingredientsText, isDark && styles.darkTextSecondary]}>
-                            {benefit}
+                            {typeof benefit === 'string' ? benefit : benefit?.name || benefit?.description || 'Unknown benefit'}
                           </Text>
                         </View>
                       );
@@ -606,9 +1589,11 @@ export default function ProductDetailScreen() {
                           </Text>
                       </View>
                       <View style={styles.vitaminContainer}>
-                          {nutrients.vitamins.map((vitamin: string, index: number) => (
+                          {nutrients.vitamins.map((vitamin: any, index: number) => (
                               <View key={index} style={styles.vitaminBadge}>
-                                  <Text style={[styles.vitaminBadgeText, isDark && styles.darkVitaminText]}>{vitamin}</Text>
+                                  <Text style={[styles.vitaminBadgeText, isDark && styles.darkVitaminText]}>
+                                    {typeof vitamin === 'string' ? vitamin : vitamin?.name || vitamin?.title || 'Unknown vitamin'}
+                                  </Text>
                               </View>
                           ))}
                       </View>
@@ -622,47 +1607,50 @@ export default function ProductDetailScreen() {
                           <Text style={[styles.sectionTitle, isDark && styles.darkText, styles.sectionTitleWithIcon]}>{t('allergens.title')}</Text>
                       </View>
                       <View style={styles.allergensListContainer}>
-                        {nutrients.allergens.map((allergen: string, index: number) => (
-                          <View 
-                            key={index} 
-                            style={[
-                              styles.allergenItem, 
-                              USER_ALLERGENS.includes(allergen) && styles.dangerAllergen
-                            ]}
-                          >     
-                            <Ionicons 
-                              name={USER_ALLERGENS.includes(allergen) ? "warning-outline" : "information-circle-outline"} 
-                              size={14} 
-                              color={USER_ALLERGENS.includes(allergen) ? "#F44336" : "#FF9800"} 
-                              style={{marginRight: 4}} 
-                            />
-                            <Text 
+                        {nutrients.allergens.map((allergen: any, index: number) => {
+                          const allergenName = typeof allergen === 'string' ? allergen : allergen?.name || allergen?.title || 'Unknown allergen';
+                          return (
+                            <View 
+                              key={index} 
                               style={[
-                                styles.allergenName, 
-                                USER_ALLERGENS.includes(allergen) && styles.dangerAllergenText
+                                styles.allergenItem, 
+                                USER_ALLERGENS.includes(allergenName) && styles.dangerAllergen
                               ]}
-                            >
-                              {allergen}
-                            </Text>
-                          </View>
-                        ))}
+                            >     
+                              <Ionicons 
+                                name={USER_ALLERGENS.includes(allergenName) ? "warning-outline" : "information-circle-outline"} 
+                                size={14} 
+                                color={USER_ALLERGENS.includes(allergenName) ? "#F44336" : "#FF9800"} 
+                                style={{marginRight: 4}} 
+                              />
+                              <Text 
+                                style={[
+                                  styles.allergenName, 
+                                  USER_ALLERGENS.includes(allergenName) && styles.dangerAllergenText
+                                ]}
+                              >
+                                {allergenName}
+                              </Text>
+                            </View>
+                          );
+                        })}
                       </View>
                     </View>
               )}
 
               {/* Восстановленная Оценка и Рекомендации */}
-              {parsedAnalysisData?.analysis?.overallHealthScore && (
+              {analysisData?.analysis?.overallHealthScore && (
                   <View style={styles.scoreContainer}>
                       <Text style={[styles.sectionTitle, isDark && styles.darkText]}>
                           {t('nutrition.overallHealthScore')}:{' '}
                           <Text style={styles.calorieValue}> 
-                              {parsedAnalysisData.analysis.overallHealthScore}/100
+                              {analysisData.analysis.overallHealthScore}/100
                           </Text>
                       </Text>
                   </View>
               )}
               
-              {parsedAnalysisData.recommendedIntake && (
+              {analysisData.recommendedIntake && (
                 <View style={[styles.nutrientCard, isDark && styles.darkCard, {marginTop: 18}]}>
                   <View style={styles.cardHeader}>
                     <Ionicons name="information-circle-outline" size={22} color={isDark ? '#FFFFFF' : '#333333'} />
@@ -671,11 +1659,11 @@ export default function ProductDetailScreen() {
                     </Text>
                   </View>
                   <Text style={[styles.ingredientsText, isDark && styles.darkTextSecondary]}>
-                    {parsedAnalysisData.recommendedIntake.description}
+                    {analysisData.recommendedIntake.description}
                   </Text>
-                  {parsedAnalysisData.recommendedIntake.maxFrequency && (
+                  {analysisData.recommendedIntake.maxFrequency && (
                     <Text style={[styles.ingredientsText, isDark && styles.darkTextSecondary, {marginTop: 8}]}>
-                      <Text style={{fontWeight: '500'}}>{t('nutrition.frequency')}:</Text> {parsedAnalysisData.recommendedIntake.maxFrequency}
+                      <Text style={{fontWeight: '500'}}>{t('nutrition.frequency')}:</Text> {analysisData.recommendedIntake.maxFrequency}
                     </Text>
                   )}
                 </View>
@@ -705,7 +1693,7 @@ export default function ProductDetailScreen() {
                 numberOfLines={2}
                 ellipsizeMode="tail"
               >
-                {productName}
+                {typeof productName === 'string' ? productName : (productName as any)?.name || (productName as any)?.title || 'Unknown product'}
               </Text>
               
               <View style={styles.portionContainer}>
@@ -714,20 +1702,20 @@ export default function ProductDetailScreen() {
               <View style={styles.nutrientCard}>
                 <View style={styles.calorieSection}>
                   <Text style={styles.calorieTitle}>{t('product.calories')}</Text>
-                  <Text style={styles.calorieValue}>{displayCalories}</Text>
+                  <Text style={styles.calorieValue}>{getDisplayCalories()}</Text>
                 </View>
                 <View style={styles.divider} />
                 <View style={styles.nutritionItem}>
                   <Text style={styles.nutritionLabel}>{t('product.protein')}</Text>
-                  <Text style={styles.nutritionValue}>{displayProtein}</Text>
+                  <Text style={styles.nutritionValue}>{getDisplayProtein()}</Text>
                 </View>
                 <View style={styles.nutritionItem}>
                   <Text style={styles.nutritionLabel}>{t('product.fat')}</Text>
-                  <Text style={styles.nutritionValue}>{displayFat}</Text>
+                  <Text style={styles.nutritionValue}>{getDisplayFat()}</Text>
                 </View>
                 <View style={styles.nutritionItem}>
                   <Text style={styles.nutritionLabel}>{t('product.carbs')}</Text>
-                  <Text style={styles.nutritionValue}>{displayCarbs}</Text>
+                  <Text style={styles.nutritionValue}>{getDisplayCarbs()}</Text>
                 </View>
               </View>
               {isAllergic && (
@@ -739,35 +1727,68 @@ export default function ProductDetailScreen() {
                   <Text style={styles.allergenWarningText}>
                     {t('allergens.contains')}: {nutrients.allergens.filter((a: string) => USER_ALLERGENS.includes(a)).join(', ')}
                   </Text>
-                  <Text style={styles.allergenWarningNote}>
-                    {t('allergens.notSafeMessage')}
-                  </Text>
                 </View>
               )}
               
-              <View style={styles.infoCard}>
-                <Text style={styles.ingredientsText}>{t('product.ingredients')}</Text>
-                <View style={styles.vitaminsList}>
-                  {nutrients.vitamins && nutrients.vitamins.map((vitamin: string, index: number) => (
-                    <View key={index} style={styles.vitaminItem}>
-                      <Ionicons name="checkmark-circle-outline" size={16} color="#4CAF50" />
-                      <Text style={[styles.vitaminName, isDark && styles.darkText]}>{vitamin}</Text>
+              {/* БЕЗОПАСНЫЙ FALLBACK РЕНДЕР - только если нет современного дизайна */}
+              {!analysisData && (
+                <View style={styles.infoCard}>
+                  <Text style={styles.ingredientsText}>{t('product.ingredients') || 'Ingredients'}</Text>
+                  
+                  {/* Безопасный рендер витаминов */}
+                  {nutrients.vitamins && Array.isArray(nutrients.vitamins) && nutrients.vitamins.length > 0 && (
+                    <View style={styles.vitaminsList}>
+                      {nutrients.vitamins.map((vitamin: any, index: number) => {
+                        // Двойная защита от объектов
+                        let vitaminText = 'Unknown vitamin';
+                        if (typeof vitamin === 'string') {
+                          vitaminText = vitamin;
+                        } else if (vitamin && typeof vitamin === 'object') {
+                          vitaminText = vitamin.name || vitamin.title || vitamin.value || 'Unknown vitamin';
+                        }
+                        
+                        return (
+                          <View key={`fallback-vitamin-${index}`} style={styles.vitaminItem}>
+                            <Ionicons name="checkmark-circle-outline" size={16} color="#4CAF50" />
+                            <Text style={[styles.vitaminName, isDark && styles.darkText]}>
+                              {String(vitaminText)}
+                            </Text>
+                          </View>
+                        );
+                      })}
                     </View>
-                  ))}
-                </View>
-                <View style={styles.allergensListContainer}>
-                  {nutrients.allergens && nutrients.allergens.map((allergen: string, index: number) => (
-                    <View key={index} style={styles.allergenItem}>
-                      <Ionicons 
-                        name={USER_ALLERGENS.includes(allergen) ? "alert-circle-outline" : "information-circle-outline"} 
-                        size={16} 
-                        color={USER_ALLERGENS.includes(allergen) ? "#FF6B6B" : "#999999"} 
-                      />
-                      <Text style={[styles.allergenName, isDark && styles.darkText]}>{allergen}</Text>
+                  )}
+                  
+                  {/* Безопасный рендер аллергенов */}
+                  {nutrients.allergens && Array.isArray(nutrients.allergens) && nutrients.allergens.length > 0 && (
+                    <View style={styles.allergensListContainer}>
+                      {nutrients.allergens.map((allergen: any, index: number) => {
+                        // Двойная защита от объектов
+                        let allergenText = 'Unknown allergen';
+                        if (typeof allergen === 'string') {
+                          allergenText = allergen;
+                        } else if (allergen && typeof allergen === 'object') {
+                          allergenText = allergen.name || allergen.title || allergen.value || 'Unknown allergen';
+                        }
+                        
+                        const allergenName = String(allergenText);
+                        return (
+                          <View key={`fallback-allergen-${index}`} style={styles.allergenItem}>
+                            <Ionicons 
+                              name={USER_ALLERGENS.includes(allergenName) ? "alert-circle-outline" : "information-circle-outline"} 
+                              size={16} 
+                              color={USER_ALLERGENS.includes(allergenName) ? "#FF6B6B" : "#999999"} 
+                            />
+                            <Text style={[styles.allergenName, isDark && styles.darkText]}>
+                              {allergenName}
+                            </Text>
+                          </View>
+                        );
+                      })}
                     </View>
-                  ))}
+                  )}
                 </View>
-              </View>
+              )}
               {(scanDate || date) && (
                 <View style={[styles.scanInfoContainerBottom, isDark && styles.darkScanInfoContainer]}>
                   <Text style={[styles.scanDateText, isDark && styles.darkText]}>
@@ -811,7 +1832,7 @@ export default function ProductDetailScreen() {
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         onConfirm={handlePortionConfirm}
-        productName={productName as string}
+        productName={typeof productName === 'string' ? productName : (productName as any)?.name || 'Product'}
       />
      {/* Функция для добавления продукта в дневную статистику */}
     </>
@@ -1414,55 +2435,101 @@ const styles = StyleSheet.create({
     borderColor: '#0A84FF',
   },
   confirmButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 10,
-    padding: 14,
-    alignItems: 'center',
-    width: '100%',
-    marginTop: 4,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    height: 48,
-    justifyContent: 'center',
+    backgroundColor: '#34C759', // Зеленая кнопка подтверждения
   },
-  darkConfirmButton: {
-    backgroundColor: '#0A84FF',
-  },
-  confirmButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+  aiButton: {
+    backgroundColor: '#FF9500', // Оранжевая AI кнопка  
   },
   cancelButton: {
-    padding: 14,
-    borderRadius: 10,
+    backgroundColor: '#FF3B30', // Красная кнопка отмены
+  },
+  productNameSection: {
+    marginBottom: 12,
+    paddingTop: 14, // Отступ сверху чтобы не накладывалось на кнопки
+  },
+  nameInput: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333333',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+  },
+  darkInput: {
+    color: '#FFFFFF',
+    borderBottomColor: '#444444',
+    backgroundColor: 'transparent',
+  },
+  weightContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
-    borderWidth: 1,
-    borderColor: '#007AFF',
-    width: '100%',
-    height: 48,
-    justifyContent: 'center',
-    backgroundColor: 'transparent',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+    marginTop: 10,
+    paddingVertical: 8,
   },
-  darkCancelButton: {
-    borderWidth: 1,
-    borderColor: '#0A84FF',
-    backgroundColor: 'transparent',
-  },
-  cancelButtonText: {
-    color: '#007AFF',
+  weightLabel: {
     fontSize: 16,
     fontWeight: '500',
+    color: '#333333',
   },
-  darkCancelButtonText: {
-    color: '#0A84FF',
+  weightInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  weightInput: {
+    fontSize: 16,
+    color: '#333333',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    minWidth: 60,
+    textAlign: 'center',
+  },
+  weightUnit: {
+    fontSize: 16,
+    color: '#333333',
+    marginLeft: 4,
+  },
+  weightValue: {
+    fontSize: 16,
+    color: '#333333',
+    fontWeight: '500',
+  },
+  nutritionInput: {
+    fontSize: 16,
+    color: '#333333',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    minWidth: 60,
+    textAlign: 'right',
+  },
+  
+  // Стили для объединенного блока редактирования
+  unifiedProductCardEditing: {
+    borderWidth: 2, // Толстая рамка как на главном экране
+    borderColor: '#007AFF',
+  },
+  editControlButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end', // Кнопки справа
+    alignItems: 'center',
+    marginBottom: 8,
+    position: 'absolute',
+    top: 12,
+    right: 12,
+  },
+  editButton: {
+    padding: 4,
+    borderRadius: 8,
+    backgroundColor: 'rgba(200, 200, 200, 0.2)',
+    marginLeft: 8,
+  },
+  darkEditButton: {
+    backgroundColor: 'rgba(100, 100, 100, 0.3)',
   },
 });

@@ -1,0 +1,1 @@
+{"nodes":[{"parameters":{"httpMethod":"POST","path":"get-recommendations","responseMode":"responseNode","options":{}},"id":"ab0ab307-3245-481e-832a-65e663b9a1cc","name":"Webhook - Get Recommendations","type":"n8n-nodes-base.webhook","typeVersion":1,"position":[-940,340],"webhookId":"get-recommendations"}]}

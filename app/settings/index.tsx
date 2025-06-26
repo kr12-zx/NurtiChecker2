@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -83,6 +84,54 @@ export default function SettingsScreen() {
     } else {
       Alert.alert('Ошибка', 'Push токен не найден');
     }
+  };
+
+  // Функция полной очистки всех данных
+  const handleClearAllData = async () => {
+    Alert.alert(
+      t('settings.clearDataConfirmTitle'),
+      t('settings.clearDataConfirmMessage'),
+      [
+        {
+          text: t('settings.clearDataCancel'),
+          style: 'cancel',
+        },
+        {
+          text: t('settings.clearDataConfirm'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              console.log('🧹 Начинаем полную очистку всех данных...');
+              
+              // Очищаем все данные AsyncStorage
+              await AsyncStorage.clear();
+              
+              console.log('✅ AsyncStorage очищен, webhook будет отправлен при открытии Welcome экрана');
+              
+              Alert.alert(
+                t('settings.success'),
+                t('settings.clearDataSuccess'),
+                [
+                  {
+                    text: 'OK',
+                    onPress: () => {
+                      // Возвращаемся на главный экран после очистки
+                      router.replace('/(tabs)/main01');
+                    },
+                  },
+                ]
+              );
+            } catch (error) {
+              console.error('❌ Ошибка при удалении данных:', error);
+              Alert.alert(
+                t('settings.error'),
+                t('settings.clearDataError')
+              );
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -206,19 +255,28 @@ export default function SettingsScreen() {
         <View style={styles.settingsSection}>
           <Text style={[styles.sectionTitle, isDark && styles.darkText]}>User</Text>
           
-          <View style={[styles.settingItem, isDark && styles.darkCard]}>
+          <View style={[styles.settingItem, isDark && styles.darkCard, { backgroundColor: '#FF0000' }]}>
             <View style={styles.settingTextContainer}>
-              <Text style={[styles.settingTitle, isDark && styles.darkText]}>
-                User ID
+              <Text style={[styles.settingTitle, isDark && styles.darkText, { color: '#FFFFFF', fontSize: 20, fontWeight: 'bold' }]}>
+                🔥 USER ID ТЕСТ 🔥
               </Text>
-              <Text style={[styles.settingDescription, isDark && styles.darkTextSecondary]}>
+              <Text style={[styles.settingDescription, isDark && styles.darkTextSecondary, { color: '#FFFFFF' }]}>
                 {userId || 'Loading...'}
               </Text>
             </View>
             <TouchableOpacity onPress={handleCopyUserId} style={styles.copyButton}>
-              <Ionicons name="copy-outline" size={20} color={isDark ? "#777" : "#999"} />
+              <Ionicons name="copy-outline" size={20} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
+
+          <TouchableOpacity 
+            style={[styles.settingItem, isDark && styles.darkCard]}
+            onPress={() => Alert.alert('ТЕСТ', 'РАБОТАЕТ!')}
+          >
+            <Text style={[styles.settingTitle, isDark && styles.darkText, { color: '#FF3B30', fontSize: 18, fontWeight: 'bold' }]}>
+              🚨 ТЕСТ КНОПКА ОЧИСТКИ 🚨
+            </Text>
+          </TouchableOpacity>
         </View>
         
         <View style={styles.settingsSection}>
@@ -261,6 +319,31 @@ export default function SettingsScreen() {
               </Text>
             </View>
             <Ionicons name="information-circle-outline" size={20} color={isDark ? "#777" : "#999"} />
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            onPress={handleClearAllData}
+            style={[styles.settingItem, isDark && styles.darkCard]}
+          >
+            <View style={{
+              width: 40,
+              height: 40,
+              borderRadius: 10,
+              backgroundColor: 'rgba(255, 59, 48, 0.15)',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: 12
+            }}>
+              <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+            </View>
+            <View style={styles.settingTextContainer}>
+              <Text style={[styles.settingTitle, isDark && styles.darkText, { color: '#FF3B30' }]}>
+                Clear All Data
+              </Text>
+              <Text style={[styles.settingDescription, isDark && styles.darkTextSecondary]}>
+                Delete all progress, products, and settings
+              </Text>
+            </View>
           </TouchableOpacity>
         </View>
 

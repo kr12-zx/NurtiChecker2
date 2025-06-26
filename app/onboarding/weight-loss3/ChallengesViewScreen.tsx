@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from '../../../i18n/i18n';
 import ButtonFooter from './components/ButtonFooter';
-import { containers, options, palette, typography } from './unifiedStyles';
+import { useContainerStyles, useOptionsStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface ChallengesViewScreenProps {
   onContinue: () => void;
@@ -29,8 +29,11 @@ const ChallengesViewScreen: React.FC<ChallengesViewScreenProps> = ({
     setLocalChallengesView(challengesView);
   }, [challengesView]);
   
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  // Получаем динамические стили
+  const palette = usePalette();
+  const containers = useContainerStyles();
+  const options = useOptionsStyles();
+  const typography = useTypographyStyles();
   
   // Функция обработки выбора отношения к трудностям
   const handleChallengesViewSelect = (view: string) => {
@@ -97,7 +100,7 @@ const ChallengesViewScreen: React.FC<ChallengesViewScreenProps> = ({
                     style={[
                       options.optionContainer,
                       isSelected ? options.selectedOption : options.unselectedOption,
-                      styles.viewOption
+                      { marginBottom: 16, paddingVertical: 16 }
                     ]}
                     onPress={() => handleChallengesViewSelect(option.id)}
                     activeOpacity={0.5}
@@ -112,11 +115,11 @@ const ChallengesViewScreen: React.FC<ChallengesViewScreenProps> = ({
                       />
                     </View>
                     
-                    <View style={[options.optionTextContainer, styles.viewTextContainer]}>
+                    <View style={[options.optionTextContainer, { flex: 1, paddingRight: 12 }]}>
                       <Text style={typography.optionTitle}>
                         {option.label}
                       </Text>
-                      <Text style={styles.descriptionText}>
+                      <Text style={[typography.caption, { marginTop: 4, lineHeight: 16 }]}>
                         {option.description}
                       </Text>
                     </View>
@@ -146,22 +149,5 @@ const ChallengesViewScreen: React.FC<ChallengesViewScreenProps> = ({
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  viewOption: {
-    marginBottom: 12,
-    paddingVertical: 16,
-  },
-  viewTextContainer: {
-    flex: 1,
-    paddingRight: 12,
-  },
-  descriptionText: {
-    fontSize: 12,
-    color: palette.text.secondary,
-    marginTop: 4,
-    lineHeight: 16,
-  }
-});
 
 export default ChallengesViewScreen;

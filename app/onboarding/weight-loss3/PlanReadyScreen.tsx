@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import { useTranslation } from '../../../i18n/i18n';
 import { OnboardingLayout } from './unifiedLayouts';
-import { planReady } from './unifiedStyles';
+import { useCardStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface PlanReadyScreenProps {
   onContinue: () => void;
@@ -21,6 +21,71 @@ const PlanReadyScreen: React.FC<PlanReadyScreenProps> = ({
   userProfile
 }) => {
   const { t } = useTranslation();
+  
+  // Получаем динамические стили
+  const palette = usePalette();
+  const typography = useTypographyStyles();
+  const cards = useCardStyles();
+
+  // Дополнительные динамические стили для этого экрана
+  const successTitleStyle = {
+    fontSize: 20,
+    fontWeight: '700' as const,
+    color: palette.primary,
+    textAlign: 'center' as const,
+    marginBottom: 8,
+  };
+
+  const successSubtitleStyle = {
+    fontSize: 16,
+    fontWeight: '400' as const,
+    color: palette.text.secondary,
+    textAlign: 'center' as const,
+    lineHeight: 22,
+  };
+
+  const featuresTitleStyle = {
+    fontSize: 18,
+    fontWeight: '600' as const,
+    color: palette.text.primary,
+    marginBottom: 16,
+  };
+
+  const featureItemStyle = {
+    flexDirection: 'row' as const,
+    alignItems: 'flex-start' as const,
+    marginBottom: 12,
+    paddingHorizontal: 4,
+  };
+
+  const featureBulletStyle = {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: palette.primary,
+    marginRight: 12,
+    marginTop: 2,
+  };
+
+  const featureTextStyle = {
+    fontSize: 16,
+    fontWeight: '400' as const,
+    color: palette.text.primary,
+    flex: 1,
+    lineHeight: 22,
+  };
+
+  const featureHighlightStyle = {
+    fontWeight: '600' as const,
+    color: palette.primary,
+  };
+
+  const ctaTextStyle = {
+    fontSize: 16,
+    fontWeight: '500' as const,
+    color: palette.text.primary,
+    textAlign: 'center' as const,
+    lineHeight: 22,
+  };
 
   // Функции для получения читаемых значений
   const getWeightLossPlanText = () => {
@@ -81,54 +146,55 @@ const PlanReadyScreen: React.FC<PlanReadyScreenProps> = ({
       continueText={t('onboarding.planReady.startJourney')}
       headerIcon={<View />}
     >
-      <View style={planReady.successContainer}>
-        <Text style={planReady.successTitle}>
+      {/* Используем cards.section вместо inline стилей */}
+      <View style={[cards.section, { alignItems: 'center', marginTop: 20, marginBottom: 24 }]}>
+        <Text style={successTitleStyle}>
           {t('onboarding.planReady.congratulations')}
         </Text>
         
-        <Text style={planReady.successSubtitle}>
+        <Text style={successSubtitleStyle}>
           {t('onboarding.planReady.successMessage')}
         </Text>
       </View>
 
       {/* Список ключевых элементов */}
-      <View style={planReady.featuresList}>
-        <Text style={planReady.featuresTitle}>
+      <View style={{ marginBottom: 24 }}>
+        <Text style={featuresTitleStyle}>
           {t('onboarding.planReady.keyElements')}
         </Text>
         
-        <View style={planReady.featureItem}>
-          <Text style={planReady.featureBullet}>•</Text>
-          <Text style={planReady.featureText}>
-            {t('onboarding.planReady.dailyCalories')}: <Text style={planReady.featureHighlight}>{userProfile?.calorieTarget || 1800} {t('onboarding.planReady.kcal')}</Text>
+        <View style={featureItemStyle}>
+          <Text style={featureBulletStyle}>•</Text>
+          <Text style={featureTextStyle}>
+            {t('onboarding.planReady.dailyCalories')}: <Text style={featureHighlightStyle}>{userProfile?.calorieTarget || 1800} {t('onboarding.planReady.kcal')}</Text>
           </Text>
         </View>
 
-        <View style={planReady.featureItem}>
-          <Text style={planReady.featureBullet}>•</Text>
-          <Text style={planReady.featureText}>
-            {t('onboarding.planReady.weightLossPace')}: <Text style={planReady.featureHighlight}>{getWeightLossPlanText()}</Text>
+        <View style={featureItemStyle}>
+          <Text style={featureBulletStyle}>•</Text>
+          <Text style={featureTextStyle}>
+            {t('onboarding.planReady.weightLossPace')}: <Text style={featureHighlightStyle}>{getWeightLossPlanText()}</Text>
           </Text>
         </View>
 
-        <View style={planReady.featureItem}>
-          <Text style={planReady.featureBullet}>•</Text>
-          <Text style={planReady.featureText}>
-            {t('onboarding.planReady.nutritionStrategy')}: <Text style={planReady.featureHighlight}>{getDietPreferenceText()}</Text>
+        <View style={featureItemStyle}>
+          <Text style={featureBulletStyle}>•</Text>
+          <Text style={featureTextStyle}>
+            {t('onboarding.planReady.nutritionStrategy')}: <Text style={featureHighlightStyle}>{getDietPreferenceText()}</Text>
           </Text>
         </View>
 
-        <View style={planReady.featureItem}>
-          <Text style={planReady.featureBullet}>•</Text>
-          <Text style={planReady.featureText}>
-            {t('onboarding.planReady.physicalActivity')}: <Text style={planReady.featureHighlight}>{getExerciseText()}</Text>
+        <View style={featureItemStyle}>
+          <Text style={featureBulletStyle}>•</Text>
+          <Text style={featureTextStyle}>
+            {t('onboarding.planReady.physicalActivity')}: <Text style={featureHighlightStyle}>{getExerciseText()}</Text>
           </Text>
         </View>
       </View>
 
-      {/* CTA контейнер */}
-      <View style={planReady.ctaContainer}>
-        <Text style={planReady.ctaText}>
+      {/* CTA контейнер - используем cards.section */}
+      <View style={[cards.section, { marginTop: 16, padding: 16 }]}>
+        <Text style={ctaTextStyle}>
           {t('onboarding.planReady.readyToStart')}
         </Text>
       </View>

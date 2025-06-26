@@ -613,3 +613,353 @@ export default ExampleScreen;
 2. Постепенно переводить каждый экран на новую систему стилей
 3. Обновить общую логику управления темами
 4. Протестировать в обеих темах и на разных устройствах
+
+## Navigation Components
+
+### Header with Back Button Pattern
+
+Стандартный паттерн для экранов с кнопкой назад:
+
+#### Code Structure:
+```tsx
+import { Stack, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView, View, Text, TouchableOpacity, useColorScheme } from 'react-native';
+
+export default function ScreenWithBackButton() {
+  const isDark = useColorScheme() === 'dark';
+  const router = useRouter();
+
+  return (
+    <SafeAreaView style={[styles.container, isDark && styles.darkContainer]}>
+      <Stack.Screen options={{ headerShown: false }} />
+      
+      {/* Custom Header */}
+      <View style={[styles.header, isDark && styles.darkHeader]}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="arrow-back" size={24} color={isDark ? "#FFFFFF" : "#000000"} />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, isDark && styles.darkText]}>
+          {t('section.title')}
+        </Text>
+        <View style={{ width: 24 }} />
+      </View>
+
+      {/* Content */}
+      <View style={[styles.content, isDark && styles.darkContent]}>
+        {/* Your content here */}
+      </View>
+    </SafeAreaView>
+  );
+}
+```
+
+#### Required Styles:
+```tsx
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F2F2F7',
+  },
+  darkContainer: {
+    backgroundColor: '#000000',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+  },
+  darkHeader: {
+    borderBottomColor: '#3A3A3C',
+  },
+  backButton: {
+    padding: 4,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#000000',
+  },
+  darkText: {
+    color: '#FFFFFF',
+  },
+  content: {
+    flex: 1,
+  },
+  darkContent: {
+    backgroundColor: '#000000',
+  },
+});
+```
+
+#### Design Specifications:
+- **Icon**: `arrow-back` size 24px
+- **Colors**: 
+  - Light: `#000000` icon, `#E5E5E5` border
+  - Dark: `#FFFFFF` icon, `#3A3A3C` border
+- **Layout**: `justifyContent: 'space-between'` with 24px spacer
+- **Padding**: 16px horizontal, 16px vertical
+- **Touch target**: 4px padding around icon
+
+#### Examples implemented:
+- `app/recommendations/index.tsx`
+- `app/user-profile/index.tsx` 
+- `app/goal-tracking/weekly-check/index.tsx`
+
+#### Localization Pattern:
+Добавить ключ в `i18n/locales/*/json`:
+```json
+{
+  "common": {
+    "recommendations": "Recommendations" // en
+    "recommendations": "Recomendaciones" // es  
+    "recommendations": "Рекомендации" // ru
+  }
+}
+```
+
+# Unified Style System
+
+## Dark Theme Support for Onboarding Screens
+
+### Overview
+Система динамических стилей для экранов онбординга с полной поддержкой темной темы. Все стили автоматически адаптируются к текущей теме устройства.
+
+### Color Palette
+Цвета темной темы соответствуют стандартным цветам приложения:
+
+**Dark Theme Colors:**
+- Main Background: `#000000` (черный как в основном приложении)
+- Card Background: `#1C1C1E` (стандартный цвет карточек)
+- Secondary Background: `#2A2A2C` (вторичные элементы)
+- Borders: `#3A3A3C` (стандартный цвет границ)
+- Primary Text: `#FFFFFF` (белый)
+- Secondary Text: `#AAAAAA` (стандартный серый)
+- Primary Accent: `#007AFF` (синий, остается тот же для консистентности)
+
+**Light Theme Colors:**
+- Main Background: `#EBF3FF` (светло-голубой фон)
+- Card Background: `#FFFFFF` (белый)
+- Primary Text: `#333333` (темно-серый)
+- Secondary Text: `#666666` (серый)
+- Primary Accent: `#007AFF` (синий)
+
+### Dynamic Style Functions
+
+#### Core Style Hooks
+```typescript
+// Получение текущей палитры цветов
+const palette = usePalette();
+
+// Основные стили контейнеров
+const containers = useContainerStyles();
+
+// Типографические стили
+const typography = useTypographyStyles();
+
+// Стили для опций выбора
+const optionsStyles = useOptionsStyles();
+
+// Стили кнопок
+const buttonStyles = useButtonStyles();
+
+// Стили индикаторов прогресса
+const progressStyles = useProgressIndicatorStyles();
+
+// Стили программ и шагов
+const programStyles = useProgramStyles();
+```
+
+#### Specialized Style Hooks
+```typescript
+// Стили для экранов с иконками
+const iconStyles = useIconContainerStyles();
+
+// Стили карточек и секций
+const cardStyles = useCardStyles();
+
+// Стили для пикеров
+const pickerStyles = usePickerStyles();
+
+// Стили для программных контейнеров
+const programContainerStyles = useProgramContainerStyles();
+
+// Стили для полей ввода
+const inputStyles = useInputStyles();
+
+// Стили для специальных опций
+const specialOptionStyles = useSpecialOptionStyles();
+```
+
+### Implementation Example
+
+#### Basic Screen Implementation
+```typescript
+import React from 'react';
+import { Text, View } from 'react-native';
+import { OnboardingLayout } from './unifiedLayouts';
+import { 
+  usePalette, 
+  useTypographyStyles, 
+  useOptionsStyles,
+  useContainerStyles 
+} from './unifiedStyles';
+
+const MyScreen: React.FC<Props> = ({ onContinue, onBack }) => {
+  const palette = usePalette();
+  const typography = useTypographyStyles();
+  const optionsStyles = useOptionsStyles();
+  const containers = useContainerStyles();
+
+  return (
+    <OnboardingLayout
+      title="Screen Title"
+      subtitle="Screen Subtitle"
+      onContinue={onContinue}
+      onBack={onBack}
+    >
+      <View style={containers.optionsList}>
+        {/* Your content here */}
+      </View>
+    </OnboardingLayout>
+  );
+};
+```
+
+#### Option Items Implementation
+```typescript
+import { TouchableOpacity, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
+const OptionItem = ({ option, isSelected, onSelect }) => {
+  const palette = usePalette();
+  const optionsStyles = useOptionsStyles();
+  const typography = useTypographyStyles();
+
+  return (
+    <TouchableOpacity
+      style={[
+        optionsStyles.optionContainer,
+        isSelected ? optionsStyles.selectedOption : optionsStyles.unselectedOption
+      ]}
+      onPress={onSelect}
+      activeOpacity={0.7}
+    >
+      <View style={optionsStyles.optionIconContainer}>
+        <Ionicons
+          name={option.icon}
+          size={24}
+          color={isSelected ? palette.primary : palette.text.secondary}
+        />
+      </View>
+      
+      <View style={optionsStyles.optionTextContainer}>
+        <Text style={typography.optionTitle}>
+          {option.label}
+        </Text>
+        {option.description && (
+          <Text style={typography.optionDescription}>
+            {option.description}
+          </Text>
+        )}
+      </View>
+      
+      <View style={[
+        optionsStyles.checkIconContainer,
+        isSelected ? optionsStyles.selectedCheckIconContainer : optionsStyles.unselectedCheckIconContainer
+      ]}>
+        {isSelected && (
+          <Ionicons name="checkmark" size={16} color={palette.text.white} />
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+};
+```
+
+### Migration Guide
+
+#### Converting Existing Screens
+1. Replace static style imports with dynamic hooks:
+```typescript
+// Old
+import { options, typography, containers } from './unifiedStyles';
+
+// New
+import { useOptionsStyles, useTypographyStyles, useContainerStyles } from './unifiedStyles';
+```
+
+2. Initialize dynamic styles in component:
+```typescript
+const MyComponent = () => {
+  const optionsStyles = useOptionsStyles();
+  const typography = useTypographyStyles();
+  const containers = useContainerStyles();
+  
+  // Use styles as before
+  return <View style={containers.optionsList}>...</View>;
+};
+```
+
+3. Update ButtonFooter and other shared components to use dynamic styles.
+
+### Style Categories
+
+#### Layout Styles
+- `containers`: Main layout containers, safe areas, scroll views
+- `optionsList`: Container for option groups
+
+#### Typography Styles
+- `screenTitle`: Main screen title (24px, bold)
+- `screenSubtitle`: Screen subtitle (16px, regular)
+- `optionTitle`: Option item title (18px, semibold)
+- `optionDescription`: Option item description (14px, regular)
+- `buttonText`: Button text styles
+
+#### Interactive Elements
+- `optionContainer`: Base option item container
+- `selectedOption` / `unselectedOption`: Selection states
+- `optionIconContainer`: Icon container within options
+- `checkIconContainer`: Checkmark container
+
+#### Button Styles
+- `backButton`: Back button with border
+- `skipButton`: Skip button transparent style
+- `continueButton`: Primary continue button
+- `optionButton`: Generic option button
+
+#### Specialized Styles
+- `iconContainer`: Large icon containers (80x80)
+- `pickerContainer`: Date/value picker containers
+- `programContainer`: Program information containers
+- `inputContainer`: Form input containers
+
+### Design Principles
+
+1. **Automatic Theme Detection**: All styles automatically adapt to system theme changes
+2. **Consistent Color Usage**: Dark theme colors match main app standards
+3. **Backward Compatibility**: Static styles remain for gradual migration
+4. **Performance**: Styles are created once per theme change, not on every render
+5. **Extensibility**: Easy to add new style categories and components
+
+### Best Practices
+
+1. Always use `usePalette()` for color values instead of hardcoded colors
+2. Group related styles into logical hook functions
+3. Maintain consistent naming conventions across components
+4. Test both light and dark themes thoroughly
+5. Use semantic color names (e.g., `palette.text.primary` instead of specific hex values)
+
+### Future Enhancements
+
+1. Add animation support for theme transitions
+2. Implement custom theme override capabilities
+3. Add accessibility improvements for high contrast themes
+4. Create automated testing for theme switching

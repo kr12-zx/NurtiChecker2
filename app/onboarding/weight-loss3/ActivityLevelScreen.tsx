@@ -4,7 +4,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from '../../../i18n/i18n';
 import { ActivityLevel } from '../../types/onboarding';
 import { OnboardingLayout } from './unifiedLayouts';
-import { activityLevel as activityLevelStyles, options, typography, usePalette } from './unifiedStyles';
+import { useOptionsStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface ActivityLevelScreenProps {
   onContinue: () => void;
@@ -22,8 +22,10 @@ const ActivityLevelScreen: React.FC<ActivityLevelScreenProps> = ({
   // Добавляем локальное состояние для мгновенного отклика
   const [localActivityLevel, setLocalActivityLevel] = React.useState<ActivityLevel>(activityLevel);
   
-  // Получаем палитру цветов
+  // Получаем динамические стили
   const palette = usePalette();
+  const options = useOptionsStyles();
+  const typography = useTypographyStyles();
   const { t } = useTranslation();
   
   // Обновляем локальное состояние при изменении пропсов
@@ -80,7 +82,7 @@ const ActivityLevelScreen: React.FC<ActivityLevelScreenProps> = ({
       onContinue={onContinue}
       onBack={onBack}
     >
-      <View style={activityLevelStyles.optionsContainer}>
+      <View style={{ marginTop: 20 }}>
         {activityOptions.map((option) => {
           // Используем локальное состояние для отображения выбранного варианта
           const isSelected = localActivityLevel === option.id;
@@ -90,7 +92,8 @@ const ActivityLevelScreen: React.FC<ActivityLevelScreenProps> = ({
               key={option.id}
               style={[
                 options.optionContainer,
-                isSelected ? options.selectedOption : options.unselectedOption
+                isSelected ? options.selectedOption : options.unselectedOption,
+                { marginBottom: 16 }
               ]}
               onPress={() => handleActivityLevelSelect(option.id)}
               activeOpacity={0.5}
@@ -105,11 +108,11 @@ const ActivityLevelScreen: React.FC<ActivityLevelScreenProps> = ({
                 />
               </View>
               
-              <View style={options.optionTextContainer}>
+              <View style={[options.optionTextContainer, { flex: 1 }]}>
                 <Text style={typography.optionTitle}>
                   {option.label}
                 </Text>
-                <Text style={typography.optionDescription}>
+                <Text style={[typography.optionDescription, { marginTop: 4 }]}>
                   {option.description}
                 </Text>
               </View>
@@ -119,7 +122,7 @@ const ActivityLevelScreen: React.FC<ActivityLevelScreenProps> = ({
                 isSelected ? options.selectedCheckIconContainer : options.unselectedCheckIconContainer
               ]}>
                 {isSelected && (
-                  <Ionicons name="checkmark" size={16} color={palette.text.white} />
+                  <Ionicons name="checkmark" size={16} color={palette.white} />
                 )}
               </View>
             </TouchableOpacity>

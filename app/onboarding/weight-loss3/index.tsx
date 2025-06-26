@@ -5,11 +5,14 @@ import React, { useRef, useState } from 'react';
 import {
     Animated,
     Dimensions,
+    useColorScheme,
     View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { calculateCompleteNutrition, NutritionCalculationResult } from '../../../utils/nutritionCalculator';
 import { ActivityLevel, Challenge, DietPreference, Gender, MealFrequency, PrimaryGoal, UnitSettings, UserProfile } from '../../types/onboarding';
-import { containers, onboardingIndex } from './unifiedStyles';
+import { getUserEmailId, sendCompletionWebhook, sendPaywallWebhook } from '../../utils/onboardingApi';
+import { useContainerStyles, usePalette } from './unifiedStyles';
 
 // Импортируем все экраны онбординга
 import ActivityLevelScreen from './ActivityLevelScreen';
@@ -66,11 +69,26 @@ interface WeightLoss3OnboardingProps {
 }
 
 export default function WeightLoss3Onboarding({ startAtStep = 0 }: WeightLoss3OnboardingProps) {
-  // Состояние для текущего шага
+  // State для отслеживания текущего шага
   const [currentStep, setCurrentStep] = useState(startAtStep);
+  
+  // Хуки для стилей и темы
+  const colorScheme = useColorScheme();
+  const palette = usePalette();
+  const containers = useContainerStyles();
   
   // Смещение для анимации
   const scrollX = useRef(new Animated.Value(0)).current;
+  
+  // State для настроек единиц измерения
+  const [unitSettings, setUnitSettings] = useState<UnitSettings>({
+    weight: 'kg',
+    height: 'cm',
+    system: 'metric'
+  });
+  
+  // State для хранения выбранных пользователем калорий
+  const [selectedCalories, setSelectedCalories] = useState<number | null>(null);
   
   // useEffect для автоматического пропуска шагов
   React.useEffect(() => {
@@ -84,6 +102,21 @@ export default function WeightLoss3Onboarding({ startAtStep = 0 }: WeightLoss3On
     if (currentStep === 25 && userProfileRef.current.intermittentFasting) {
       setCurrentStep(26);
       return;
+    }
+    
+    // Отправляем webhook при достижении paywall (step 45)
+    if (currentStep === 45) {
+      const sendPaywallWebhookAsync = async () => {
+        try {
+          const emailId = await getUserEmailId();
+          console.log('🎯 Paywall reached for user:', emailId);
+          await sendPaywallWebhook(userProfileRef.current, unitSettings);
+        } catch (error) {
+          console.error('Error sending paywall webhook:', error);
+        }
+      };
+      
+      sendPaywallWebhookAsync();
     }
   }, [currentStep]);
   
@@ -113,10 +146,10 @@ export default function WeightLoss3Onboarding({ startAtStep = 0 }: WeightLoss3On
     birthday: '1992-06-15', // 32 года по умолчанию (для 2024 года)
     gender: 'male', // Устанавливаем мужской пол по умолчанию
     height: 176, // Средний рост мужчины по умолчанию
-    weight: 50, // 110 lb при конвертации в имперскую систему
+    weight: 87, // 87 кг по умолчанию как на скрине
     primaryGoal: 'lose-weight', // Основная цель - похудение
-    goalWeight: 45, // ~99 lb - реалистичный целевой вес
-    weightLossRate: 0.5, // Скорость снижения веса (0.5 кг в неделю)
+    goalWeight: 80, // 80 кг - целевой вес для похудения как на скрине
+    weightLossRate: 0.25, // Скорость снижения веса (0.25 кг в неделю) - соответствует выбору пользователя
     activityLevel: 'lightly-active', // Слабая активность по умолчанию
     
     // Питание и диета
@@ -155,13 +188,6 @@ export default function WeightLoss3Onboarding({ startAtStep = 0 }: WeightLoss3On
     stressResponse: 'emotional-eating', // Заедает стресс
   });
   
-  // Настройки единиц измерения
-  const [unitSettings, setUnitSettings] = useState<UnitSettings>({
-    weight: 'kg',
-    height: 'cm',
-    system: 'metric'
-  });
-  
   // Максимальное количество шагов
   const MAX_STEPS = 47; // Исправлено согласно оригинальному дизайну (0-46)
   
@@ -169,11 +195,32 @@ export default function WeightLoss3Onboarding({ startAtStep = 0 }: WeightLoss3On
   const saveUserProfile = async () => {
     try {
       const userProfile = userProfileRef.current;
+      
+      // Получаем или создаем email ID пользователя
+      const emailId = await getUserEmailId();
+      console.log('User Email ID:', emailId);
+      
+      // Рассчитываем план питания
+      const nutritionPlan = calculateNutritionPlan();
+      
       await AsyncStorage.setItem('userProfile', JSON.stringify(userProfile));
       await AsyncStorage.setItem('unitSettings', JSON.stringify(unitSettings));
       
+      // Сохраняем план питания, если удалось рассчитать
+      if (nutritionPlan) {
+        await AsyncStorage.setItem('nutritionPlan', JSON.stringify(nutritionPlan));
+        console.log('💾 План питания сохранён:', nutritionPlan);
+      }
+      
       // Флаг о завершении онбординга
       await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
+      
+      // Отправляем webhook о завершении онбординга
+      try {
+        await sendCompletionWebhook(userProfile, unitSettings);
+      } catch (webhookError) {
+        console.error('Webhook error (non-blocking):', webhookError);
+      }
       
       console.log('Профиль пользователя сохранен:', userProfile);
       console.log('Настройки единиц измерения:', unitSettings);
@@ -190,6 +237,13 @@ export default function WeightLoss3Onboarding({ startAtStep = 0 }: WeightLoss3On
     try {
       const userProfile = userProfileRef.current;
       
+      // Получаем или создаем email ID пользователя
+      const emailId = await getUserEmailId();
+      console.log('User Email ID for trial:', emailId);
+      
+      // Рассчитываем план питания
+      const nutritionPlan = calculateNutritionPlan();
+      
       // Устанавливаем дату начала пробного периода
       const trialStartDate = new Date().toISOString();
       const trialEndDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(); // +3 дня
@@ -201,10 +255,24 @@ export default function WeightLoss3Onboarding({ startAtStep = 0 }: WeightLoss3On
       await AsyncStorage.setItem('userProfile', JSON.stringify(userProfile));
       await AsyncStorage.setItem('unitSettings', JSON.stringify(unitSettings));
       
+      // Сохраняем план питания, если удалось рассчитать
+      if (nutritionPlan) {
+        await AsyncStorage.setItem('nutritionPlan', JSON.stringify(nutritionPlan));
+        console.log('💾 План питания сохранён для триала:', nutritionPlan);
+      }
+      
       // Флаг о завершении онбординга
       await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
       
+      // Отправляем webhook о завершении онбординга с триалом
+      try {
+        await sendCompletionWebhook(userProfile, unitSettings);
+      } catch (webhookError) {
+        console.error('Webhook error (non-blocking):', webhookError);
+      }
+      
       console.log('🎁 Пробный период запущен:', {
+        emailId,
         startDate: trialStartDate,
         endDate: trialEndDate,
         userProfile
@@ -256,6 +324,82 @@ export default function WeightLoss3Onboarding({ startAtStep = 0 }: WeightLoss3On
     }
     
     return Math.max(age, 18); // минимальный возраст 18 лет
+  };
+  
+  // Функция для расчёта полного плана питания
+  const calculateNutritionPlan = (): NutritionCalculationResult | null => {
+    try {
+      const userProfile = userProfileRef.current;
+      console.log('🔍 Начинаем расчёт плана питания для:', userProfile);
+      
+      // Проверяем наличие всех необходимых данных
+      if (!userProfile.weight || !userProfile.height || !userProfile.birthday || !userProfile.gender) {
+        console.warn('❌ Недостаточно данных для расчёта питания:', {
+          weight: userProfile.weight,
+          height: userProfile.height,
+          birthday: userProfile.birthday,
+          gender: userProfile.gender
+        });
+        return null;
+      }
+      
+      console.log('✅ Все необходимые данные есть, начинаем расчёт...');
+      
+      // Конвертируем вес в поле currentWeight для совместимости с калькулятором
+      const profileForCalculation = {
+        ...userProfile,
+        currentWeight: userProfile.weight,
+        // Убеждаемся, что все поля имеют значения по умолчанию
+        primaryGoal: userProfile.primaryGoal || 'lose-weight',
+        activityLevel: userProfile.activityLevel || 'lightly-active',
+        dietPreference: userProfile.dietPreference || 'standard',
+        weightLossRate: userProfile.weightLossRate || 0.25,
+        weightLossPlan: userProfile.weightLossPlan || 'steady',
+        exerciseIntent: userProfile.exerciseIntent || false,
+        nutritionFocus: userProfile.nutritionFocus || 'balanced',
+        mealFrequency: userProfile.mealFrequency || '3-meals',
+        intermittentFasting: userProfile.intermittentFasting || false,
+        confidenceLevel: userProfile.confidenceLevel || 3,
+        stressResponse: userProfile.stressResponse || 'exercise',
+        temptationResponse: userProfile.temptationResponse || 'usually-control',
+        medicationUse: userProfile.medicationUse || 'not-using'
+      };
+      
+      console.log('📋 Профиль для расчёта:', profileForCalculation);
+      
+      const nutritionPlan = calculateCompleteNutrition(profileForCalculation);
+      console.log('🧮 Рассчитан план питания:', nutritionPlan);
+      
+      return nutritionPlan;
+    } catch (error) {
+      console.error('❌ Ошибка расчёта плана питания:', error);
+      return null;
+    }
+  };
+  
+  // Функция для получения рассчитанных калорий
+  const getCalculatedCalories = (): number => {
+    // Если пользователь уже выбрал калории на экране планов, используем их
+    if (selectedCalories) {
+      console.log('💾 Используем выбранные пользователем калории:', selectedCalories);
+      return selectedCalories;
+    }
+    
+    // Иначе рассчитываем через полный калькулятор
+    const nutritionPlan = calculateNutritionPlan();
+    const calculatedValue = nutritionPlan ? nutritionPlan.targetCalories : 1800;
+    console.log('🧮 Рассчитанные калории через полный калькулятор:', calculatedValue);
+    return calculatedValue;
+  };
+
+  // Функция для проверки полноты данных для точного расчета
+  const hasCompleteNutritionData = (): boolean => {
+    const userProfile = userProfileRef.current;
+    return !!(userProfile.activityLevel && 
+             userProfile.stressResponse &&
+             userProfile.dietPreference &&
+             userProfile.nutritionFocus &&
+             userProfile.mealFrequency);
   };
   
   // Рендеринг текущего экрана
@@ -321,7 +465,7 @@ export default function WeightLoss3Onboarding({ startAtStep = 0 }: WeightLoss3On
             currentWeight={userProfileRef.current.weight || 50}
             unitSettings={unitSettings}
             onGoalWeightChange={(goalWeight: number) => updateUserProfile({ goalWeight })}
-            weightLossRate={userProfileRef.current.weightLossRate || 0.5}
+            weightLossRate={userProfileRef.current.weightLossRate || 0.25}
             onWeightLossRateChange={(weightLossRate: number) => updateUserProfile({ weightLossRate })}
           />
         );
@@ -381,6 +525,7 @@ export default function WeightLoss3Onboarding({ startAtStep = 0 }: WeightLoss3On
                 ? 'extra-active' 
                 : userProfileRef.current.activityLevel || 'moderately-active'
             }}
+            fullUserProfile={userProfileRef.current}
           />
         );
       case 11:
@@ -413,6 +558,10 @@ export default function WeightLoss3Onboarding({ startAtStep = 0 }: WeightLoss3On
             onWeightLossPlanChange={(plan: string) => {
               updateUserProfile({ weightLossPlan: plan });
             }}
+            onCalorieSelectionChange={(calories: number) => {
+              console.log('💾 Сохраняем выбранные пользователем калории:', calories);
+              setSelectedCalories(calories);
+            }}
             userProfile={{
               gender: (userProfileRef.current.gender === 'male' || userProfileRef.current.gender === 'female') 
                 ? userProfileRef.current.gender 
@@ -424,6 +573,7 @@ export default function WeightLoss3Onboarding({ startAtStep = 0 }: WeightLoss3On
                 ? 'extra-active' 
                 : userProfileRef.current.activityLevel || 'moderately-active'
             }}
+            fullUserProfile={userProfileRef.current}
           />
         );
       case 13:
@@ -431,8 +581,9 @@ export default function WeightLoss3Onboarding({ startAtStep = 0 }: WeightLoss3On
           <CalorieBudgetConfirmScreen
             onContinue={goToNextStep}
             onBack={goToPreviousStep}
-            calorieBudget={1800} // Заглушка - в реальности нужно рассчитывать на основе выбранного плана
+            calorieBudget={getCalculatedCalories()}
             weightLossPlan={userProfileRef.current.weightLossPlan || 'steady'}
+            isPreliminary={!hasCompleteNutritionData()}
           />
         );
       case 14:
@@ -453,7 +604,7 @@ export default function WeightLoss3Onboarding({ startAtStep = 0 }: WeightLoss3On
             <FixedCalorieBudgetConfirmScreen
               onContinue={goToNextStep}
               onBack={goToPreviousStep}
-              calorieBudget={1800} // Заглушка - в реальности нужно рассчитывать
+              calorieBudget={getCalculatedCalories()}
             />
           );
         }
@@ -464,8 +615,8 @@ export default function WeightLoss3Onboarding({ startAtStep = 0 }: WeightLoss3On
           <NutritionIntroScreen
             onContinue={goToNextStep}
             onBack={goToPreviousStep}
-            calorieBudget={1800} // Заглушка - в реальности нужно рассчитывать
-            weightLossRate={0.75} // Заглушка - зависит от выбранного плана
+            calorieBudget={getCalculatedCalories()}
+            weightLossRate={userProfileRef.current.weightLossRate || 0.25}
             useFlexibleCalories={userProfileRef.current.useFlexibleCalories || false}
           />
         );
@@ -677,7 +828,7 @@ export default function WeightLoss3Onboarding({ startAtStep = 0 }: WeightLoss3On
             onContinue={goToNextStep}
             onBack={goToPreviousStep}
             userProfile={{
-              calorieBudget: 1800, // Заглушка - в реальности нужно рассчитывать
+              calorieBudget: getCalculatedCalories(),
               weightLossPlan: userProfileRef.current.weightLossPlan || 'steady',
               exerciseIntent: userProfileRef.current.exerciseIntent || false,
               nutritionFocus: userProfileRef.current.nutritionFocus || 'balanced',
@@ -786,12 +937,45 @@ export default function WeightLoss3Onboarding({ startAtStep = 0 }: WeightLoss3On
     }
   };
 
+  // Создаем динамические стили для компонента
+  const dynamicStyles = {
+    progressBarContainer: {
+      width: width,
+      height: 4,
+      backgroundColor: palette.border.inactive,
+      position: 'absolute' as const,
+      top: 0,
+    },
+    progressBar: {
+      height: 4,
+      backgroundColor: palette.primary,
+    },
+    stepIndicator: {
+      flexDirection: 'row' as const,
+      justifyContent: 'center' as const,
+      marginVertical: 8,
+    },
+    stepDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: palette.border.inactive,
+      marginHorizontal: 4,
+    },
+    activeStepDot: {
+      backgroundColor: palette.primary,
+    },
+    screenContainer: {
+      flex: 1,
+    },
+  };
+
   // Прогресс-бар
   const renderProgressBar = () => {
     const progressWidth = (currentStep / (MAX_STEPS - 1)) * width;
     return (
-      <View style={onboardingIndex.progressBarContainer}>
-        <Animated.View style={[onboardingIndex.progressBar, { width: progressWidth }]} />
+      <View style={dynamicStyles.progressBarContainer}>
+        <Animated.View style={[dynamicStyles.progressBar, { width: progressWidth }]} />
       </View>
     );
   };
@@ -799,13 +983,13 @@ export default function WeightLoss3Onboarding({ startAtStep = 0 }: WeightLoss3On
   // Индикаторы шагов
   const renderStepIndicators = () => {
     return (
-      <View style={onboardingIndex.stepIndicator}>
+      <View style={dynamicStyles.stepIndicator}>
         {Array.from({ length: MAX_STEPS }).map((_, index) => (
           <View
             key={index}
             style={[
-              onboardingIndex.stepDot,
-              currentStep === index && onboardingIndex.activeStepDot
+              dynamicStyles.stepDot,
+              currentStep === index && dynamicStyles.activeStepDot
             ]}
           />
         ))}
@@ -814,11 +998,11 @@ export default function WeightLoss3Onboarding({ startAtStep = 0 }: WeightLoss3On
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
-      <StatusBar style="dark" />
+    <View style={{ flex: 1, backgroundColor: palette.background }}>
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       <SafeAreaView style={containers.safeArea} edges={['top', 'left', 'right']}>
         {renderProgressBar()}
-        <View style={onboardingIndex.screenContainer}>
+        <View style={dynamicStyles.screenContainer}>
           {renderCurrentScreen()}
         </View>
       </SafeAreaView>
@@ -829,7 +1013,7 @@ export default function WeightLoss3Onboarding({ startAtStep = 0 }: WeightLoss3On
         left: 0,
         right: 0,
         height: 34, // Высота Home Indicator на iPhone
-        backgroundColor: '#FFFFFF',
+        backgroundColor: palette.background,
         zIndex: -1
       }} />
     </View>

@@ -1,0 +1,74 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "path": "test-manual-product",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        -400
+      ],
+      "id": "test-webhook",
+      "name": "Test Webhook",
+      "webhookId": "test-manual-product-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Простой тест - возвращаем полученные данные\nconst inputData = $input.item.json;\n\nreturn {\n  json: {\n    success: true,\n    message: \"Test webhook работает!\",\n    receivedData: inputData,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1800,
+        -400
+      ],
+      "id": "test-code",
+      "name": "Test Code"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        2000,
+        -400
+      ],
+      "id": "test-respond",
+      "name": "Test Respond"
+    }
+  ],
+  "connections": {
+    "Test Webhook": {
+      "main": [
+        [
+          {
+            "node": "Test Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Code": {
+      "main": [
+        [
+          {
+            "node": "Test Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "test-manual-product-workflow"
+  }
+} 

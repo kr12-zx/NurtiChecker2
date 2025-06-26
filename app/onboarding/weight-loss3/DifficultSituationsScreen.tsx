@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { ScrollView, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from '../../../i18n/i18n';
 import ButtonFooter from './components/ButtonFooter';
-import { containers, difficultSituationsStyles, options, palette, typography } from './unifiedStyles';
+import { useContainerStyles, useOptionsStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface DifficultSituationsScreenProps {
   onContinue: () => void;
@@ -29,8 +29,11 @@ const DifficultSituationsScreen: React.FC<DifficultSituationsScreenProps> = ({
     setLocalHandling(difficultSituationsHandling);
   }, [difficultSituationsHandling]);
   
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  // Получаем динамические стили
+  const palette = usePalette();
+  const containers = useContainerStyles();
+  const options = useOptionsStyles();
+  const typography = useTypographyStyles();
   
   // Функция обработки выбора способа управления сложными ситуациями
   const handleDifficultSituationsSelect = (handling: string) => {
@@ -97,7 +100,7 @@ const DifficultSituationsScreen: React.FC<DifficultSituationsScreenProps> = ({
                     style={[
                       options.optionContainer,
                       isSelected ? options.selectedOption : options.unselectedOption,
-                      difficultSituationsStyles.handlingOption
+                      { marginBottom: 16 }
                     ]}
                     onPress={() => handleDifficultSituationsSelect(option.id)}
                     activeOpacity={0.5}
@@ -112,11 +115,11 @@ const DifficultSituationsScreen: React.FC<DifficultSituationsScreenProps> = ({
                       />
                     </View>
                     
-                    <View style={[options.optionTextContainer, difficultSituationsStyles.handlingTextContainer]}>
+                    <View style={[options.optionTextContainer, { flex: 1 }]}>
                       <Text style={typography.optionTitle}>
                         {option.label}
                       </Text>
-                      <Text style={difficultSituationsStyles.descriptionText}>
+                      <Text style={[typography.optionDescription, { marginTop: 4 }]}>
                         {option.description}
                       </Text>
                     </View>
@@ -146,7 +149,5 @@ const DifficultSituationsScreen: React.FC<DifficultSituationsScreenProps> = ({
     </SafeAreaView>
   );
 };
-
-// Локальных стилей больше нет - все стили вынесены в унифицированный модуль unifiedStyles.ts
 
 export default DifficultSituationsScreen;

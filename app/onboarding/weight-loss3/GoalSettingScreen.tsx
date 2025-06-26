@@ -5,7 +5,7 @@ import SimplePicker from '../../../components/SimplePicker';
 import { useTranslation } from '../../../i18n/i18n';
 import { PrimaryGoal, UnitSettings } from '../../types/onboarding';
 import { OnboardingLayout } from './unifiedLayouts';
-import { goalSetting, options, typography, usePalette } from './unifiedStyles';
+import { useGoalSettingStyles, useOptionsStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface GoalSettingScreenProps {
   onContinue: () => void;
@@ -33,7 +33,10 @@ const GoalSettingScreen: React.FC<GoalSettingScreenProps> = ({
   unitSettings
 }) => {
   const palette = usePalette();
-  const { t } = useTranslation();
+  const optionsStyles = useOptionsStyles();
+  const typographyStyles = useTypographyStyles();
+  const goalSettingStyles = useGoalSettingStyles();
+  const { t, locale } = useTranslation();
   
   // Локальное состояние для отображения значений
   const [localGoal, setLocalGoal] = useState<PrimaryGoal>(primaryGoal);
@@ -217,7 +220,7 @@ const GoalSettingScreen: React.FC<GoalSettingScreenProps> = ({
     const calculatedDate = new Date(currentDate);
     calculatedDate.setDate(currentDate.getDate() + daysNeeded);
     
-    return calculatedDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+    return calculatedDate.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
   };
 
   // Определяем заголовок и подзаголовок в зависимости от текущего шага
@@ -257,7 +260,7 @@ const GoalSettingScreen: React.FC<GoalSettingScreenProps> = ({
     >
       {activeStep === 'goal' && (
         <>
-          <View style={goalSetting.optionsContainer}>
+          <View style={goalSettingStyles.optionsContainer}>
             {goalOptions.map((option) => {
               // Используем локальное состояние для отображения выбранного варианта
               const isSelected = localGoal === option.id;
@@ -266,14 +269,14 @@ const GoalSettingScreen: React.FC<GoalSettingScreenProps> = ({
                 <TouchableOpacity
                   key={option.id}
                   style={[
-                    options.optionContainer,
-                    isSelected ? options.selectedOption : options.unselectedOption
+                    optionsStyles.optionContainer,
+                    isSelected ? optionsStyles.selectedOption : optionsStyles.unselectedOption
                   ]}
                   onPress={() => handleGoalSelect(option.id)}
                   activeOpacity={0.5}
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
-                  <View style={options.optionIconContainer}>
+                  <View style={optionsStyles.optionIconContainer}>
                     <Ionicons
                       name={option.icon as any}
                       size={24}
@@ -281,21 +284,21 @@ const GoalSettingScreen: React.FC<GoalSettingScreenProps> = ({
                     />
                   </View>
                   
-                  <View style={options.optionTextContainer}>
-                    <Text style={typography.optionTitle}>
+                  <View style={optionsStyles.optionTextContainer}>
+                    <Text style={typographyStyles.optionTitle}>
                       {option.label}
                     </Text>
-                    <Text style={typography.optionDescription}>
+                    <Text style={typographyStyles.optionDescription}>
                       {option.description}
                     </Text>
                   </View>
                   
                   <View style={[
-                    options.checkIconContainer,
-                    isSelected ? options.selectedCheckIconContainer : options.unselectedCheckIconContainer
+                    optionsStyles.checkIconContainer,
+                    isSelected ? optionsStyles.selectedCheckIconContainer : optionsStyles.unselectedCheckIconContainer
                   ]}>
                     {isSelected && (
-                      <Ionicons name="checkmark" size={16} color={palette.text.white} />
+                      <Ionicons name="checkmark" size={16} color={palette.white} />
                     )}
                   </View>
                 </TouchableOpacity>
@@ -305,10 +308,10 @@ const GoalSettingScreen: React.FC<GoalSettingScreenProps> = ({
           
           {primaryGoal === 'lose-weight' && (
             <TouchableOpacity 
-              style={goalSetting.nextStepButton}
+              style={goalSettingStyles.nextStepButton}
               onPress={() => setActiveStep('target')}
             >
-              <Text style={[goalSetting.nextStepText, { color: palette.primary }]}>{t('onboarding.goalSetting.setTargetWeight')}</Text>
+              <Text style={goalSettingStyles.nextStepText}>{t('onboarding.goalSetting.setTargetWeight')}</Text>
               <Ionicons name="arrow-forward" size={18} color={palette.primary} />
             </TouchableOpacity>
           )}
@@ -317,7 +320,7 @@ const GoalSettingScreen: React.FC<GoalSettingScreenProps> = ({
 
       {activeStep === 'target' && (
         <>
-          <View style={goalSetting.pickerContainer}>
+          <View style={goalSettingStyles.pickerContainer}>
             <SimplePicker
               values={simpleWeightValues}
               selectedValue={displayGoalWeight}
@@ -325,25 +328,25 @@ const GoalSettingScreen: React.FC<GoalSettingScreenProps> = ({
               pickerWidth={150}
               pickerHeight={200}
               formatValue={unitSettings.weight === 'kg' ? 
-                (value) => `${value} кг` : 
-                (value) => `${value} lb`}
+                (value) => `${value} ${t('onboarding.heightWeight.units.kg')}` : 
+                (value) => `${value} ${t('onboarding.heightWeight.units.lb')}`}
             />
           </View>
           
-          <View style={goalSetting.navigationButtons}>
+          <View style={goalSettingStyles.navigationButtons}>
             <TouchableOpacity 
-              style={goalSetting.navigationButton}
+              style={goalSettingStyles.navigationButton}
               onPress={() => setActiveStep('goal')}
             >
               <Ionicons name="arrow-back" size={18} color={palette.primary} />
-              <Text style={[goalSetting.nextStepText, { color: palette.primary }]}>{t('onboarding.goalSetting.backToGoal')}</Text>
+              <Text style={goalSettingStyles.nextStepText}>{t('onboarding.goalSetting.backToGoal')}</Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
-              style={goalSetting.navigationButton}
+              style={goalSettingStyles.navigationButton}
               onPress={() => setActiveStep('rate')}
             >
-              <Text style={[goalSetting.nextStepText, { color: palette.primary }]}>{t('onboarding.goalSetting.weightLossSpeed')}</Text>
+              <Text style={goalSettingStyles.nextStepText}>{t('onboarding.goalSetting.weightLossSpeed')}</Text>
               <Ionicons name="arrow-forward" size={18} color={palette.primary} />
             </TouchableOpacity>
           </View>
@@ -352,7 +355,7 @@ const GoalSettingScreen: React.FC<GoalSettingScreenProps> = ({
 
       {activeStep === 'rate' && (
         <>
-          <View style={goalSetting.pickerContainer}>
+          <View style={goalSettingStyles.pickerContainer}>
             <SimplePicker
               values={simpleRateValues}
               selectedValue={displayWeightLossRate}
@@ -360,25 +363,25 @@ const GoalSettingScreen: React.FC<GoalSettingScreenProps> = ({
               pickerWidth={150}
               pickerHeight={200}
               formatValue={unitSettings.weight === 'kg' ? 
-                (value) => `${value} кг/нед` : 
-                (value) => `${value} lb/нед`}
+                (value) => `${value} ${t('onboarding.heightWeight.units.kgPerWeek')}` : 
+                (value) => `${value} ${t('onboarding.heightWeight.units.lbPerWeek')}`}
             />
           </View>
           
 
           {targetDate && (
-            <View style={goalSetting.targetDateContainer}>
-              <Text style={[goalSetting.targetDateLabel, { color: palette.text.secondary }]}>{t('onboarding.goalSetting.estimatedDate')}</Text>
-              <Text style={[goalSetting.targetDate, { color: palette.text.primary }]}>{targetDate}</Text>
+            <View style={goalSettingStyles.targetDateContainer}>
+              <Text style={goalSettingStyles.targetDateLabel}>{t('onboarding.goalSetting.estimatedDate')}</Text>
+              <Text style={goalSettingStyles.targetDate}>{targetDate}</Text>
             </View>
           )}
           
           <TouchableOpacity 
-            style={goalSetting.nextStepButton}
+            style={goalSettingStyles.nextStepButton}
             onPress={() => setActiveStep('target')}
           >
             <Ionicons name="arrow-back" size={18} color={palette.primary} />
-            <Text style={[goalSetting.nextStepText, { color: palette.primary }]}>{t('onboarding.goalSetting.backToTargetWeight')}</Text>
+            <Text style={goalSettingStyles.nextStepText}>{t('onboarding.goalSetting.backToTargetWeight')}</Text>
           </TouchableOpacity>
         </>
       )}

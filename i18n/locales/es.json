@@ -1,6 +1,7 @@
 {
   "common": {
     "back": "Atrás",
+    "continue": "Continuar",
     "cancel": "Cancelar",
     "save": "Guardar",
     "done": "Hecho",
@@ -10,19 +11,72 @@
     "search": "Buscar",
     "settings": "Configuración",
     "error": "Error",
+    "productNotFound": "Producto no encontrado",
+    "failedToFindProduct": "No se pudo encontrar el producto",
+    "failedToAddProduct": "No se pudo añadir el producto al diario",
+    "deleteProduct": "Eliminar Producto",
+    "deleteProductConfirm": "¿Estás seguro de que quieres eliminar \"{{productName}}\" del historial?",
+    "deleteFromDiary": "Eliminar del Diario",
+    "deleteFromDiaryConfirm": "¿Estás seguro de que quieres eliminar \"{{productName}}\" del diario nutricional?",
+    "deleteFromDiaryMessage": "¿Estás seguro de que quieres eliminar del diario nutricional?",
+    "deleteFromHistoryMessage": "¿Estás seguro de que quieres eliminar del historial?",
+    "failedToDeleteProduct": "No se pudo eliminar el producto",
+    "failedToDeleteFromDiary": "No se pudo eliminar el producto del diario",
+    "skip": "Omitir",
     "viewAll": "Ver Todo",
     "scanMore": "Escanear Más",
     "scanProduct": "Escanear Producto",
     "gallery": "Galería",
     "camera": "Cámara",
-    "retake": "Volver a tomar",
+    "retake": "Repetir",
     "use": "Usar",
     "processing": "Procesando...",
-    "takePhotoFood": "Tomar Foto de Alimento",
-    "foodPhotoSaved": "Foto de alimento guardada exitosamente",
+    "takePhotoFood": "Tomar Foto de Comida",
+    "foodPhotoSaved": "Foto de comida guardada exitosamente",
     "success": "Éxito",
-    "foodAddedToJournal": "¡{{foodName}} añadido a tu diario de alimentos!",
-    "quantity": "Cantidad"
+    "foodAddedToJournal": "¡{{foodName}} añadido a tu diario nutricional!",
+    "quantity": "Cantidad",
+    "language": "Idioma",
+    "theme": "Tema",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema",
+    "notifications": "Notificaciones",
+    "dataUsage": "Uso de Datos",
+    "terms": "Términos de Servicio",
+    "privacy": "Política de Privacidad",
+    "support": "Soporte",
+    "version": "Versión de la App",
+    "home": "Inicio",
+    "history": "Historial",
+    "stats": "Estadísticas",
+    "months": {
+      "january": "Enero",
+      "february": "Febrero",
+      "march": "Marzo",
+      "april": "Abril",
+      "may": "Mayo",
+      "june": "Junio",
+      "july": "Julio",
+      "august": "Agosto",
+      "september": "Septiembre",
+      "october": "Octubre",
+      "november": "Noviembre",
+      "december": "Diciembre"
+    },
+    "daysShort": {
+      "Mo": "Lu",
+      "Tu": "Ma",
+      "We": "Mi",
+      "Th": "Ju",
+      "Fr": "Vi",
+      "Sa": "Sa",
+      "Su": "Do"
+    },
+    "kcal": "kcal",
+    "gram": "g",
+    "kg": "kg",
+    "recommendations": "Recomendaciones"
   },
   "tabs": {
     "dashboard": "Inicio",
@@ -33,19 +87,109 @@
   },
   "dashboard": {
     "title": "NutriChecker",
-    "caloriesLeft": "Calorías Restantes",
+    "caloriesLeft": "Calorías\nrestantes",
+    "caloriesWeekly": "Calorías",
     "burned": "Quemadas",
     "protein": "Proteína",
     "fat": "Grasa",
     "carbs": "Carbohidratos",
     "recentScans": "Escaneos Recientes",
-    "noScannedProducts": "Aún no hay productos escaneados"
+    "recentAdded": "Agregado Recientemente",
+    "noScannedProducts": "No hay productos escaneados",
+    "weeklyStats": "Estadísticas Semanales",
+    "weeklyStatsDetailed": "Estadísticas Semanales: {{consumed}}/{{goal}} kcal ({{percentage}}%)",
+    "vitaminsAndMineralsWeekly": "💊 Vitaminas y Minerales Semanales",
+    "notEnoughDataForStats": "No hay suficientes datos para estadísticas",
+    "getPersonalizedRecommendations": "Obtener Recomendaciones Personalizadas",
+    "personalizedRecommendations": "Recomendaciones Personalizadas",
+    "personalizedRecommendationsInfo": "Acerca de las Recomendaciones Personalizadas",
+    "personalizedRecommendationsDescription": "Las recomendaciones personalizadas se pueden solicitar una vez por día. Esto permite que la IA analice tus datos y proporcione consejos de calidad basados en las estadísticas nutricionales semanales.",
+    "analyzingData": "Analizando tus datos...",
+    "processingNutrition": "Procesando nutrientes...",
+    "generatingRecommendations": "Generando recomendaciones...",
+    "almostReady": "Casi listo...",
+    "recommendationsError": "Error al obtener recomendaciones",
+    "updated": "Actualizado",
+    "dailyRecommendations": "Recomendaciones de Hoy",
+    "loadingMotivationMessage": "Cargando mensaje motivacional...",
+    "retryRequest": "Reintentar Solicitud",
+    "deficiency": "Deficiencia",
+    "showLess": "Mostrar menos",
+    "readMore": "Leer más",
+    "motivationMessages": {
+      "firstTime": "¡Bienvenido! Es genial que hayas decidido empezar a controlar tu nutrición. ¡Comencemos el camino hacia hábitos saludables! 🎯",
+      "success": [
+        "¡Excelente trabajo! Ayer te mantuviste perfectamente dentro de tus objetivos de calorías. ¡Sigue así! Continuemos hacia nuestra meta hoy 🔥",
+        "¡Excelente! Ayer fue según el plan - calorías bajo control. ¡Repitamos ese éxito hoy! 💪",
+        "¡Dominaste tu nutrición ayer! Plan ejecutado perfectamente. Hagamos el mismo trabajo increíble hoy ⭐",
+        "Ayer fue increíble - ¡calorías perfectas! Excelente trabajo manteniendo la disciplina. ¡Sigamos así hoy! 🚀",
+        "¡Magnífico! Ayer mostraste cómo controlar las calorías correctamente. Excelente trabajo. ¡Continuemos con el mismo espíritu! 🎯",
+        "¡Bravo! El resultado calórico de ayer fue exactamente lo que el doctor recetó. ¡Repitamos ese logro hoy! ✨",
+        "¡Bien hecho! Ayer hiciste todo inteligentemente - ¡nutrición en el camino correcto! Sigue así. Mostremos la misma clase hoy 💥",
+        "¡Trabajo inteligente! Manejaste las calorías brillantemente ayer. Claramente estás trabajando en ti mismo. ¡Continuemos hoy! 🌟",
+        "¡Excelente trabajo! ¡Ayer tus calorías estuvieron justo en el objetivo! Respeto por tal disciplina. ¡Hagamos lo mismo hoy! 🔥",
+        "¡Gran trabajo! Ayer mostraste disciplina férrea con las calorías. Ese es el camino al éxito. ¡Mantengamos el nivel hoy! 💪"
+      ],
+      "exceeded": [
+        "¡Buen trabajo siguiendo! Las calorías de ayer estuvieron un poco por encima del plan, pero eso es normal. ¡Volvamos al camino hoy! 💙",
+        "¡Seguimiento inteligente! Ayer fue activo en calorías - un poco por encima de lo normal. ¡Ajustemos el curso y sigamos adelante hoy! 💪",
+        "¡Genial que mantengas el seguimiento! Ayer fue un día alto en calorías, pero no crítico. ¡Mostremos cómo se hace hoy! 🌟",
+        "¡Buen trabajo siendo honesto! Ayer superamos el límite de calorías, pero estos días pasan. ¡Recuperémonos hoy! 🔥",
+        "¡Genial que no te rindas! Ayer las calorías excedieron la meta, pero esa es experiencia. ¡Sigamos el plan hoy! 🎯",
+        "¡Bravo por la persistencia! Ayer fue nutricionalmente rico. ¡Volvamos al ritmo hoy! ✨",
+        "¡Buen trabajo no rendirse! Ayer tuvimos más calorías de las deseadas. ¡Hagamos correcciones hoy! 💥",
+        "¡Enfoque inteligente! Ayer fue un día alto en calorías - un poco de exceso. ¡Mostremos el enfoque correcto hoy! 🌟",
+        "¡Gran persistencia! Ayer las calorías fueron al plus, pero eso no es problema. ¡Trabajemos según el plan hoy! 🔥",
+        "¡Buen trabajo con el seguimiento honesto! Ayer fue activo en comida - un poco por encima de lo normal. ¡Mantengamos el rumbo hacia la meta hoy! 💪"
+      ],
+      "noData": [
+        "¡Buen trabajo regresando! No hubo datos ayer, pero hoy es un gran día para empezar a rastrear el progreso! 🌟",
+        "¡Movimiento inteligente! Ayer pasó sin registros, pero hoy es el momento perfecto para ponerse a trabajar y moverse hacia la meta! 💪",
+        "¡Genial que no te rindas! Ayer perdimos el seguimiento nutricional, pero hoy empezamos con nueva energía! 🚀",
+        "¡Buen trabajo regresando! Ayer no llegó información, pero hoy mostremos cómo rastrear correctamente! ⭐",
+        "¡Excelente que estés de vuelta con nosotros! Ayer se quedó vacío, pero hoy llenemos el diario y vayamos por el éxito! 🎯"
+      ]
+    },
+    "welcomeCard": {
+      "title": "¡Bienvenido a tu diario nutricional!",
+      "goalCalculatedWith": "Objetivos calculados usando la fórmula Mifflin-St Jeor:",
+      "calendarDescription": "Calendario arriba - selección de fecha con estadísticas nutricionales",
+      "editCaloriesDescription": "para editar calorías",
+      "tapToEdit": "Toca",
+      "scanProductsDescription": "Escanea y añade productos — aparecerán abajo en el diario",
+      "swipeDescription": "Desliza a la derecha → estadísticas semanales y vitaminas",
+      "understood": "Entendido",
+      "moreDetails": "Más Detalles",
+      "hideDetails": "Ocultar",
+      "personalGoalsTitle": "Tus Objetivos Personales:",
+      "disclaimerText": "Basado en: tu edad, peso, altura, actividad, objetivo y preferencias nutricionales",
+      "macroLabels": {
+        "calories": "kcal",
+        "protein": "proteína",
+        "fat": "grasa",
+        "carbs": "carbohidratos"
+      }
+    },
+    "quickAccess": "Acceso Rápido",
+    "calculationsWork": "Cómo Funcionan los Cálculos",
+    "calculationsWorkDesc": "Base científica de nuestras recomendaciones",
+    "userProfile": "Perfil de Usuario",
+    "userProfileDesc": "Ver datos de registro y preferencias",
+    "adjustPlan": "Ajustar Plan",
+    "adjustPlanDesc": "Cambiar objetivos y parámetros",
+    "detailedStats": "Estadísticas Detalladas",
+    "detailedStatsDesc": "Gráficos y análisis de progreso",
+    "comingSoon": "¡Próximamente!",
+    "comingSoonDescription": "Las estadísticas detalladas estarán disponibles en la próxima actualización",
+    "detailedStatsComingSoon": "Las estadísticas detalladas con gráficos y análisis estarán disponibles en la próxima actualización. ¡Mantente atento!"
   },
   "nutrition": {
     "disclaimerPortionStandard": "Datos calculados para la porción escaneada. Puede ajustar el tamaño, la cantidad consumida y los aditivos para un cálculo preciso cuando pulse el botón Añadir",
     "portion": "Porción",
+    "eatenPortion": "Porción Consumida",
     "gram": "g",
     "kcal": "kcal",
+    "estimatedWeight": "Peso Estimado",
     "nutritionalValue": "Valor Nutricional",
     "calories": "Calorías",
     "protein": "Proteína",
@@ -62,7 +206,200 @@
     "recommendations": "Recomendaciones",
     "frequency": "Frecuencia",
     "recentScans": "Escaneos Recientes",
-    "noScannedProducts": "Aún no hay productos escaneados"
+    "noScannedProducts": "No hay productos escaneados"
+  },
+  "goalTracking": {
+    "title": "Seguimiento de objetivos",
+    "yourProgress": "Tu progreso",
+    "current": "Actual",
+    "goal": "Objetivo",
+    "remaining": "Restante",
+    "needToGain": "Necesitas ganar",
+    "status": "Estado",
+    "achieved": "¡Logrado!",
+    "weeksToGoal": "Semanas para el objetivo",
+    "result": "Resultado",
+    "done": "¡Hecho!",
+    "noData": "Sin datos",
+    "goalAchieved": "¡Objetivo alcanzado! 🎉",
+    "thisWeek": "Esta semana:",
+    "newRecommendations": "Nuevas recomendaciones",
+    "weeklyCheck": "Chequeo semanal",
+    "lastCheck": "Último chequeo:",
+    "today": "hoy",
+    "checkCompleted": "Chequeo completado",
+    "takeCheck": "Hacer chequeo",
+    "additional": "Adicional",
+    "adjustPlan": "Ajustar plan",
+    "adjustPlanDescription": "Cambiar objetivos y parámetros",
+    "detailedStats": "Estadísticas detalladas",
+    "detailedStatsDescription": "Gráficos y análisis de progreso",
+    "comingSoon": "¡Próximamente!",
+    "detailedStatsComingSoon": "Las estadísticas detalladas con gráficos y análisis estarán disponibles en la próxima actualización. ¡Mantente atento!",
+    "generatingRecommendations": "Generando recomendaciones personalizadas...",
+    "thankYouForWeeklyCheck": "¡Gracias por el chequeo semanal!",
+    "dataProcessing": "Los datos se están procesando...",
+    "analyzingWeightDynamics": "Analizando dinámicas de peso",
+    "evaluatingNutritionQuality": "Evaluando calidad nutricional",
+    "trackingBehaviorChanges": "Rastreando cambios de comportamiento",
+    "continuingGoalWork": "¡Sigue trabajando hacia tus objetivos!",
+    "determiningNutritionStrategy": "Determinando estrategia nutricional óptima",
+    "determiningOptimalCalories": "Determinando ingesta calórica óptima",
+    "balancingMacronutrients": "Equilibrando macronutrientes",
+    "fallbackRecommendations": {
+      "addMoreVegetablesAndFruits": "Agrega más verduras y frutas",
+      "limitSweetDrinksAndFastFood": "Limita las bebidas dulces y la comida rápida",
+      "header": "Recomendaciones personalizadas basadas en tu chequeo:",
+      "lowEnergy": "Aumenta el consumo de proteínas y carbohidratos complejos para mantener la energía",
+      "lowMotivation": "Establece pequeñas metas intermedias para mantener la motivación",
+      "poorDiet": "Intenta planificar las comidas con anticipación y preparar aperitivos saludables",
+      "lowExercise": "Comienza con 10-15 minutos de actividad por día, aumentando gradualmente el tiempo",
+      "poorSleep": "Mantén un horario de sueño: acuéstate y levántate a la misma hora",
+      "highStress": "Practica técnicas de relajación: meditación, respiración profunda",
+      "keepGoing": "¡Excelente trabajo! Sigue así para alcanzar tu objetivo"
+    },
+    "formingHealthyHabits": "Formando hábitos saludables",
+    "selectingSuitableActivity": "Seleccionando actividad adecuada",
+    "analyzingPersonalizedRecommendations": "Analizando tus datos para recomendaciones personalizadas",
+    "dailyOpportunityReminder": "Recuerda: cada día es una nueva oportunidad para ser mejor. ¡Estás en el camino correcto!",
+    "dateFormat": {
+      "dayAgo": "día atrás",
+      "daysAgo": "días atrás",
+      "daysAgoMany": "días atrás"
+    },
+    "weeklyCheckFallback": {
+      "recommendationsTitle": "Recomendaciones:",
+      "lowEnergyTips": {
+        "1": "Aumenta el consumo de proteínas en cada comida",
+        "2": "Agrega más verduras y frutas", 
+        "3": "Presta atención a la calidad del sueño"
+      },
+      "highEnergyTips": {
+        "1": "¡Excelente energía! Mantén tu rutina actual",
+        "2": "Prueba nuevas recetas saludables",
+        "3": "Aumenta la actividad física"
+      },
+      "moderateEnergyTips": {
+        "1": "Equilibra proteínas, grasas y carbohidratos",
+        "2": "Bebe más agua durante el día",
+        "3": "Come regularmente cada 3-4 horas"
+      },
+      "mainGoals": {
+        "emotionalEating": "Objetivo principal: Trabaja en la alimentación consciente. Intenta hacer una pausa antes de comer y pregúntate - ¿realmente tengo hambre?",
+        "timeShortage": "Objetivo principal: Planifica tus comidas con anticipación. Prepara aperitivos saludables para la semana.",
+        "general": "Objetivo principal: Continúa siguiendo tu plan de comidas y rastreando el progreso."
+      }
+    }
+  },
+  "weeklyCheck": {
+    "title": "Revisión Semanal",
+    "stepOf": "de",
+    "next": "Siguiente",
+    "finish": "Finalizar",
+    "steps": {
+      "weight": {
+        "title": "¿Cuál es tu peso actual?",
+        "description": "Ingresa tu peso actual para seguir el progreso",
+        "label": "Peso actual (kg)",
+        "hint": "Ingresa tu peso en kilogramos",
+        "hintPicker": "Selecciona tu peso con precisión de 100 gramos",
+        "grams": "g",
+        "placeholder": "75.5"
+      },
+      "energy": {
+        "title": "¿Cómo está tu nivel de energía?",
+        "description": "Califica cómo te has sentido durante la semana pasada",
+        "ratingTitle": "Nivel de energía",
+        "labels": ["Muy bajo", "Excelente"]
+      },
+      "motivation": {
+        "title": "¿Cómo está tu motivación?",
+        "description": "¿Qué tan motivado estás para continuar hacia tu objetivo?",
+        "ratingTitle": "Nivel de motivación",
+        "labels": ["Para nada", "Muy alta"]
+      },
+      "challenges": {
+        "title": "¿Cuáles fueron las principales dificultades?",
+        "description": "Selecciona todos los problemas que enfrentaste esta semana"
+      },
+      "diet": {
+        "title": "¿Cómo seguiste el plan de alimentación?",
+        "description": "Califica qué tan bien siguiste las recomendaciones nutricionales",
+        "ratingTitle": "Cumplimiento de dieta",
+        "labels": ["No seguí para nada", "Perfecto"]
+      },
+      "exercise": {
+        "title": "¿Qué tal la actividad física?",
+        "description": "Califica qué tan activo fuiste esta semana",
+        "ratingTitle": "Actividad física",
+        "labels": ["No hice ejercicio", "Excelente"]
+      },
+      "sleepStress": {
+        "title": "Sueño y estrés",
+        "description": "Califica tu calidad de sueño y nivel de estrés",
+        "sleepTitle": "Calidad del sueño",
+        "sleepLabels": ["Muy mala", "Excelente"],
+        "stressTitle": "Nivel de estrés",
+        "stressLabels": ["Muy alto", "Muy bajo"]
+      }
+    },
+    "challenges": {
+      "overeating": "Comer en exceso",
+      "emotionalEating": "Alimentación emocional",
+      "lackOfTime": "Falta de tiempo",
+      "workStress": "Estrés laboral",
+      "socialEvents": "Eventos sociales",
+      "sweetTemptations": "Tentaciones dulces",
+      "lackOfSleep": "Falta de sueño",
+      "lowMotivation": "Baja motivación"
+    },
+    "completion": {
+      "title": "¡Excelente!",
+      "subtitle": "Revisión semanal completada",
+      "dataSaved": "Datos guardados",
+      "yourResults": "Tus resultados:",
+      "weight": "Peso:",
+      "energy": "Energía:",
+      "motivation": "Motivación:",
+      "getRecommendations": "Obtener recomendaciones"
+    },
+    "loading": {
+      "generating": "Generando recomendaciones personalizadas..."
+    }
+  },
+  "recommendations": {
+    "title": "Nuevas Recomendaciones",
+    "loading": "Cargando recomendaciones...",
+    "error": "Error al cargar recomendaciones",
+    "noRecommendations": "Completa la revisión semanal para obtener recomendaciones personalizadas",
+    "more": "más",
+    "card": {
+      "mainTitle": "Recomendaciones Personalizadas",
+      "sections": {
+        "progressAnalysis": "Análisis de Progreso",
+        "foodsToAddAndAvoid": "Qué Agregar y Excluir",
+        "nextWeekGoals": "Objetivos para la Próxima Semana"
+      },
+      "progress": {
+        "weightChange": "Cambio de Peso:",
+        "nutritionQuality": "Calidad Nutricional:",
+        "challengeWork": "Manejo de Desafíos:"
+      },
+      "foods": {
+        "addToRation": "Agregar a la Dieta:",
+        "limitOrExclude": "Limitar o Excluir:"
+      },
+      "targets": {
+        "calories": "Calorías:",
+        "macronutrients": "Macronutrientes:",
+        "behavioralGoal": "Objetivo de Comportamiento:",
+        "activity": "Actividad:"
+      },
+      "actions": {
+        "expandAll": "Expandir Todo",
+        "collapseAll": "Contraer Todo"
+      }
+    }
   },
   "allergens": {
     "title": "Alérgenos",
@@ -135,12 +472,20 @@
     "title": "Historial",
     "today": "Hoy",
     "yesterday": "Ayer",
+    "earlier": "Anteriormente",
     "thisWeek": "Esta Semana",
     "lastWeek": "Semana Pasada",
     "earlierMonth": "Mes Anterior",
     "selectMonth": "Seleccionar Mes",
     "noHistory": "No hay historial de escaneos para mostrar",
-    "startScanning": "Comienza a escanear alimentos"
+    "startScanning": "Comienza a escanear alimentos",
+    "scannedProducts": "Tus Escaneos",
+    "addedToDashboard": "Diario Alimentario",
+    "noDashboardProducts": "No hay productos agregados",
+    "goToDashboard": "Ir al Panel",
+    "calories": "kcal",
+    "manualAddPlaceholder": "Agregar producto manual...",
+    "loading": "Cargando más..."
   },
   "product": {
     "productFeatures": "Características del producto",
@@ -182,6 +527,116 @@
     "termsOfService": "Términos de Servicio",
     "contactUs": "Contáctanos",
     "logout": "Cerrar Sesión",
-    "version": "Versión"
-  }
+    "version": "Versión",
+    "clearAllData": "Borrar Todos los Datos",
+    "clearAllDataDescription": "Eliminar todo el progreso, productos y configuraciones",
+    "clearDataConfirmTitle": "¿Eliminar Todos los Datos?",
+    "clearDataConfirmMessage": "Esta acción eliminará permanentemente todos los datos de la aplicación: productos, progreso, configuraciones, historial nutricional y absolutamente toda la información.\n\n¡Esta acción es irreversible!",
+    "clearDataConfirm": "Sí, eliminar todo",
+    "clearDataCancel": "Cancelar",
+    "clearDataSuccess": "Todos los datos eliminados",
+    "clearDataSuccessMessage": "Todos los datos eliminados exitosamente. Será redirigido a la configuración inicial.",
+    "clearDataError": "Error al eliminar datos",
+    "clearDataErrorMessage": "Ocurrió un error al limpiar los datos. Por favor, inténtelo de nuevo."
+  },
+  "addManualProduct": {
+    "title": "Añadir Producto",
+    "productName": "Nombre del Producto",
+    "productNameRequired": "Nombre del Producto *",
+    "productNamePlaceholder": "ej., pechuga de pollo a la plancha",
+    "nutrientsPerPortion": "Nutrientes por porción",
+    "caloriesRequired": "Calorías *",
+    "protein": "Proteína (g)",
+    "fat": "Grasa (g)",
+    "carbs": "Carbohidratos (g)",
+    "sugar": "Azúcar (g)",
+    "fiber": "Fibra (g)",
+    "portionSize": "Tamaño de Porción",
+    "portionSmall": "Pequeña",
+    "portionRegular": "Regular",
+    "portionLarge": "Grande",
+    "getAIData": "IA",
+    "addToJournal": "Añadir al Diario",
+    "enterProductName": "Ingrese el nombre del producto",
+    "caloriesMustBePositive": "Las calorías deben ser mayor a 0",
+    "aiDataReceived": "🤖 ¡Datos recibidos!",
+    "aiDataReceivedMessage": "Por favor revise y edite los datos si es necesario",
+    "aiDataError": "No se pudieron obtener datos de la IA. Por favor complete los campos manualmente.",
+    "productAdded": "¡{{productName}} añadido al diario!",
+    "failedToAddProduct": "No se pudo añadir el producto"
+  },
+  "planSettings": {
+    "title": "Configurar Plan",
+    "mainParameters": "Parámetros Principales",
+    "startWeight": "Peso Inicial",
+    "targetWeight": "Peso Objetivo",
+    "weightLossSpeed": "Velocidad de Pérdida de Peso",
+    "weightGainSpeed": "Velocidad de Aumento de Peso",
+    "recommendation": "Recomendado: 0.3-0.7 kg por semana para pérdida de peso, 0.2-0.5 kg para aumento de peso",
+    "forecast": "Pronóstico",
+    "goalType": "Tipo de Objetivo",
+    "weightChange": "Cambio de Peso",
+    "estimatedTime": "Tiempo Estimado",
+    "actions": "Acciones",
+    "resetProgress": "Reiniciar Todo el Progreso",
+    "saveChanges": "Guardar Cambios",
+    "saving": "Guardando...",
+    "weightLoss": "Pérdida de Peso",
+    "weightGain": "Aumento de Peso",
+    "weeks": "semanas",
+    "notDetermined": "No determinado",
+    "kg": "kg",
+    "kgPerWeek": "kg/semana",
+    "alerts": {
+      "invalidStartWeight": "Ingrese un peso inicial válido (30-300 kg)",
+      "invalidTargetWeight": "Ingrese un peso objetivo válido (30-300 kg)",
+      "invalidWeeklyTarget": "Ingrese una velocidad válida (0.1-2.0 kg por semana)",
+      "weightDifferenceTooSmall": "La diferencia entre el peso inicial y objetivo debe ser mayor a 0.5 kg",
+      "savedTitle": "¡Guardado!",
+      "savedMessage": "Configuración del plan actualizada exitosamente",
+      "saveError": "No se pudieron guardar los ajustes. Inténtelo de nuevo.",
+      "resetTitle": "¿Reiniciar Progreso?",
+      "resetMessage": "Esta acción eliminará todos los datos de progreso y verificaciones semanales. No se puede deshacer.",
+      "cancel": "Cancelar",
+      "reset": "Reiniciar",
+      "resetFeatureTitle": "Función de Reinicio",
+      "resetFeatureMessage": "Se implementará en la próxima actualización",
+      "ok": "OK",
+      "error": "Error"
+    }
+  },
+  "goalsInfo": {
+    "title": "Tus objetivos personales:",
+    "kcal": "kcal",
+    "protein": "proteína",
+    "fat": "grasa",
+    "carbs": "carbohidratos",
+    "description": "Basado en: tu edad, peso, altura, actividad, objetivo y preferencias nutricionales",
+    "weightGoalsTitle": "Peso y progreso:",
+    "currentWeight": "Actual",
+    "targetWeight": "Objetivo",
+    "weeklyRate": "Semanal",
+    "weeksLeft": "Semanas"
+  },
+  "productManagement": {
+    "deleteProduct": "Eliminar Producto",
+    "productDeleted": "Producto eliminado",
+    "confirmDelete": "¿Estás seguro?",
+    "confirmDeleteMessage": "¿Estás seguro de que quieres eliminar \"{productName}\" del historial?",
+    "delete": "Eliminar",
+    "deleteError": "No se pudo eliminar el producto",
+    "thisActionCannotBeUndone": "Esta acción no se puede deshacer"
+  },
+  "productNameEdit": {
+    "emptyNameError": "El nombre no puede estar vacío",
+    "enterProductName": "Ingrese el nombre del producto",
+    "nameUpdated": "Nombre actualizado",
+    "aiAnalysisComplete": "Análisis de IA completado",
+    "aiAnalysisError": "No se pudo realizar el análisis de IA",
+    "enterNameForAnalysis": "Ingrese el nombre del producto para análisis"
+  },
+  "noScannedProducts": "No hay productos escaneados",
+  "noAddedProducts": "No hay productos agregados",
+  "addProduct": "Agregar producto",
+  "weeklyStats": "Estadísticas Semanales"
 }

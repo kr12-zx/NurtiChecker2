@@ -1,0 +1,385 @@
+{
+  "name": "Weekly Check AI Recommendations",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "pro_week_check",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "e438a495-d9f2-4ac4-a328-2b99f216eab1",
+      "name": "Webhook - Weekly Check",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        1360
+      ],
+      "webhookId": "pro_week_check"
+    },
+    {
+      "parameters": {
+        "url": "=https://bespxpyftmnhbynchywl.supabase.co/rest/v1/webhook_events",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "email_id",
+              "value": "=eq.{{ $json.userId || $json.body?.userId }}"
+            },
+            {
+              "name": "event_type",
+              "value": "eq.onboarding_completed"
+            },
+            {
+              "name": "select",
+              "value": "payload"
+            },
+            {
+              "name": "order",
+              "value": "sent_at.desc"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a8b11eb4-e3c7-4957-a0d1-1c4fa76096f8",
+      "name": "Get webhook_events",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        40,
+        1360
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "8RKkUwkeVmyvS58y",
+          "name": "Supabase account NutriCheker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Обработка данных из webhook_events + еженедельные данные\nconsole.log('=== ОБРАБОТКА WEBHOOK EVENTS + WEEKLY DATA ===');\n\n// Получаем данные из предыдущей ноды Get webhook_events\nconst webhookEventsData = $input.all();\nconst originalWeeklyRequest = $('Webhook - Weekly Check').all()[0] || {};\n\nconsole.log('Получено записей webhook_events:', webhookEventsData.length);\nconsole.log('Оригинальный weekly запрос:', JSON.stringify(originalWeeklyRequest.body || originalWeeklyRequest.json, null, 2));\n\nif (webhookEventsData.length === 0) {\n  console.error('❌ Нет данных из webhook_events');\n  return [{\n    json: {\n      error: 'No webhook_events data found',\n      user: {},\n      profile: {},\n      settings: {},\n      weeklyData: {}\n    }\n  }];\n}\n\n// Извлекаем данные еженедельной проверки из оригинального запроса\nconst weeklyRequestBody = originalWeeklyRequest.body || originalWeeklyRequest.json || {};\nconst weeklyData = weeklyRequestBody.weeklyData || {};\n\nconsole.log('Weekly data из запроса:', weeklyData);\n\n// Извлекаем первую запись\nconst webhookRecord = webhookEventsData[0];\n\n// Проверяем разные возможные структуры данных\nlet payloadString = null;\nif (webhookRecord.payload) {\n  payloadString = webhookRecord.payload;\n} else if (webhookRecord.json && webhookRecord.json.payload) {\n  payloadString = webhookRecord.json.payload;\n} else {\n  console.error('❌ Нет payload в webhook_events');\n  return [{\n    json: {\n      error: 'No payload in webhook_events',\n      user: {},\n      profile: {},\n      settings: {},\n      weeklyData: weeklyData\n    }\n  }];\n}\n\n// Парсим JSON payload\nlet parsedData = {};\ntry {\n  parsedData = JSON.parse(payloadString);\n  console.log('✅ Payload успешно распарсен');\n} catch (error) {\n  console.error('❌ Ошибка парсинга payload:', error.message);\n  return [{\n    json: {\n      error: 'Failed to parse payload JSON: ' + error.message,\n      user: {},\n      profile: {},\n      settings: {},\n      weeklyData: weeklyData\n    }\n  }];\n}\n\n// Извлекаем основные секции\nconst user = parsedData.user || {};\nconst profile = parsedData.profile || {};\nconst settings = parsedData.settings || {};\n\n// Функция для расчета возраста\nconst calculateAge = (birthday) => {\n  if (!birthday) return null;\n  \n  try {\n    const birthDate = new Date(birthday);\n    const today = new Date();\n    let age = today.getFullYear() - birthDate.getFullYear();\n    const monthDiff = today.getMonth() - birthDate.getMonth();\n    \n    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {\n      age--;\n    }\n    \n    return age > 0 ? age : null;\n  } catch (error) {\n    return null;\n  }\n};\n\n// Рассчитываем возраст\nconst calculatedAge = calculateAge(profile.birthday);\n\n// Формируем структурированные данные с еженедельными данными\nconst processedData = {\n  // Информация о пользователе\n  user: {\n    emailId: user.emailId || weeklyRequestBody.userId || '',\n    createdAt: user.createdAt || '',\n    age: calculatedAge,\n    timezone: user.timezone || null,\n    timezoneOffset: user.timezoneOffset || null\n  },\n  \n  // Профиль пользователя (все поля как в оригинале)\n  profile: {\n    birthday: profile.birthday || null,\n    gender: profile.gender || null,\n    height: profile.height || null,\n    currentWeight: weeklyData.currentWeight || profile.currentWeight || null, // приоритет новому весу\n    goalWeight: profile.goalWeight || null,\n    weightLossRate: profile.weightLossRate || null,\n    primaryGoal: profile.primaryGoal || null,\n    activityLevel: profile.activityLevel || null,\n    dietPreference: profile.dietPreference || null,\n    nutritionFocus: profile.nutritionFocus || null,\n    mealFrequency: profile.mealFrequency || null,\n    foodPreferences: profile.foodPreferences || null,\n    foodVariety: profile.foodVariety || null,\n    weightLossPlan: profile.weightLossPlan || null,\n    exerciseIntent: profile.exerciseIntent || null,\n    showCalorieTutorial: profile.showCalorieTutorial || null,\n    useFlexibleCalories: profile.useFlexibleCalories || null,\n    intermittentFasting: profile.intermittentFasting || null,\n    confidenceLevel: profile.confidenceLevel || null,\n    challenges: Array.isArray(profile.challenges) ? profile.challenges : [],\n    mainObstacle: profile.mainObstacle || null,\n    stressResponse: profile.stressResponse || null,\n    adaptability: profile.adaptability || null,\n    challengesView: profile.challengesView || null,\n    setbacksResponse: profile.setbacksResponse || null,\n    decisionMaking: profile.decisionMaking || null,\n    difficultSituationsHandling: profile.difficultSituationsHandling || null,\n    temptationResponse: profile.temptationResponse || null,\n    eatingHabitsAssessment: profile.eatingHabitsAssessment || null\n  },\n  \n  // Настройки единиц измерения\n  settings: {\n    weightUnit: settings.weightUnit || 'kg',\n    heightUnit: settings.heightUnit || 'cm',\n    system: settings.system || 'metric'\n  },\n  \n  // НОВОЕ: Данные еженедельной проверки\n  weeklyData: {\n    currentWeight: weeklyData.currentWeight || null,\n    energyLevel: weeklyData.energyLevel || null,\n    motivationLevel: weeklyData.motivationLevel || null,\n    challenges: weeklyData.challenges || [],\n    dietCompliance: weeklyData.dietCompliance || null,\n    exerciseCompliance: weeklyData.exerciseCompliance || null,\n    sleepQuality: weeklyData.sleepQuality || null,\n    stressLevel: weeklyData.stressLevel || null,\n    completedAt: weeklyData.completedAt || new Date().toISOString(),\n    timestamp: weeklyData.timestamp || new Date().toISOString()\n  }\n};\n\nconsole.log('=== ОБРАБОТАННЫЕ ДАННЫЕ WEBHOOK + WEEKLY ===');\nconsole.log('User emailId:', processedData.user.emailId);\nconsole.log('Weekly currentWeight:', processedData.weeklyData.currentWeight);\nconsole.log('Weekly energyLevel:', processedData.weeklyData.energyLevel);\nconsole.log('Weekly challenges:', processedData.weeklyData.challenges);\n\nreturn [{ json: processedData }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        1360
+      ],
+      "id": "e6b71f74-ec25-4daa-a4f8-f818916e68ad",
+      "name": "process_webhook_events"
+    },
+    {
+      "parameters": {
+        "url": "=https://bespxpyftmnhbynchywl.supabase.co/rest/v1/profiles",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "mailid",
+              "value": "=eq.{{ $('Webhook - Weekly Check').item.json.userId || $('Webhook - Weekly Check').item.json.body?.userId }}"
+            },
+            {
+              "name": "select",
+              "value": "locale,timezone,timezone_offset,country,mailid,uuid"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1d9f745c-f90b-42a6-914f-44457f37266d",
+      "name": "Get profiles",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        400,
+        1360
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "8RKkUwkeVmyvS58y",
+          "name": "Supabase account NutriCheker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://bespxpyftmnhbynchywl.supabase.co/rest/v1/meals_added",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "mailid",
+              "value": "=eq.{{ $('Webhook - Weekly Check').item.json.userId || $('Webhook - Weekly Check').item.json.body?.userId }}"
+            },
+            {
+              "name": "select",
+              "value": "dish,grams,kcal,prot,fat,carb,sugar,fiber,sodium,vitamins,minerals,eaten_at,eaten_day,overallhealthscore"
+            },
+            {
+              "name": "order",
+              "value": "eaten_at.desc"
+            },
+            {
+              "name": "limit",
+              "value": "50"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "976537a7-e6c4-43fc-9c76-0e21528028c2",
+      "name": "Get meals_added",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        580,
+        1360
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "8RKkUwkeVmyvS58y",
+          "name": "Supabase account NutriCheker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Обработка данных из meals_added (как в оригинале)\nconsole.log('=== УПРОЩЕННАЯ ОБРАБОТКА MEALS ===');\n\n// Получаем данные из предыдущей ноды Get meals_added\nlet rawData = $input.all();\nconsole.log('Получено записей:', rawData.length);\n\n// Проверяем, если данные приходят в обертке\nlet mealsData = rawData;\nif (rawData.length === 1 && Array.isArray(rawData[0])) {\n  mealsData = rawData[0];\n} else if (rawData.length === 1 && rawData[0].json && Array.isArray(rawData[0].json)) {\n  mealsData = rawData[0].json;\n}\n\nconsole.log('Финальное количество блюд для обработки:', mealsData.length);\n\n// Функция для безопасного преобразования в число\nconst safeFloat = (value) => {\n  if (value === null || value === undefined || value === '') {\n    return 0;\n  }\n  const num = parseFloat(value);\n  return isNaN(num) ? 0 : num;\n};\n\n// Обрабатываем каждое блюдо\nconst processedMeals = mealsData.map((item, index) => {\n  let meal = item;\n  if (item.json) {\n    meal = item.json;\n  }\n  \n  const dishName = meal.dish || 'Неизвестное блюдо';\n  const calories = safeFloat(meal.kcal);\n  \n  return {\n    dish: dishName,\n    calories: calories\n  };\n});\n\n// Рассчитываем общую статистику\nconst totalCalories = processedMeals.reduce((sum, meal) => sum + meal.calories, 0);\nconst averageCalories = processedMeals.length > 0 ? Math.round(totalCalories / processedMeals.length) : 0;\n\n// Формируем результат\nconst result = {\n  meals: processedMeals,\n  summary: {\n    totalMeals: processedMeals.length,\n    totalCalories: totalCalories,\n    averageCalories: averageCalories\n  }\n};\n\nconsole.log('=== СТАТИСТИКА ПИТАНИЯ ===');\nconsole.log('Общее количество блюд:', result.summary.totalMeals);\nconsole.log('Общие калории:', result.summary.totalCalories);\n\nreturn [{ json: result }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        760,
+        1360
+      ],
+      "id": "138fc42d-28a1-40de-ae54-693fedb4593b",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Объединение всех данных + еженедельная проверка\nconsole.log('=== ОБЪЕДИНЕНИЕ ДАННЫХ ПОЛЬЗОВАТЕЛЯ + WEEKLY CHECK ===');\n\n// Получаем данные из всех предыдущих нод\nconst webhookProcessedData = $('process_webhook_events').all();\nconst profilesData = $('Get profiles').all();\nconst mealsProcessedData = $('Code').all();\nconst originalRequest = $('Webhook - Weekly Check').all()[0] || {};\n\nconsole.log('Webhook processed data:', webhookProcessedData.length, 'записей');\nconsole.log('Profiles data:', profilesData.length, 'записей');\nconsole.log('Meals processed data:', mealsProcessedData.length, 'записей');\n\n// Проверяем наличие данных\nif (webhookProcessedData.length === 0) {\n  console.error('❌ Нет обработанных данных webhook');\n  return [{ json: { error: 'No processed webhook data' } }];\n}\n\n// Извлекаем обработанные данные\nconst webhookData = webhookProcessedData[0].json || webhookProcessedData[0];\nconst profileData = profilesData.length > 0 ? (profilesData[0].json || profilesData[0]) : {};\nconst mealsData = mealsProcessedData.length > 0 ? (mealsProcessedData[0].json || mealsProcessedData[0]) : { meals: [], summary: { totalCalories: 0 } };\n\n// Получаем userId\nconst userId = originalRequest.body?.userId || originalRequest.userId || webhookData.user?.emailId;\nconsole.log('User ID:', userId);\n\n// Функция для создания детальной сводки питания (урезанная версия)\nconst createDetailedNutritionSummary = (simpleMealsData) => {\n  if (!simpleMealsData || !simpleMealsData.meals) {\n    return {\n      totalCalories: 0,\n      avgCaloriesPerDay: 0,\n      mealCount: 0,\n      allDishes: []\n    };\n  }\n\n  const rawMeals = simpleMealsData.meals || [];\n  const totalCalories = rawMeals.reduce((sum, meal) => sum + meal.calories, 0);\n  const mealCount = rawMeals.length;\n  const estimatedDays = Math.max(1, Math.min(7, Math.ceil(mealCount / 3)));\n  \n  return {\n    totalCalories: totalCalories,\n    avgCaloriesPerDay: Math.round(totalCalories / estimatedDays),\n    mealCount: mealCount,\n    allDishes: rawMeals.map(meal => ({\n      dish: meal.dish,\n      calories: meal.calories\n    }))\n  };\n};\n\n// Функция для конвертации confidenceLevel в описательный текст\nconst getConfidenceLevelDescription = (level) => {\n  switch (level) {\n    case 1: return \"Not confident at all\";\n    case 2: return \"Slightly confident\";\n    case 3: return \"Moderately confident\";\n    case 4: return \"Quite confident\";\n    case 5: return \"Very confident\";\n    default: return \"Not specified\";\n  }\n};\n\n// Формируем финальные структурированные данные\nconst structuredData = {\n  user: {\n    emailId: userId,\n    age: webhookData.user?.age || null,\n    timezone: profileData.timezone || webhookData.user?.timezone || 'UTC',\n    timezoneOffset: profileData.timezone_offset || webhookData.user?.timezoneOffset || 0,\n    locale: profileData.locale || 'en',\n    country: profileData.country || 'Unknown'\n  },\n  profile: {\n    // Все поля профиля как в оригинале\n    gender: webhookData.profile?.gender || null,\n    height: webhookData.profile?.height || null,\n    currentWeight: webhookData.weeklyData?.currentWeight || webhookData.profile?.currentWeight || null,\n    goalWeight: webhookData.profile?.goalWeight || null,\n    weightLossRate: webhookData.profile?.weightLossRate || null,\n    primaryGoal: webhookData.profile?.primaryGoal || null,\n    activityLevel: webhookData.profile?.activityLevel || null,\n    dietPreference: webhookData.profile?.dietPreference || null,\n    nutritionFocus: webhookData.profile?.nutritionFocus || null,\n    mealFrequency: webhookData.profile?.mealFrequency || null,\n    foodPreferences: webhookData.profile?.foodPreferences || null,\n    foodVariety: webhookData.profile?.foodVariety || null,\n    weightLossPlan: webhookData.profile?.weightLossPlan || null,\n    exerciseIntent: webhookData.profile?.exerciseIntent || null,\n        confidenceLevel: getConfidenceLevelDescription(webhookData.profile?.confidenceLevel),\n    confidenceLevelOriginal: webhookData.profile?.confidenceLevel || null,\n    challenges: webhookData.profile?.challenges || [],\n    mainObstacle: webhookData.profile?.mainObstacle || null,\n    stressResponse: webhookData.profile?.stressResponse || null,\n    adaptability: webhookData.profile?.adaptability || null,\n    decisionMaking: webhookData.profile?.decisionMaking || null,\n    temptationResponse: webhookData.profile?.temptationResponse || null\n  },\n  settings: {\n    weightUnit: webhookData.settings?.weightUnit || 'kg',\n    heightUnit: webhookData.settings?.heightUnit || 'cm',\n    system: webhookData.settings?.system || 'metric'\n  },\n  weeklyNutrition: createDetailedNutritionSummary(mealsData),\n  \n  // НОВОЕ: Данные текущей еженедельной проверки\n  currentWeeklyCheck: {\n    currentWeight: webhookData.weeklyData?.currentWeight || null,\n    energyLevel: webhookData.weeklyData?.energyLevel || null,\n    motivationLevel: webhookData.weeklyData?.motivationLevel || null,\n    challenges: webhookData.weeklyData?.challenges || [],\n    dietCompliance: webhookData.weeklyData?.dietCompliance || null,\n    exerciseCompliance: webhookData.weeklyData?.exerciseCompliance || null,\n    sleepQuality: webhookData.weeklyData?.sleepQuality || null,\n    stressLevel: webhookData.weeklyData?.stressLevel || null,\n    completedAt: webhookData.weeklyData?.completedAt || new Date().toISOString()\n  }\n};\n\nconsole.log('=== ФИНАЛЬНЫЕ ОБЪЕДИНЕННЫЕ ДАННЫЕ ===');\nconsole.log('User:', structuredData.user);\nconsole.log('Weekly Check данные:', structuredData.currentWeeklyCheck);\nconsole.log('Nutrition summary:', {\n  totalCalories: structuredData.weeklyNutrition.totalCalories,\n  mealCount: structuredData.weeklyNutrition.mealCount\n});\n\nreturn [{ json: structuredData }];"
+      },
+      "id": "67fb1b33-8e0d-4e42-b95b-883cbbd52a32",
+      "name": "Process User Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        920,
+        1360
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an experienced dietitian and nutritionist specializing in weight management and behavioral psychology. Your task is to analyze the user's weekly check-in data combined with their food history and provide personalized recommendations.\n\n**USER PROFILE:**\n- Age: {{ $json.user.age || 'not specified' }} years\n- Gender: {{ $json.profile.gender || 'not specified' }}\n- Height: {{ $json.profile.height || 'not specified' }} cm\n- Current weight: {{ $json.profile.currentWeight || 'not specified' }} kg\n- Goal weight: {{ $json.profile.goalWeight || 'not specified' }} kg\n- Primary goal: {{ $json.profile.primaryGoal || 'not specified' }}\n- Activity level: {{ $json.profile.activityLevel || 'not specified' }}\n- Diet preference: {{ $json.profile.dietPreference || 'standard' }}\n- Country: {{ $json.user.country }}\n- Language: {{ $json.user.locale }}\n\n**PSYCHOLOGICAL PROFILE:**\n- Confidence level (1-5): {{ $json.profile.confidenceLevel || 'not specified' }}\n- Main challenges: {{ ($json.profile.challenges || []).join(', ') || 'not specified' }}\n- Stress response: {{ $json.profile.stressResponse || 'not specified' }}\n- Decision making: {{ $json.profile.decisionMaking || 'not specified' }}\n\n**WEEKLY CHECK-IN DATA (CURRENT):**\n- **New weight**: {{ $json.currentWeeklyCheck.currentWeight || 'not provided' }} kg\n- **Energy level** (1-5): {{ $json.currentWeeklyCheck.energyLevel || 'not provided' }}\n- **Motivation level** (1-5): {{ $json.currentWeeklyCheck.motivationLevel || 'not provided' }}\n- **Current challenges**: {{ ($json.currentWeeklyCheck.challenges || []).join(', ') || 'none reported' }}\n- **Diet compliance** (1-5): {{ $json.currentWeeklyCheck.dietCompliance || 'not provided' }}\n- **Exercise compliance** (1-5): {{ $json.currentWeeklyCheck.exerciseCompliance || 'not provided' }}\n- **Sleep quality** (1-5): {{ $json.currentWeeklyCheck.sleepQuality || 'not provided' }}\n- **Stress level** (1-5): {{ $json.currentWeeklyCheck.stressLevel || 'not provided' }}\n- **Check completed**: {{ $json.currentWeeklyCheck.completedAt }}\n\n**NUTRITION HISTORY:**\n- Total meals logged: {{ $json.weeklyNutrition.mealCount }}\n- Total calories: {{ $json.weeklyNutrition.totalCalories }} kcal\n- Average daily calories: {{ $json.weeklyNutrition.avgCaloriesPerDay }} kcal\n\n**RECENT DISHES:**\n{% for dish in $json.weeklyNutrition.allDishes %}\n- {{ dish.dish }}: {{ dish.calories }} kcal\n{% endfor %}\n\n**TASK:**\nAnalyze the user's weekly check-in data in context of their profile and nutrition history. Provide actionable recommendations focusing on:\n\n1. **WEIGHT PROGRESS ANALYSIS**: Compare current weight with goal\n2. **ENERGY & MOTIVATION**: Address low energy/motivation if reported\n3. **COMPLIANCE ISSUES**: Help with diet/exercise compliance problems\n4. **PSYCHOLOGICAL SUPPORT**: Address current challenges and stress\n5. **SLEEP & RECOVERY**: Improve sleep quality if needed\n6. **NUTRITION ALIGNMENT**: How their food choices support their goals\n\nResponse in JSON format:\n\n```json\n{\n  \"weeklyAnalysis\": {\n    \"weightProgress\": {\n      \"currentWeight\": {{ $json.currentWeeklyCheck.currentWeight || 'null' }},\n      \"goalWeight\": {{ $json.profile.goalWeight || 'null' }},\n      \"progressAssessment\": \"analysis of weight progress\",\n      \"recommendation\": \"specific weight management advice\"\n    },\n    \"energyMood\": {\n      \"energyLevel\": {{ $json.currentWeeklyCheck.energyLevel || 'null' }},\n      \"motivationLevel\": {{ $json.currentWeeklyCheck.motivationLevel || 'null' }},\n      \"assessment\": \"analysis of energy and motivation\",\n      \"recommendations\": [\"energy tip 1\", \"motivation tip 2\"]\n    },\n    \"compliance\": {\n      \"dietCompliance\": {{ $json.currentWeeklyCheck.dietCompliance || 'null' }},\n      \"exerciseCompliance\": {{ $json.currentWeeklyCheck.exerciseCompliance || 'null' }},\n      \"assessment\": \"analysis of compliance levels\",\n      \"improvements\": [\"diet improvement 1\", \"exercise improvement 2\"]\n    },\n    \"lifestyle\": {\n      \"sleepQuality\": {{ $json.currentWeeklyCheck.sleepQuality || 'null' }},\n      \"stressLevel\": {{ $json.currentWeeklyCheck.stressLevel || 'null' }},\n      \"assessment\": \"analysis of sleep and stress\",\n      \"recommendations\": [\"sleep tip 1\", \"stress management tip 2\"]\n    }\n  },\n  \"nutritionRecommendations\": {\n    \"shortSummary\": \"BRIEF summary based on weekly check and nutrition history (MAX 200 characters)\",\n    \"bulletPoints\": [\n      \"Action tip 1 (max 50 chars)\",\n      \"Action tip 2 (max 50 chars)\",\n      \"Action tip 3 (max 50 chars)\",\n      \"Action tip 4 (max 50 chars)\"\n    ],\n    \"weeklyPlan\": {\n      \"focusAreas\": [\"area 1\", \"area 2\", \"area 3\"],\n      \"dailyCalorieTarget\": \"recommended daily calories based on current data\",\n      \"keyNutrients\": [\"nutrient 1\", \"nutrient 2\"],\n      \"avoidFoods\": [\"food to avoid 1\", \"food to avoid 2\"]\n    }\n  },\n  \"motivationalSupport\": {\n    \"personalizedMessage\": \"encouraging message based on current challenges and progress\",\n    \"weeklyGoals\": [\n      \"achievable goal 1\",\n      \"achievable goal 2\",\n      \"achievable goal 3\"\n    ],\n    \"challengeStrategies\": [\n      \"strategy for current challenge 1\",\n      \"strategy for current challenge 2\"\n    ]\n  },\n  \"nextWeekFocus\": {\n    \"priorities\": [\"priority 1\", \"priority 2\", \"priority 3\"],\n    \"measurements\": [\"what to track\", \"what to measure\"],\n    \"checkInReminder\": \"reminder for next week's check-in\"\n  }\n}\n```\n\n**CRITICAL REQUIREMENTS:**\n1. **ANALYZE WEEKLY DATA** - Focus on the specific weekly check-in metrics\n2. **CONTEXTUAL ADVICE** - Consider psychological profile and current challenges\n3. **ACTIONABLE RECOMMENDATIONS** - Provide specific, implementable advice\n4. **RESPOND IN LANGUAGE** {{ $json.user.locale === 'ru' ? 'Russian' : $json.user.locale === 'es' ? 'Spanish' : 'English' }}\n5. **CONSIDER COUNTRY** {{ $json.user.country }} - suggest locally available solutions\n6. **TEXT LENGTH LIMITS**: shortSummary max 200 chars, bulletPoints max 50 chars each\n7. **POSITIVE TONE** - Be encouraging and supportive\n8. **SPECIFIC TO DATA** - Address the actual reported values, not generic advice\n\nRespond ONLY in JSON format, without additional text.",
+        "hasOutputParser": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        1080,
+        1360
+      ],
+      "id": "2f6af949-dc00-4019-b3d4-e81bedaa25bd",
+      "name": "Generate AI Recommendations"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "d514ca1b-ba6d-484c-ac8a-a2b2d28f18fd",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1420,
+        1360
+      ]
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro-preview-06-05",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        1580
+      ],
+      "id": "6a2c7624-e380-4a9d-9155-55ae329937fc",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "uebwXI2R84KHmUXO",
+          "name": "Google Gemini(PaLM) Api zergovprotas@gmail.com PAID"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook - Weekly Check": {
+      "main": [
+        [
+          {
+            "node": "Get webhook_events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get webhook_events": {
+      "main": [
+        [
+          {
+            "node": "process_webhook_events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "process_webhook_events": {
+      "main": [
+        [
+          {
+            "node": "Get profiles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get profiles": {
+      "main": [
+        [
+          {
+            "node": "Get meals_added",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get meals_added": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Process User Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process User Data": {
+      "main": [
+        [
+          {
+            "node": "Generate AI Recommendations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate AI Recommendations": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate AI Recommendations",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "3f98e65bbc53fb913ce632c695b32ab3b2d3d92ced38c3d4d86ebd2965460fa1"
+  }
+} 

@@ -11,6 +11,17 @@
     "search": "Search",
     "settings": "Settings",
     "error": "Error",
+    "productNotFound": "Product not found",
+    "failedToFindProduct": "Failed to find product",
+    "failedToAddProduct": "Failed to add product to journal",
+    "deleteProduct": "Delete Product",
+    "deleteProductConfirm": "Are you sure you want to delete \"{{productName}}\" from history?",
+    "deleteFromDiary": "Delete from Diary",
+    "deleteFromDiaryConfirm": "Are you sure you want to delete \"{{productName}}\" from nutrition diary?",
+    "deleteFromDiaryMessage": "Are you sure you want to delete from nutrition diary?",
+    "deleteFromHistoryMessage": "Are you sure you want to delete from history?",
+    "failedToDeleteProduct": "Failed to delete product",
+    "failedToDeleteFromDiary": "Failed to delete product from diary",
     "skip": "Skip",
     "viewAll": "View All",
     "scanMore": "Scan More",
@@ -20,14 +31,28 @@
     "retake": "Retake",
     "use": "Use",
     "processing": "Processing...",
-    "takePhotoFood": "Take Food Photo",
+    "takePhotoFood": "Take Photo of Food",
     "foodPhotoSaved": "Food photo saved successfully",
     "success": "Success",
-    "foodAddedToJournal": "{{foodName}} added to your food journal!",
+    "foodAddedToJournal": "{{foodName}} added to your nutrition journal!",
     "quantity": "Quantity",
+    "language": "Language",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "notifications": "Notifications",
+    "dataUsage": "Data Usage",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "support": "Support",
+    "version": "App Version",
+    "home": "Home",
+    "history": "History",
+    "stats": "Stats",
     "months": {
       "january": "January",
-      "february": "February", 
+      "february": "February",
       "march": "March",
       "april": "April",
       "may": "May",
@@ -39,7 +64,45 @@
       "november": "November",
       "december": "December"
     },
-    "kcal": "kcal"
+    "daysShort": {
+      "Mo": "Mo",
+      "Tu": "Tu",
+      "We": "We",
+      "Th": "Th",
+      "Fr": "Fr",
+      "Sa": "Sa",
+      "Su": "Su"
+    },
+    "kcal": "kcal",
+    "gram": "g",
+    "kg": "kg",
+    "recommendations": "Recommendations"
+  },
+  "addManualProduct": {
+    "title": "Add Product",
+    "productName": "Product Name",
+    "productNameRequired": "Product Name *",
+    "productNamePlaceholder": "e.g., grilled chicken breast",
+    "nutrientsPerPortion": "Nutrients per portion",
+    "caloriesRequired": "Calories *",
+    "protein": "Protein (g)",
+    "fat": "Fat (g)",
+    "carbs": "Carbs (g)",
+    "sugar": "Sugar (g)",
+    "fiber": "Fiber (g)",
+    "portionSize": "Portion Size",
+    "portionSmall": "Small",
+    "portionRegular": "Regular",
+    "portionLarge": "Large",
+    "getAIData": "AI",
+    "addToJournal": "Add to Journal",
+    "enterProductName": "Enter product name",
+    "caloriesMustBePositive": "Calories must be greater than 0",
+    "aiDataReceived": "🤖 Data received!",
+    "aiDataReceivedMessage": "Please review and edit the data if necessary",
+    "aiDataError": "Failed to get data from AI. Please fill in the fields manually.",
+    "productAdded": "{{productName}} added to journal!",
+    "failedToAddProduct": "Failed to add product"
   },
   "tabs": {
     "dashboard": "Dashboard",
@@ -50,20 +113,140 @@
   },
   "dashboard": {
     "title": "NutriChecker",
-    "caloriesLeft": "Calories Left",
+    "caloriesLeft": "Calories\nleft",
+    "caloriesWeekly": "Calories",
     "burned": "Burned",
     "protein": "Protein",
     "fat": "Fat",
     "carbs": "Carbs",
     "recentScans": "Recent Scans",
-    "noScannedProducts": "No scanned products yet"
+    "recentAdded": "Recently Added",
+    "noScannedProducts": "No scanned products",
+    "noAddedProducts": "No added products",
+    "addProduct": "Add product",
+    "greeting": "Hello,",
+    "dailyGoal": "Your daily goal",
+    "caloriesConsumed": "Calories consumed",
+    "waterIntake": "Water intake",
+    "viewAll": "View all",
+    "noScans": "No scans yet",
+    "quickAdd": "Quick add",
+    "searchFood": "Search for food...",
+    "recommendations": "Recommendations for you",
+    "insights": "Nutrition insights",
+    "nutrientBalance": "Nutrient balance",
+    "improveDiet": "Improve your diet",
+    "editingGoals": "Editing Goals",
+    "weeklyStats": "Weekly Stats",
+    "weeklyStatsDetailed": "Weekly Stats: {{consumed}}/{{goal}} kcal ({{percentage}}%)",
+    "vitaminsAndMineralsWeekly": "💊 Vitamins and Minerals Weekly",
+    "notEnoughDataForStats": "Not enough data for statistics",
+    "getPersonalizedRecommendations": "Get Personalized Recommendations",
+    "personalizedRecommendations": "Personalized Recommendations",
+    "personalizedRecommendationsInfo": "About Personalized Recommendations",
+    "personalizedRecommendationsDescription": "Personalized recommendations can be requested once per day. This allows AI to analyze your data and provide quality advice based on weekly nutrition statistics.",
+    "analyzingData": "Analyzing your data...",
+    "processingNutrition": "Processing nutrients...",
+    "generatingRecommendations": "Generating recommendations...",
+    "almostReady": "Almost ready...",
+    "recommendationsError": "Error getting recommendations",
+    "updated": "Updated",
+    "dailyRecommendations": "Today's Recommendations",
+    "loadingMotivationMessage": "Loading motivational message...",
+    "retryRequest": "Retry Request",
+    "deficiency": "Deficiency",
+    "readMore": "Read More",
+    "showLess": "Show Less",
+    "motivationMessages": {
+      "firstTime": "Welcome! It's great that you've decided to start tracking your nutrition. Let's begin the journey to healthy habits! 🎯",
+      "success": [
+        "Great job! Yesterday you stayed within your calorie goals perfectly. Keep it up! Let's continue moving toward our goal today 🔥",
+        "Excellent! Yesterday went according to plan - calories under control. Let's repeat that success today! 💪",
+        "You nailed your nutrition yesterday! Plan executed perfectly. Let's do the same awesome work today ⭐",
+        "Yesterday was amazing - calories on point! Great job maintaining discipline. Let's keep it up today! 🚀",
+        "Superb! Yesterday you showed how to control calories properly. Excellent work. Let's continue in the same spirit! 🎯",
+        "Bravo! Yesterday's calorie result was exactly what the doctor ordered. Let's repeat that achievement today! ✨",
+        "Well done! Yesterday you did everything smart - nutrition on track! Keep it up. Let's show the same class today 💥",
+        "Smart work! You handled calories brilliantly yesterday. You're clearly working on yourself. Let's continue today! 🌟",
+        "Excellent work! Yesterday your calories were right on target! Respect for such discipline. Let's do the same today! 🔥",
+        "Great job! Yesterday you showed iron discipline with calories. That's the path to success. Let's maintain the bar today! 💪"
+      ],
+      "exceeded": [
+        "Good job tracking! Yesterday's calories were a bit above plan, but that's normal. Let's get back on track today! 💙",
+        "Smart tracking! Yesterday was active calorie-wise - a bit above normal. Let's adjust course and move forward today! 💪",
+        "Great that you're keeping track! Yesterday was a high-calorie day, but not critical. Let's show how it's done today! 🌟",
+        "Good job being honest! Yesterday went over the calorie limit, but these days happen. Let's bounce back today! 🔥",
+        "Great that you don't give up! Yesterday calories exceeded the goal, but that's experience. Let's stick to the plan today! 🎯",
+        "Bravo for persistence! Yesterday was nutritionally rich. Let's get back in the groove today! ✨",
+        "Good job not giving up! Yesterday had more calories than desired. Let's make corrections today! 💥",
+        "Smart approach! Yesterday was a high-calorie day - a bit of excess. Let's show the right approach today! 🌟",
+        "Great persistence! Yesterday calories went into the plus, but that's not a problem. Let's work according to plan today! 🔥",
+        "Good job with honest tracking! Yesterday was active food-wise - a bit above normal. Let's stay on course to the goal today! 💪"
+      ],
+      "noData": [
+        "Good job coming back! There was no data yesterday, but today is a great day to start tracking progress! 🌟",
+        "Smart move! Yesterday passed without records, but today is the perfect time to get to work and move toward the goal! 💪",
+        "Great that you don't give up! Yesterday we missed nutrition tracking, but today we start with new energy! 🚀",
+        "Good job returning! Yesterday no information came in, but today let's show how to track properly! ⭐",
+        "Excellent that you're back with us! Yesterday stayed empty, but today let's fill the diary and go for success! 🎯"
+      ]
+    },
+    "welcomeCard": {
+      "title": "Welcome to your nutrition diary!",
+      "goalCalculatedWith": "Goals calculated using Mifflin-St Jeor formula:",
+      "calendarDescription": "Calendar at the top - date selection with nutrition stats",
+      "editCaloriesDescription": "Tap to edit calories",
+      "tapToEdit": "Tap",
+      "scanProductsDescription": "Scan and add products — they'll appear at the bottom in diary",
+      "swipeDescription": "Swipe right → weekly stats and vitamins",
+      "understood": "Got it",
+      "moreDetails": "More Details",
+      "hideDetails": "Hide",
+      "personalGoalsTitle": "Your Personal Goals:",
+      "disclaimerText": "Based on: your age, weight, height, activity, goal and nutrition preferences",
+      "macroLabels": {
+        "calories": "kcal",
+        "protein": "protein",
+        "fat": "fat",
+        "carbs": "carbs"
+      }
+    },
+    "todayGoal": "Today's Goal",
+    "caloriesBurned": "calories burned",
+    "weeklyGoal": "Weekly Goal",
+    "weeklyProgress": "Weekly Progress",
+    "averageDaily": "Average Daily",
+    "weeklyTotal": "Weekly Total",
+    "daysInGoal": "Days in Goal",
+    "outOf": "out of",
+    "caloriesTrend": "vs last week",
+    "vitaminsMinerals": "Vitamins & Minerals",
+    "vitaminScore": "Vitamin Score",
+    "mineralScore": "Mineral Score",
+    "deficiencies": "Deficiencies",
+    "recommendations": "Recommendations",
+    "quickAccess": "Quick Access",
+    "calculationsWork": "How Calculations Work",
+    "calculationsWorkDesc": "Scientific basis of our recommendations",
+    "userProfile": "User Profile", 
+    "userProfileDesc": "View onboarding data and preferences",
+    "adjustPlan": "Adjust Plan",
+    "adjustPlanDesc": "Change goals and parameters",
+    "detailedStats": "Detailed Statistics",
+    "detailedStatsDesc": "Charts and progress analytics",
+    "comingSoon": "Coming Soon!",
+    "comingSoonDescription": "Detailed statistics will be available in the next update"
   },
   "nutrition": {
     "nutritionFacts": "Nutrition Facts",
     "disclaimerPortionStandard": "Data calculated for the scanned portion. You can adjust size, consumed amount and additives for an accurate calculation when you tap the Add button",
+    "disclaimerActualConsumed": "Shows actual consumed values considering selected portion and addons",
+    "actuallyConsumed": "Actually consumed",
     "portion": "Portion",
+    "eatenPortion": "Eaten Portion",
     "gram": "g",
     "kcal": "kcal",
+    "estimatedWeight": "Estimated Weight",
     "nutritionalValue": "Nutritional Value",
     "calories": "Calories",
     "protein": "Protein",
@@ -80,7 +263,204 @@
     "recommendations": "Recommendations",
     "frequency": "Frequency",
     "recentScans": "Recent Scans",
-    "noScannedProducts": "No scanned products yet"
+    "recentAdded": "Recently Added",
+    "portionNotDetermined": "Portion not determined",
+    "notDetermined": "Not determined",
+    "recommendationsNotDetermined": "Recommendations not determined"
+  },
+  "goalTracking": {
+    "title": "Goal Tracking",
+    "yourProgress": "Your Progress",
+    "current": "Current",
+    "goal": "Goal",
+    "remaining": "Remaining",
+    "needToGain": "Need to gain",
+    "status": "Status",
+    "achieved": "Achieved!",
+    "weeksToGoal": "Weeks to goal",
+    "result": "Result",
+    "done": "Done!",
+    "noData": "No data",
+    "goalAchieved": "Goal achieved! 🎉",
+    "thisWeek": "This week:",
+    "newRecommendations": "New Recommendations",
+    "weeklyCheck": "Weekly Check",
+    "lastCheck": "Last check:",
+    "today": "today",
+    "checkCompleted": "Check completed",
+    "takeCheck": "Take check",
+    "additional": "Additional",
+    "adjustPlan": "Adjust Plan",
+    "adjustPlanDescription": "Change goals and parameters",
+    "detailedStats": "Detailed Statistics",
+    "detailedStatsDescription": "Charts and progress analytics",
+    "detailedStatsComingSoon": "Detailed statistics with charts and analytics will be available in the next update. Stay tuned!",
+    "comingSoon": "Coming Soon!",
+    "comingSoonDescription": "Detailed statistics will be available in the next update",
+    "generatingRecommendations": "Generating personalized recommendations...",
+    "thankYouForWeeklyCheck": "Thank you for the weekly check!",
+    "dataProcessing": "Data is being processed...",
+    "analyzingWeightDynamics": "Analyzing weight dynamics",
+    "evaluatingNutritionQuality": "Evaluating nutrition quality",
+    "trackingBehaviorChanges": "Tracking behavior changes", 
+    "continuingGoalWork": "Keep working towards your goals!",
+    "determiningNutritionStrategy": "Determining optimal nutrition strategy",
+    "determiningOptimalCalories": "Determining optimal calorie intake",
+    "balancingMacronutrients": "Balancing macronutrients",
+    "fallbackRecommendations": {
+      "addMoreVegetablesAndFruits": "Add more vegetables and fruits",
+      "limitSweetDrinksAndFastFood": "Limit sweet drinks and fast food",
+      "header": "Personalized recommendations based on your check:",
+      "lowEnergy": "Increase protein and complex carbohydrate intake to maintain energy",
+      "lowMotivation": "Set small intermediate goals to maintain motivation",
+      "poorDiet": "Try planning meals in advance and preparing healthy snacks",
+      "lowExercise": "Start with 10-15 minutes of activity per day, gradually increasing time",
+      "poorSleep": "Maintain a sleep schedule: go to bed and wake up at the same time",
+      "highStress": "Practice relaxation techniques: meditation, deep breathing",
+      "keepGoing": "Great work! Keep it up to achieve your goal"
+    },
+    "formingHealthyHabits": "Forming healthy habits",
+    "selectingSuitableActivity": "Selecting suitable activity",
+    "analyzingPersonalizedRecommendations": "Analyzing your data for personalized recommendations",
+    "dailyOpportunityReminder": "Remember: every day is a new opportunity to become better. You're on the right path!",
+    "dateFormat": {
+      "dayAgo": "day ago",
+      "daysAgo": "days ago",
+      "daysAgoMany": "days ago"
+    },
+    "weeklyCheckFallback": {
+      "recommendationsTitle": "Recommendations:",
+      "lowEnergyTips": {
+        "1": "Increase protein intake at every meal",
+        "2": "Add more vegetables and fruits", 
+        "3": "Pay attention to sleep quality"
+      },
+      "highEnergyTips": {
+        "1": "Great energy! Maintain your current routine",
+        "2": "Try new healthy recipes",
+        "3": "Increase physical activity"
+      },
+      "moderateEnergyTips": {
+        "1": "Balance proteins, fats, and carbohydrates",
+        "2": "Drink more water throughout the day",
+        "3": "Eat regularly every 3-4 hours"
+      },
+      "mainGoals": {
+        "emotionalEating": "Main goal: Work on mindful eating. Try pausing before eating and asking yourself - am I really hungry?",
+        "timeShortage": "Main goal: Plan your meals in advance. Prepare healthy snacks for the week ahead.",
+        "general": "Main goal: Continue following your meal plan and tracking progress."
+      }
+    }
+  },
+  "weeklyCheck": {
+    "title": "Weekly Check",
+    "stepOf": "of",
+    "next": "Next",
+    "finish": "Finish",
+    "steps": {
+      "weight": {
+        "title": "What is your current weight?",
+        "description": "Enter your current weight to track progress",
+        "label": "Current weight (kg)",
+        "hint": "Enter your weight in kilograms",
+        "hintPicker": "Select your weight with precision to 100 grams",
+        "grams": "g",
+        "placeholder": "75.5"
+      },
+      "energy": {
+        "title": "How is your energy level?",
+        "description": "Rate how you feel during the past week",
+        "ratingTitle": "Energy level",
+        "labels": ["Very low", "Excellent"]
+      },
+      "motivation": {
+        "title": "How is your motivation?",
+        "description": "How motivated are you to continue moving toward your goal?",
+        "ratingTitle": "Motivation level",
+        "labels": ["None at all", "Very high"]
+      },
+      "challenges": {
+        "title": "What were the main difficulties?",
+        "description": "Select all problems you faced this week"
+      },
+      "diet": {
+        "title": "How did you follow the diet plan?",
+        "description": "Rate how well you followed the nutrition recommendations",
+        "ratingTitle": "Diet compliance",
+        "labels": ["Didn't follow at all", "Perfect"]
+      },
+      "exercise": {
+        "title": "How about physical activity?",
+        "description": "Rate how active you were this week",
+        "ratingTitle": "Physical activity",
+        "labels": ["Didn't exercise at all", "Excellent"]
+      },
+      "sleepStress": {
+        "title": "Sleep and stress",
+        "description": "Rate your sleep quality and stress level",
+        "sleepTitle": "Sleep quality",
+        "sleepLabels": ["Very poor", "Excellent"],
+        "stressTitle": "Stress level",
+        "stressLabels": ["Very high", "Very low"]
+      }
+    },
+    "challenges": {
+      "overeating": "Overeating",
+      "emotionalEating": "Emotional eating",
+      "lackOfTime": "Lack of time",
+      "workStress": "Work stress",
+      "socialEvents": "Social events",
+      "sweetTemptations": "Sweet temptations",
+      "lackOfSleep": "Lack of sleep",
+      "lowMotivation": "Low motivation"
+    },
+    "completion": {
+      "title": "Excellent!",
+      "subtitle": "Weekly check completed",
+      "dataSaved": "Data saved",
+      "yourResults": "Your results:",
+      "weight": "Weight:",
+      "energy": "Energy:",
+      "motivation": "Motivation:",
+      "getRecommendations": "Get recommendations"
+    },
+    "loading": {
+      "generating": "Generating personalized recommendations..."
+    }
+  },
+  "recommendations": {
+    "title": "New Recommendations",
+    "loading": "Loading recommendations...",
+    "error": "Error loading recommendations",
+    "noRecommendations": "Complete weekly check to get personalized recommendations",
+    "more": "more",
+    "card": {
+      "mainTitle": "Personalized Recommendations",
+      "sections": {
+        "progressAnalysis": "Progress Analysis",
+        "foodsToAddAndAvoid": "What to Add and Exclude",
+        "nextWeekGoals": "Goals for Next Week"
+      },
+      "progress": {
+        "weightChange": "Weight Change:",
+        "nutritionQuality": "Nutrition Quality:",
+        "challengeWork": "Challenge Management:"
+      },
+      "foods": {
+        "addToRation": "Add to Diet:",
+        "limitOrExclude": "Limit or Exclude:"
+      },
+      "targets": {
+        "calories": "Calories:",
+        "macronutrients": "Macronutrients:",
+        "behavioralGoal": "Behavioral Goal:",
+        "activity": "Activity:"
+      },
+      "actions": {
+        "expandAll": "Expand All",
+        "collapseAll": "Collapse All"
+      }
+    }
   },
   "allergens": {
     "title": "Allergens",
@@ -133,14 +513,22 @@
   },
   "history": {
     "title": "History",
-    "noHistory": "No scan history yet",
-    "startScanning": "Start scanning products to see your history",
-    "calories": "calories",
-    "filter": "Filter",
-    "scannedProducts": "Scanned",
-    "addedToDashboard": "Added",
-    "noScannedProducts": "No scanned products",
-    "noDashboardProducts": "No products added to dashboard"
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "earlier": "Earlier",
+    "thisWeek": "This Week",
+    "lastWeek": "Last Week",
+    "earlierMonth": "Earlier This Month",
+    "selectMonth": "Select Month",
+    "noHistory": "No scan history to display",
+    "startScanning": "Start scanning foods",
+    "scannedProducts": "Your Scans",
+    "addedToDashboard": "Eating Diary",
+    "noDashboardProducts": "No added products",
+    "goToDashboard": "Go to Dashboard",
+    "calories": "kcal",
+    "manualAddPlaceholder": "Add manual product...",
+    "loading": "Loading more..."
   },
   "scan": {
     "positionProduct": "Position food product in the frame",
@@ -169,11 +557,123 @@
     "imperial": "Imperial (oz, fl oz)",
     "manageAllergens": "Manage Allergens",
     "manageAllergensDescription": "Add or remove food allergens",
+    "user": "User",
+    "userId": "User ID",
+    "loading": "Loading...",
+    "copied": "Copied",
+    "userIdCopied": "User ID copied to clipboard",
+    "error": "Error",
+    "failedToCopy": "Failed to copy ID",
     "about": "About",
+    "calculationScience": "How Calculations Work",
+    "calculationScienceDescription": "Scientific basis of our recommendations",
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
     "aboutApp": "About NutriChecker",
-    "version": "Version"
+    "version": "Version 1.0.0",
+    "aboutMessage": "NutriChecker v1.0.0\nMade with ❤️",
+    "development": "Development",
+    "pushNotificationsDev": "Push Notifications (DEV)",
+    "pushNotificationsDevDescription": "Test push notifications functionality",
+    "testMealWebhook": "Test Meal Webhook",
+    "testMealWebhookDescription": "Test sending product data",
+    "pushToken": "Push Token",
+    "pushNotificationsNotReady": "Push notifications not ready",
+    "pushNotificationsNotReadyMessage": "Make sure you have granted notification permissions and are using a real device.",
+    "success": "Success",
+    "testNotificationSent": "Test notification sent! Check in a few seconds.",
+    "failedToSendNotification": "Failed to send test notification",
+    "testDataSent": "Test product data sent successfully!",
+    "failedToSendTestData": "Failed to send test data",
+    "testingError": "An error occurred during testing",
+    "pushTokenCopied": "Push token copied to clipboard",
+    "pushTokenNotFound": "Push token not found",
+    "userProfile": "User Profile",
+    "userProfileDescription": "View your onboarding data and preferences",
+    "clearAllData": "Clear All Data",
+    "clearAllDataDescription": "Delete all progress, products, and settings",
+    "clearDataConfirmTitle": "Delete All Data?",
+    "clearDataConfirmMessage": "This action will permanently delete all app data: products, progress, settings, nutrition history and absolutely all information.\n\nThis action is irreversible!",
+    "clearDataConfirm": "Yes, delete all",
+    "clearDataCancel": "Cancel",
+    "clearDataSuccess": "All data deleted",
+    "clearDataSuccessMessage": "All data successfully deleted. You will be redirected to the initial setup.",
+    "clearDataError": "Error deleting data",
+    "clearDataErrorMessage": "An error occurred while clearing data. Please try again."
+  },
+  "calculationScience": {
+    "title": "How Calculations Work",
+    "introTitle": "Scientific Approach to Nutrition",
+    "introText": "NutriChecker uses proven scientific formulas and considers your individual characteristics to create a personalized nutrition plan.",
+    "sections": {
+      "basics": {
+        "title": "Basic Calculations",
+        "subtitle": "How we determine your calorie needs",
+        "bmrExplanation": "We start by calculating your Basal Metabolic Rate (BMR) — the minimum number of calories your body burns for vital functions at rest.",
+        "formulaTitle": "Mifflin-St Jeor Formula (our primary method)",
+        "formulaMale": "Men: 10×weight + 6.25×height - 5×age + 5",
+        "formulaFemale": "Women: 10×weight + 6.25×height - 5×age - 161",
+        "formulaDescription": "This formula is considered most accurate for most people with ±10% precision",
+        "tdeeExplanation": "Then we multiply BMR by your activity coefficient to get Total Daily Energy Expenditure (TDEE):",
+        "activityCoefficients": "Activity Coefficients:",
+        "sedentary": "Sedentary lifestyle: ×1.2",
+        "lightActivity": "Light activity: ×1.375",
+        "moderateActivity": "Moderate activity: ×1.55",
+        "highActivity": "High activity: ×1.725"
+      },
+      "personalization": {
+        "title": "Personalization",
+        "subtitle": "47 factors for accurate calculation",
+        "explanation": "Your onboarding answers help us consider many factors affecting metabolism:",
+        "medicalConditions": "Medical conditions: diabetes, thyroid disorders",
+        "lifestyle": "Lifestyle: stress, sleep quality, smoking",
+        "nutrition": "Nutrition: dietary preferences, allergies",
+        "activity": "Activity: workouts, daily movements",
+        "example": "For example, if you indicated emotional eating under stress, we add buffer calories. If you have hypothyroidism, we reduce basal metabolism by 5-10%."
+      },
+      "macros": {
+        "title": "Macronutrients",
+        "subtitle": "Proteins, fats, and carbohydrates",
+        "qualityMatters": "We don't just count calories — their quality and ratio matter:",
+        "thermalEffect": "Thermal Effect of Food",
+        "proteinThermal": "Proteins: 20-30% of calories spent on digestion",
+        "carbsThermal": "Carbohydrates: 5-10%",
+        "fatsThermal": "Fats: 0-3%",
+        "proteinBenefit": "High-protein diet naturally burns more calories!",
+        "proteinNeeds": "Protein needs are calculated by body weight:",
+        "sedentaryProtein": "Sedentary: 1.0-1.2 g/kg",
+        "activeProtein": "Active: 1.2-1.6 g/kg",
+        "weightLossProtein": "Weight loss/muscle gain: 1.6-2.2 g/kg"
+      },
+      "safety": {
+        "title": "Safety",
+        "subtitle": "Protecting your health",
+        "noDangerousDiets": "We never recommend dangerous diets. Our algorithms include multiple checks:",
+        "minimumThresholds": "Minimum thresholds: no less than 1200 kcal for women, 1500 for men",
+        "safePace": "Safe pace: maximum 1 kg per week",
+        "medicalLimitations": "Medical limitations: consideration of special health conditions"
+      },
+      "adaptation": {
+        "title": "Adaptation",
+        "subtitle": "System learns and adjusts",
+        "uniqueOrganism": "Your body is unique, so we constantly adjust recommendations:",
+        "automaticAdjustment": "Automatic adjustment when:",
+        "weightChange": "• Weight changes by 2-3 kg",
+        "activityChange": "• Activity level changes",
+        "plateau": "• Progress plateau for more than 2 weeks",
+        "lifeChanges": "• Life circumstances change"
+      }
+    },
+    "scientificBasis": {
+      "title": "Scientific Basis",
+      "description": "Our algorithms are based on World Health Organization recommendations, metabolism and nutrition research, Mifflin-St Jeor, Harris-Benedict, Katch-McArdle formulas.",
+      "learnMore": "Learn more about scientific sources"
+    },
+    "disclaimer": {
+      "title": "Important Information",
+      "accuracy": "All calculations are estimates based on scientific formulas and population data with ±10% accuracy. The app is for informational purposes only and does not replace medical consultation.",
+      "consultation": "For medical conditions, pregnancy, breastfeeding, or specific athletic goals, please consult with a doctor or registered dietitian."
+    }
   },
   "permissions": {
     "cameraUsage": "This app uses the camera to scan product barcodes and get information about their calories, nutritional content, and allergens.",
@@ -194,11 +694,13 @@
     "tip4": "Place a utensil nearby for accurate size determination",
     "nonFoodError": "Could not recognize food products in this photo. Please retake the photo.",
     "analysisError": "Unable to recognize food in the photo. Please take another photo with better lighting.",
-    "networkError": "A network error occurred during analysis. Please check your internet connection and try again."
+    "networkError": "A network error occurred during analysis. Please check your internet connection and try again.",
+    "criticalError": "Failed to recognize product in the image. Try taking a clearer photo of the food.",
+    "generalAnalysisError": "Failed to analyze image. Please try again."
   },
   "product": {
     "add": "Add",
-    "vitamins": "Vitamins",
+    "minerals": "Minerals",
     "ingredients": "Ingredients",
     "setPortionTitle": "Set Portion Size",
     "portionSize": "Portion Size",
@@ -208,17 +710,40 @@
     "sauce": "Sauce",
     "sugar": "Sugar",
     "oil": "Oil",
+    "cream": "Cream",
+    "cheese": "Cheese",
+    "nuts": "Nuts",
+    "preparationMethod": "Preparation Method",
     "productFeatures": "Product Features",
     "portions": {
-      "маленький": "Small",
-      "обычный": "Regular",
-      "большой": "Large"
+      "small": "Small",
+      "regular": "Regular", 
+      "large": "Large"
     },
     "quantities": {
-      "все": "All",
-      "половина": "Half",
-      "четверть": "Quarter"
-    }
+      "all": "All",
+      "three_quarters": "3/4",
+      "half": "Half",
+      "third": "1/3",
+      "quarter": "Quarter",
+      "tenth": "1/10",
+      "sip": "Sip"
+    },
+    "preparation": {
+      "raw": "Raw",
+      "boiled": "Boiled",
+      "fried": "Fried",
+      "grilled": "Grilled",
+      "baked": "Baked"
+    },
+    "portion": "Portion",
+    "eatenPortion": "Eaten Portion",
+    "calories": "Calories",
+    "protein": "Protein",
+    "fat": "Fat",
+    "carbs": "Carbs",
+    "vitamins": "Vitamins",
+    "vitaminsAndMinerals": "Vitamins & Minerals"
   },
   "onboarding": {
     "welcome": {
@@ -258,7 +783,9 @@
       "backToHeight": "Back to height",
       "units": {
         "kg": "kg",
-        "lb": "lb"
+        "lb": "lb",
+        "kgPerWeek": "kg/week",
+        "lbPerWeek": "lb/week"
       }
     },
     "goalSetting": {
@@ -273,6 +800,9 @@
       "weightLossSpeed": "Weight loss speed",
       "estimatedDate": "Estimated goal achievement date:",
       "backToTargetWeight": "Back to target weight",
+      "currentWeight": "Current weight",
+      "weightLossGoal": "Weight loss goal",
+      "recommendedText": "Recommended target weight for sustainable and healthy results:",
       "options": {
         "loseWeight": {
           "label": "Weight Loss",
@@ -424,7 +954,13 @@
         "boredom": "Diet boredom",
         "nightEating": "Night eating",
         "stress": "Stress",
-        "lackOfKnowledge": "Lack of knowledge"
+        "lackOfKnowledge": "Lack of knowledge",
+        "emotional-eating": "Emotional eating",
+        "time-constraints": "Time constraints",
+        "social-pressure": "Social pressure",
+        "lack-of-motivation": "Lack of motivation",
+        "night-eating": "Night eating",
+        "lack-of-knowledge": "Lack of knowledge"
       },
       "descriptions": {
         "emotionalEating": "I often eat when experiencing stress or other strong emotions",
@@ -488,6 +1024,8 @@
     "calorieBudgetInfo": {
       "title": "Your calorie budget: {{calories}} kcal",
       "subtitle": "Calorie budget is the most important element of your weight loss program. Here's how it's calculated:",
+      "preliminaryNote": "* Preliminary calculation based on basic data",
+      "willBeRefinedNote": "Precise values will be calculated after collecting additional information about your habits and preferences.",
       "steps": {
         "bmr": "Basal Metabolic Rate (BMR) calculation",
         "activity": "Activity level consideration", 
@@ -542,7 +1080,9 @@
         "socializing": "Socialize with friends",
         "mindfulness": "Mindfulness",
         "avoidance": "Avoidance",
-        "creative": "Creative activities"
+        "creative": "Creative activities",
+        "emotional-eating": "Emotional eating",
+        "loss-of-appetite": "Loss of appetite"
       },
       "descriptions": {
         "emotionalEating": "I turn to food when experiencing stress or negative emotions",
@@ -666,14 +1206,16 @@
         "good": "Good",
         "improving": "Trying to improve",
         "needWork": "Need work",
-        "poor": "Poor"
+        "poor": "Poor",
+        "figuring-out": "Figuring it out"
       },
       "descriptions": {
         "excellent": "I know what food suits my body and usually make healthy choices",
         "good": "I have decent habits, but I want to improve them to achieve my goals",
         "improving": "I try different approaches to find what works for me",
         "needWork": "I feel uncertain and need clear recommendations",
-        "poor": "I need serious help changing my eating habits"
+        "poor": "I need serious help changing my eating habits",
+        "figuring-out": "I'm still figuring out what works best for me"
       }
     },
     "weightManagementObstacle": {
@@ -704,11 +1246,13 @@
     "calorieBudgetConfirm": {
       "title": "Your budget - {{calories}} calories",
       "subtitle": "If you consistently consume an average of {{calories}} calories, you will lose weight at your chosen pace.",
+      "preliminaryNote": "* Preliminary calculation",
+      "refinementNote": "Precise values will be calculated after collecting all data about your habits",
       "kcalPerDay": "kcal/day",
       "weightLossRates": {
-        "steady": "0.5 kg",
-        "moderate": "0.75 kg",
-        "aggressive": "1 kg"
+        "steady": "0.25 kg",
+        "moderate": "0.5 kg",
+        "aggressive": "0.75 kg"
       },
       "lossPerWeek": "Loss of approximately {{rate}} per week",
       "goalAchievement": "Goal achievement in approximately {{weeks}} weeks",
@@ -848,7 +1392,11 @@
         "lightlyActive": "Lightly active",
         "moderatelyActive": "Moderately active",
         "veryActive": "Very active",
-        "extremelyActive": "Extremely active"
+        "extremelyActive": "Extremely active",
+        "lightly-active": "Lightly Active",
+        "moderately-active": "Moderately Active",
+        "very-active": "Very Active",
+        "extremely-active": "Extremely Active"
       },
       "dietTypes": {
         "standard": "Standard",
@@ -865,7 +1413,17 @@
         "fourMeals": "4 meals",
         "fiveMeals": "5 meals",
         "sixMeals": "6 meals",
-        "intermittent": "Intermittent fasting"
+        "intermittent": "Intermittent fasting",
+        "2Meals": "2 meals",
+        "3Meals": "3 meals",
+        "4Meals": "4 meals",
+        "5Meals": "5 meals",
+        "6Meals": "6 meals",
+        "2-meals": "2 meals",
+        "3-meals": "3 meals",
+        "4-meals": "4 meals",
+        "5-meals": "5 meals",
+        "6-meals": "6 meals"
       },
       "stressResponses": {
         "emotionalEating": "Emotional eating",
@@ -873,7 +1431,9 @@
         "mindfulness": "Mindfulness",
         "avoidance": "Avoidance",
         "socializing": "Social support",
-        "creative": "Creative activities"
+        "creative": "Creative activities",
+        "emotional-eating": "Emotional eating",
+        "loss-of-appetite": "Loss of appetite"
       },
       "challengesViews": {
         "growthOpportunity": "See opportunities for growth",
@@ -891,13 +1451,21 @@
         "easilyResist": "Easily resist",
         "usuallyControl": "Usually control myself",
         "tryResist": "Try to resist",
-        "oftenGiveIn": "Often give in"
+        "oftenGiveIn": "Often give in",
+        "easily-resist": "Easily resist",
+        "usually-control": "Usually control myself",
+        "try-resist": "Try to resist",
+        "often-give-in": "Often give in"
       },
       "setbacksResponses": {
         "bounceBack": "Quickly bounce back",
         "recoverEffort": "Recover with effort",
         "hardBack": "Hard to get back on track",
-        "struggleRecover": "Struggle to recover"
+        "struggleRecover": "Struggle to recover",
+        "bounce-back": "Quickly bounce back",
+        "recover-effort": "Recover with effort",
+        "hard-back": "Hard to get back on track",
+        "struggle-recover": "Struggle to recover"
       }
     },
     "adaptability": {
@@ -995,8 +1563,10 @@
       "note": "Remember that the foundation of weight loss is proper nutrition and calorie control, while physical activity is an additional tool."
     },
     "weightLossPlan": {
-      "title": "Choose your weight loss plan",
+      "title": "Select a weight loss plan",
       "subtitle": "The plan determines the rate of weight loss and daily calorie budget. Choose the most suitable option for you.",
+      "preliminaryNote": "* Preliminary calorie values",
+      "refinementNote": "Precise calories will be calculated considering all your data",
       "recommended": "Recommended",
       "caloriesPerDay": "Calories per day:",
       "lossPerWeek": "Loss per week:",
@@ -1004,19 +1574,19 @@
       "plans": {
         "steady": {
           "label": "Gradual loss",
-          "description": "Comfortable and sustainable weight loss pace, recommended by experts."
+          "description": "Comfortable and sustainable weight loss pace recommended by experts."
         },
         "moderate": {
           "label": "Moderate loss",
-          "description": "Medium pace of weight loss, requires more discipline in nutrition."
+          "description": "Average weight loss pace, requires more discipline in nutrition."
         },
         "aggressive": {
           "label": "Intensive loss",
-          "descriptionAvailable": "Fast pace of weight loss, recommended only with high TDEE.",
+          "descriptionAvailable": "Fast weight loss pace, recommended only with high TDEE.",
           "descriptionUnavailable": "This plan is not available at your activity level. We recommend gradual loss."
         }
       },
-      "disclaimer": "Note: Weight loss pace may vary depending on individual body characteristics. Consultation with a doctor is recommended before starting any weight loss program."
+      "disclaimer": "Note: Weight loss rate may vary depending on individual body characteristics. Consultation with a doctor is recommended before starting any weight loss program."
     },
     "planSummary": {
       "title": "Your personalized plan is ready!",
@@ -1192,10 +1762,96 @@
         "nutrition": "Nutrition recommendations",
         "workouts": "Workout plan",
         "calories": "Calorie and nutrient distribution",
-        "motivation": "Strategies for maintaining motivation"
+        "motivation": "Motivation strategies"
       },
       "whatsNext": "What's next?",
-      "nextStepsDescription": "Complete the app setup and start using NutriChecker to track your nutrition and progress. You can find your plan in the \"Profile\" section at any time."
+      "nextStepsDescription": "Complete the app setup and start using NutriChecker to track your nutrition and progress. You can find your plan in the \"Profile\" section at any time.",
+      "shareTitle": "Share nutrition plan",
+      "weightLoss": {
+        "steady": "gradual (0.25 kg per week)",
+        "moderate": "moderate (0.5 kg per week)",
+        "aggressive": "intensive (0.75 kg per week)"
+      },
+      "activityLevels": {
+        "sedentary": "Sedentary lifestyle",
+        "lightlyActive": "Light activity",
+        "moderatelyActive": "Moderate activity",
+        "veryActive": "Active lifestyle",
+        "extremelyActive": "Very active lifestyle"
+      },
+      "goalTime": {
+        "notDetermined": "not determined",
+        "maintenance": "weight maintenance",
+        "weeks": "about {{weeks}} weeks",
+        "months": "about {{months}} months",
+        "monthsAndWeeks": "about {{months}} months and {{weeks}} weeks"
+      },
+      "planContent": {
+        "title": "PERSONALIZED NUTRITION AND WORKOUT PLAN",
+        "dateCreated": "Date created",
+        "personalInfo": "PERSONAL INFORMATION",
+        "name": "Name",
+        "notSpecified": "Not specified",
+        "gender": "Gender",
+        "genders": {
+          "male": "Male",
+          "female": "Female"
+        },
+        "age": "Age",
+        "years": "years",
+        "height": "Height",
+        "cm": "cm",
+        "currentWeight": "Current weight",
+        "kg": "kg",
+        "targetWeight": "Target weight",
+        "bmi": "Body Mass Index (BMI)",
+        "activityLevel": "Activity level",
+        "goalsAndPreferences": "GOALS AND PREFERENCES",
+        "primaryGoal": "Primary goal",
+        "weightLoss": "Weight loss",
+        "weightLossPace": "Weight loss pace",
+        "estimatedTime": "Estimated time to reach goal",
+        "dietPreferences": "Diet preferences",
+        "mixedDiet": "Mixed diet",
+        "mealFrequency": "Meal frequency",
+        "threeMealsPerDay": "3 times a day",
+        "intermittentFasting": "Intermittent fasting use",
+        "yes": "Yes",
+        "no": "No",
+        "nutritionPlan": "NUTRITION PLAN",
+        "targetCalories": "Target calories",
+        "willBeCalculated": "Will be calculated in the app",
+        "kcalPerDay": "kcal/day",
+        "recommendedProtein": "Recommended protein",
+        "gPerDay": "g/day",
+        "recommendedWater": "Recommended water",
+        "mlPerDay": "ml/day",
+        "macroDistribution": "Macronutrient distribution",
+        "proteins": "Proteins",
+        "proteinBenefit": "provide satiety and preserve muscle mass",
+        "fats": "Fats",
+        "fatBenefit": "important for hormonal balance",
+        "carbs": "Carbohydrates",
+        "carbBenefit": "main energy source",
+        "vegetarianProteinSources": "Recommended protein sources for vegetarians:\n- Tofu and tempeh\n- Legumes (lentils, chickpeas, beans)\n- Quinoa\n- Nuts and seeds\n- Dairy products (if included in diet)",
+        "standardProteinSources": "Recommended protein sources:\n- Chicken breast\n- Turkey\n- Fish\n- Eggs\n- Cottage cheese\n- Greek yogurt",
+        "workoutRecommendations": "WORKOUT RECOMMENDATIONS",
+        "activeWorkoutPlan": "Based on your activity level and goals, recommended:\n- Cardio: 3-4 times per week for 30-45 minutes\n- Strength training: 2-3 times per week\n- Stretching: every day for 10-15 minutes\n\nStart with moderate loads and gradually increase intensity.",
+        "lightActivityPlan": "Even without intensive workouts, for health maintenance recommended:\n- Daily walking: at least 7000-10000 steps\n- Light stretching: 10-15 minutes per day\n- Gradual increase in daily physical activity",
+        "psychologicalRecommendations": "PSYCHOLOGICAL RECOMMENDATIONS",
+        "lowConfidenceAdvice": "To increase confidence in achieving your goal, recommended:\n- Set small, achievable goals\n- Celebrate even small successes\n- Keep a food and activity diary\n- Find like-minded people or seek professional support",
+        "motivationAdvice": "To maintain motivation, recommended:\n- Set specific weekly/monthly goals\n- Track progress in the app\n- Use non-material rewards for achievements\n- Remember the benefits of a healthy lifestyle",
+        "personalizedStrategies": "Most effective strategies for your psychological profile",
+        "emotionalEatingStrategies": "- Learn mindful eating techniques\n- Find alternative ways to cope with stress\n- Plan meals in advance to avoid impulsive decisions",
+        "generalStressStrategies": "- Maintain regular eating schedule\n- Find healthy ways to relax\n- Use deep breathing techniques during stress",
+        "nextSteps": "NEXT STEPS",
+        "step1": "Use NutriChecker app to scan products and track calories",
+        "step2": "Track your progress in the \"Reports\" section",
+        "step3": "Set reminders for regular meals",
+        "step4": "Regularly update your weight in the app for plan adjustments",
+        "planAdjustment": "Your plan will automatically adjust based on your data and progress.",
+        "footer": "Created in NutriChecker app"
+      }
     },
     "generatingPlan": {
       "title": "Generating Your Custom Plan...",
@@ -1219,43 +1875,390 @@
       }
     },
     "paywall": {
-      "title": "Unlock Your Full Potential",
+      "title": "Premium Plan",
       "premiumBadge": "PREMIUM",
-      "mainTitle": "Get Premium Access",
-      "mainSubtitle": "Join millions who have transformed their lives with our premium features",
-      "mostPopular": "MOST POPULAR",
+      "mainTitle": "Get full access to NutriChecker",
+      "mainSubtitle": "Unlock all features to achieve your goals",
+      "mostPopular": "Most Popular",
       "plans": {
         "month1": {
-          "duration": "1 Month",
-          "price": "$19.99",
+          "duration": "1 month",
+          "price": "$9.99",
           "period": "per month"
         },
         "month3": {
-          "duration": "3 Months",
-          "price": "$14.99",
+          "duration": "3 months",
+          "price": "$6.99",
           "period": "per month",
-          "savings": "Save 25%"
+          "savings": "Save 33%"
         },
         "month12": {
-          "duration": "12 Months",
-          "price": "$9.99",
+          "duration": "12 months",
+          "price": "$3.99",
           "period": "per month",
-          "savings": "Save 50%"
+          "savings": "Save 67%"
         }
       },
       "benefits": {
-        "mealPlans": "Unlimited access to personalized meal plans",
-        "tracking": "Advanced nutrition tracking and insights",
-        "workouts": "Custom workout routines and exercise library",
-        "progress": "Progress photos and body measurement tracking",
-        "recipes": "Recipe recommendations based on your preferences",
-        "tips": "Expert tips and educational content",
-        "support": "24/7 customer support"
+        "mealPlans": "Personalized meal plans",
+        "tracking": "Advanced nutrient tracking",
+        "workouts": "Workout plans",
+        "progress": "Detailed progress analytics",
+        "recipes": "Recipe library",
+        "tips": "Personal tips",
+        "support": "Priority support"
       },
-      "startPremium": "Start My Premium Journey",
+      "startPremium": "Start Premium",
       "restorePurchases": "Restore Purchases",
-      "termsText": "By subscribing, you agree to our Terms of Service and Privacy Policy. Subscription automatically renews unless cancelled 24 hours before renewal.",
-      "continueWithFree": "Continue with Free Version"
+      "continueWithFree": "Continue with Free Version",
+      "termsText": "By subscribing, you agree to the terms of use and privacy policy"
     }
+  },
+  "userProfile": {
+    "title": "User Profile",
+    "subtitle": "Your onboarding data and preferences",
+    "noData": "No profile data found",
+    "loadingError": "Error loading profile data",
+    "sections": {
+      "basicInfo": {
+        "title": "Basic Information",
+        "age": "Age",
+        "gender": "Gender",
+        "height": "Height",
+        "currentWeight": "Current Weight",
+        "targetWeight": "Target Weight",
+        "weightLossRate": "Weight Loss Rate",
+        "primaryGoal": "Primary Goal",
+        "units": "Units",
+        "years": "years",
+        "perWeek": "per week"
+      },
+      "activity": {
+        "title": "Activity & Exercise",
+        "activityLevel": "Activity Level",
+        "exerciseIntent": "Exercise Intent",
+        "yes": "Yes",
+        "no": "No"
+      },
+      "nutrition": {
+        "title": "Nutrition & Diet",
+        "dietPreference": "Diet Type",
+        "mealFrequency": "Meal Frequency",
+        "nutritionFocus": "Nutrition Focus",
+        "foodPreferences": "Food Preferences",
+        "foodVariety": "Food Variety",
+        "mealFeelings": "Feelings After Meals",
+        "intermittentFasting": "Intermittent Fasting",
+        "showCalorieTutorial": "Show Calorie Tutorial",
+        "useFlexibleCalories": "Flexible Calorie Budget",
+        "weightLossPlan": "Weight Loss Plan"
+      },
+      "psychology": {
+        "title": "Psychological Profile",
+        "confidenceLevel": "Confidence Level",
+        "stressResponse": "Stress Response",
+        "adaptability": "Adaptability",
+        "challengesView": "View of Challenges",
+        "setbacksResponse": "Response to Setbacks",
+        "temptationResponse": "Response to Temptations",
+        "decisionMaking": "Decision Making",
+        "difficultSituations": "Handling Difficult Situations"
+      },
+      "challenges": {
+        "title": "Challenges & Obstacles",
+        "mainObstacle": "Main Obstacle",
+        "challenges": "Selected Challenges",
+        "eatingHabitsAssessment": "Eating Habits Assessment"
+      },
+      "medical": {
+        "title": "Medical Information",
+        "medicationUse": "Medication Use"
+      }
+    },
+    "values": {
+      "genders": {
+        "male": "Male",
+        "female": "Female",
+        "nonBinary": "Non-binary",
+        "preferNotToSay": "Prefer not to say"
+      },
+      "goals": {
+        "loseWeight": "Lose Weight",
+        "maintainWeight": "Maintain Weight",
+        "gainMuscle": "Gain Muscle",
+        "improveHealth": "Improve Health",
+        "trackNutrition": "Track Nutrition",
+        "lose-weight": "Lose Weight",
+        "maintain-weight": "Maintain Weight",
+        "gain-muscle": "Gain Muscle",
+        "improve-health": "Improve Health",
+        "track-nutrition": "Track Nutrition"
+      },
+      "activityLevels": {
+        "sedentary": "Sedentary",
+        "lightlyActive": "Lightly Active",
+        "moderatelyActive": "Moderately Active",
+        "veryActive": "Very Active",
+        "extremelyActive": "Extremely Active",
+        "lightly-active": "Lightly Active",
+        "moderately-active": "Moderately Active",
+        "very-active": "Very Active",
+        "extremely-active": "Extremely Active"
+      },
+      "dietTypes": {
+        "standard": "Standard",
+        "vegetarian": "Vegetarian",
+        "vegan": "Vegan",
+        "lowCarb": "Low-Carb",
+        "keto": "Ketogenic",
+        "paleo": "Paleo",
+        "mediterranean": "Mediterranean"
+      },
+      "mealFrequencies": {
+        "twoMeals": "2 meals",
+        "threeMeals": "3 meals",
+        "fourMeals": "4 meals",
+        "fiveMeals": "5 meals",
+        "sixMeals": "6 meals",
+        "intermittent": "Intermittent fasting",
+        "2Meals": "2 meals",
+        "3Meals": "3 meals",
+        "4Meals": "4 meals",
+        "5Meals": "5 meals",
+        "6Meals": "6 meals",
+        "2-meals": "2 meals",
+        "3-meals": "3 meals",
+        "4-meals": "4 meals",
+        "5-meals": "5 meals",
+        "6-meals": "6 meals"
+      },
+      "nutritionFocus": {
+        "caloriesOnly": "Calories Only",
+        "balanced": "Balanced Nutrition",
+        "highProtein": "High-Protein",
+        "lowCarb": "Low-Carb",
+        "plantBased": "Plant-Based"
+      },
+      "weightLossPlans": {
+        "steady": "Gradual Loss",
+        "moderate": "Moderate Loss",
+        "aggressive": "Intensive Loss"
+      },
+      "foodPreferences": {
+        "taste": "Taste",
+        "health": "Health Benefits",
+        "convenience": "Convenience",
+        "price": "Affordable Price",
+        "tradition": "Familiar Food",
+        "nutrition": "Nutritional Value"
+      },
+      "foodVariety": {
+        "often": "Often experiment",
+        "sometimes": "Sometimes try new",
+        "rarely": "Rarely change diet",
+        "never": "Prefer familiar foods"
+      },
+      "mealFeelings": {
+        "energized": "Full of energy",
+        "satisfied": "Satisfied and content",
+        "tired": "Feel tired",
+        "bloated": "Feel heavy",
+        "stillHungry": "Still hungry"
+      },
+      "stressResponses": {
+        "emotionalEating": "Emotional eating",
+        "lossOfAppetite": "Loss of appetite",
+        "exercise": "Exercise",
+        "sleep": "Sleep more",
+        "socializing": "Socialize with friends",
+        "mindfulness": "Mindfulness",
+        "avoidance": "Avoidance",
+        "creative": "Creative activities",
+        "emotional-eating": "Emotional eating",
+        "loss-of-appetite": "Loss of appetite"
+      },
+      "adaptability": {
+        "embraceQuickly": "Quickly embrace changes",
+        "adaptTime": "Adapt, but need time",
+        "struggleTry": "Struggle but try best",
+        "findOverwhelming": "Changes cause stress",
+        "embrace-quickly": "Quickly embrace changes",
+        "adapt-time": "Adapt, but need time",
+        "struggle-try": "Struggle but try best",
+        "find-overwhelming": "Changes cause stress"
+      },
+      "challengesView": {
+        "growthOpportunity": "See as growth opportunities",
+        "tryLearn": "Try to learn lessons",
+        "avoidFailure": "Avoid due to fear",
+        "tooDifficult": "Consider too difficult",
+        "growth-opportunity": "See as growth opportunities",
+        "try-learn": "Try to learn lessons",
+        "avoid-failure": "Avoid due to fear",
+        "too-difficult": "Consider too difficult"
+      },
+      "setbacksResponse": {
+        "bounceBack": "Quickly bounce back",
+        "recoverEffort": "Recover with effort",
+        "hardBack": "Hard to get back on track",
+        "struggleRecover": "Struggle to recover",
+        "bounce-back": "Quickly bounce back",
+        "recover-effort": "Recover with effort",
+        "hard-back": "Hard to get back on track",
+        "struggle-recover": "Struggle to recover"
+      },
+      "temptationResponse": {
+        "easilyResist": "Easily resist",
+        "usuallyControl": "Usually control myself",
+        "tryResist": "Try to resist",
+        "oftenGiveIn": "Often give in",
+        "easily-resist": "Easily resist",
+        "usually-control": "Usually control myself",
+        "try-resist": "Try to resist",
+        "often-give-in": "Often give in"
+      },
+      "decisionMaking": {
+        "fullyTrust": "Fully trust my choices",
+        "confidentDoubt": "Confident but sometimes doubt",
+        "oftenUnsure": "Often feel uncertain",
+        "secondGuess": "Constantly change my mind",
+        "fully-trust": "Fully trust my choices",
+        "confident-doubt": "Confident but sometimes doubt",
+        "often-unsure": "Often feel uncertain",
+        "second-guess": "Constantly change my mind"
+      },
+      "difficultSituations": {
+        "handleWell": "Handle well with effective strategies",
+        "copeMost": "Cope in most cases",
+        "struggleStuck": "Struggle and often feel stuck",
+        "hardManage": "Have trouble managing",
+        "handle-well": "Handle well with effective strategies",
+        "cope-most": "Cope in most cases",
+        "struggle-stuck": "Struggle and often feel stuck",
+        "hard-manage": "Have trouble managing"
+      },
+      "mainObstacles": {
+        "emotionalEating": "Emotional eating",
+        "timeConstraints": "Time constraints",
+        "socialSituations": "Social situations",
+        "lackOfMotivation": "Lack of motivation",
+        "plateaus": "Weight plateaus",
+        "cravings": "Junk food cravings",
+        "selfControl": "Self-control difficulties",
+        "other": "Something else",
+        "emotional-eating": "Emotional eating",
+        "time-constraints": "Time constraints",
+        "social-situations": "Social situations",
+        "lack-of-motivation": "Lack of motivation",
+        "self-control": "Self-control difficulties",
+        "long-term-motivation": "Long-term motivation"
+      },
+      "eatingHabitsAssessment": {
+        "excellent": "Excellent",
+        "good": "Good",
+        "improving": "Trying to improve",
+        "needWork": "Need work",
+        "poor": "Poor",
+        "figuring-out": "Figuring it out"
+      },
+      "medicationUse": {
+        "notUsing": "Not taking any",
+        "appetiteReducer": "Prescription medications",
+        "fatAbsorption": "Over-the-counter drugs",
+        "supplements": "Vitamins and supplements",
+        "interested": "Herbal supplements",
+        "not-using": "Not taking any",
+        "appetite-reducer": "Prescription medications",
+        "fat-absorption": "Over-the-counter drugs"
+      },
+      "challenges": {
+        "emotionalEating": "Emotional eating",
+        "cravings": "Sweet/fatty food cravings",
+        "timeConstraints": "Time constraints",
+        "socialPressure": "Social pressure",
+        "lackOfMotivation": "Lack of motivation",
+        "plateaus": "Weight plateaus",
+        "boredom": "Diet boredom",
+        "nightEating": "Night eating",
+        "stress": "Stress",
+        "lackOfKnowledge": "Lack of knowledge",
+        "emotional-eating": "Emotional eating",
+        "time-constraints": "Time constraints",
+        "social-pressure": "Social pressure",
+        "lack-of-motivation": "Lack of motivation",
+        "night-eating": "Night eating",
+        "lack-of-knowledge": "Lack of knowledge"
+      }
+    }
+  },
+  "planSettings": {
+    "title": "Configure Plan",
+    "mainParameters": "Main Parameters",
+    "startWeight": "Starting Weight",
+    "targetWeight": "Target Weight",
+    "weightLossSpeed": "Weight Loss Speed",
+    "weightGainSpeed": "Weight Gain Speed",
+    "recommendation": "Recommended: 0.3-0.7 kg per week for weight loss, 0.2-0.5 kg for weight gain",
+    "forecast": "Forecast",
+    "goalType": "Goal Type",
+    "weightChange": "Weight Change",
+    "estimatedTime": "Estimated Time",
+    "actions": "Actions",
+    "resetProgress": "Reset All Progress",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "weightLoss": "Weight Loss",
+    "weightGain": "Weight Gain",
+    "weeks": "weeks",
+    "notDetermined": "Not determined",
+    "kg": "kg",
+    "kgPerWeek": "kg/week",
+    "alerts": {
+      "invalidStartWeight": "Enter a valid starting weight (30-300 kg)",
+      "invalidTargetWeight": "Enter a valid target weight (30-300 kg)",
+      "invalidWeeklyTarget": "Enter a valid rate (0.1-2.0 kg per week)",
+      "weightDifferenceTooSmall": "The difference between starting and target weight must be greater than 0.5 kg",
+      "savedTitle": "Saved!",
+      "savedMessage": "Plan settings successfully updated",
+      "saveError": "Failed to save settings. Please try again.",
+      "resetTitle": "Reset Progress?",
+      "resetMessage": "This action will delete all progress data and weekly checks. It cannot be undone.",
+      "cancel": "Cancel",
+      "reset": "Reset",
+      "resetFeatureTitle": "Reset Feature",
+      "resetFeatureMessage": "Will be implemented in the next update",
+      "ok": "OK",
+      "error": "Error"
+    }
+  },
+  "goalsInfo": {
+    "title": "Your Personal Goals:",
+    "kcal": "kcal",
+    "protein": "protein",
+    "fat": "fat",
+    "carbs": "carbs",
+    "description": "Based on: your age, weight, height, activity, goal and nutrition preferences",
+    "weightGoalsTitle": "Weight & Progress:",
+    "currentWeight": "Current",
+    "targetWeight": "Target",
+    "weeklyRate": "Weekly Rate",
+    "weeksLeft": "Weeks Left"
+  },
+  "productManagement": {
+    "deleteProduct": "Delete Product",
+    "productDeleted": "Product deleted",
+    "confirmDelete": "Are you sure?",
+    "confirmDeleteMessage": "Are you sure you want to delete \"{productName}\" from history?",
+    "delete": "Delete",
+    "deleteError": "Could not delete product",
+    "thisActionCannotBeUndone": "This action cannot be undone"
+  },
+  "productNameEdit": {
+    "emptyNameError": "Name cannot be empty",
+    "enterProductName": "Enter product name",
+    "nameUpdated": "Name updated",
+    "aiAnalysisComplete": "AI analysis complete",
+    "aiAnalysisError": "Failed to perform AI analysis",
+    "enterNameForAnalysis": "Enter product name for analysis"
   }
 }

@@ -4,7 +4,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from '../../../i18n/i18n';
 import { DietPreference } from '../../types/onboarding';
 import { OnboardingLayout } from './unifiedLayouts';
-import { dietPreferences, options, typography, usePalette } from './unifiedStyles';
+import { useOptionsStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface DietPreferenceScreenProps {
   onContinue: () => void;
@@ -22,8 +22,10 @@ const DietPreferenceScreen: React.FC<DietPreferenceScreenProps> = ({
   // Добавляем локальное состояние для мгновенного отклика
   const [localDietPreference, setLocalDietPreference] = React.useState<DietPreference>(dietPreference);
   
-  // Получаем палитру цветов
+  // Получаем динамические стили
   const palette = usePalette();
+  const options = useOptionsStyles();
+  const typography = useTypographyStyles();
   const { t } = useTranslation();
   
   // Обновляем локальное состояние при изменении пропсов
@@ -92,7 +94,7 @@ const DietPreferenceScreen: React.FC<DietPreferenceScreenProps> = ({
       onContinue={onContinue}
       onBack={onBack}
     >
-      <View style={dietPreferences.optionsContainer}>
+      <View style={{ marginTop: 20 }}>
         {dietOptions.map((option) => {
           // Используем локальное состояние для отображения выбранного варианта
           const isSelected = localDietPreference === option.id;
@@ -102,7 +104,8 @@ const DietPreferenceScreen: React.FC<DietPreferenceScreenProps> = ({
               key={option.id}
               style={[
                 options.optionContainer,
-                isSelected ? options.selectedOption : options.unselectedOption
+                isSelected ? options.selectedOption : options.unselectedOption,
+                { marginBottom: 16 }
               ]}
               onPress={() => handleDietPreferenceSelect(option.id)}
               activeOpacity={0.5}
@@ -117,11 +120,11 @@ const DietPreferenceScreen: React.FC<DietPreferenceScreenProps> = ({
                 />
               </View>
               
-              <View style={options.optionTextContainer}>
+              <View style={[options.optionTextContainer, { flex: 1 }]}>
                 <Text style={typography.optionTitle}>
                   {option.label}
                 </Text>
-                <Text style={typography.optionDescription}>
+                <Text style={[typography.optionDescription, { marginTop: 4 }]}>
                   {option.description}
                 </Text>
               </View>
@@ -131,7 +134,7 @@ const DietPreferenceScreen: React.FC<DietPreferenceScreenProps> = ({
                 isSelected ? options.selectedCheckIconContainer : options.unselectedCheckIconContainer
               ]}>
                 {isSelected && (
-                  <Ionicons name="checkmark" size={16} color={palette.text.white} />
+                  <Ionicons name="checkmark" size={16} color={palette.white} />
                 )}
               </View>
             </TouchableOpacity>

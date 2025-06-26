@@ -3,14 +3,16 @@ import React from 'react';
 import { ScrollView, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from '../../../i18n/i18n';
+import { calculateCompleteNutrition } from '../../../utils/nutritionCalculator';
 import ButtonFooter from './components/ButtonFooter';
-import { containers, options, palette, typography, weightLossPlan as weightLossPlanStyles } from './unifiedStyles';
+import { useContainerStyles, useOptionsStyles, usePalette, useSpecialOptionStyles, useTypographyStyles } from './unifiedStyles';
 
 interface WeightLossPlanScreenProps {
   onContinue: () => void;
   onBack: () => void;
   weightLossPlan: string | null;
   onWeightLossPlanChange: (plan: string) => void;
+  onCalorieSelectionChange?: (calories: number) => void;
   userProfile?: {
     gender: 'male' | 'female';
     age: number;
@@ -18,6 +20,7 @@ interface WeightLossPlanScreenProps {
     height: number; // в см
     activityLevel: 'sedentary' | 'lightly-active' | 'moderately-active' | 'very-active' | 'extra-active';
   };
+  fullUserProfile?: any; // Полный профиль пользователя для точного расчета
 }
 
 const WeightLossPlanScreen: React.FC<WeightLossPlanScreenProps> = ({ 
@@ -25,9 +28,18 @@ const WeightLossPlanScreen: React.FC<WeightLossPlanScreenProps> = ({
   onBack, 
   weightLossPlan,
   onWeightLossPlanChange,
-  userProfile
+  onCalorieSelectionChange,
+  userProfile,
+  fullUserProfile
 }) => {
   const { t } = useTranslation();
+  
+  // Получаем динамические стили
+  const containers = useContainerStyles();
+  const options = useOptionsStyles();
+  const typography = useTypographyStyles();
+  const palette = usePalette();
+  const specialOptions = useSpecialOptionStyles();
   
   // Добавляем локальное состояние для мгновенного отклика
   const [localWeightLossPlan, setLocalWeightLossPlan] = React.useState<string | null>(weightLossPlan || 'steady');
@@ -40,22 +52,57 @@ const WeightLossPlanScreen: React.FC<WeightLossPlanScreenProps> = ({
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   
-  // Функция обработки выбора плана снижения веса
-  const handleWeightLossPlanSelect = (plan: string) => {
-    console.log('Выбран план снижения веса:', plan);
-    // Обновляем локальное состояние немедленно
-    setLocalWeightLossPlan(plan);
-    // Обновляем состояние в родительском компоненте
-    onWeightLossPlanChange(plan);
+  // Проверяем, есть ли у нас достаточно данных для полного калькулятора
+  const hasCompleteData = fullUserProfile && 
+                         fullUserProfile.activityLevel && 
+                         fullUserProfile.stressResponse &&
+                         fullUserProfile.dietPreference;
+  
+  // Функция для получения калорий через полный калькулятор (как на главном экране)
+  const getCaloriesForPlan = (planType: string): number => {
+    // Проверяем, есть ли у нас достаточно данных для полного калькулятора
+    const hasCompleteData = fullUserProfile && 
+                           fullUserProfile.activityLevel && 
+                           fullUserProfile.stressResponse &&
+                           fullUserProfile.dietPreference;
+    
+    if (hasCompleteData) {
+      try {
+        // Определяем скорость похудения для каждого плана (согласованно с CalorieBudgetInfoScreen)
+        const weightLossRateForPlan = planType === 'steady' ? 0.25 : planType === 'moderate' ? 0.5 : 0.75; // Изменено: steady = 0.25
+        
+        // Создаем профиль с нужным планом похудения и скоростью
+        const profileForPlan = {
+          ...fullUserProfile,
+          weightLossPlan: planType,
+          weightLossRate: weightLossRateForPlan, // Используем скорость для конкретного плана
+          currentWeight: fullUserProfile.weight || fullUserProfile.currentWeight
+        };
+        
+        console.log(`🧮 WeightLossPlanScreen: full calculation for plan "${planType}" (rate: ${weightLossRateForPlan} kg/week):`, profileForPlan);
+        
+        const nutrition = calculateCompleteNutrition(profileForPlan);
+        console.log(`📊 WeightLossPlanScreen: full calculation result for "${planType}":`, nutrition.targetCalories, 'kcal');
+        
+        return nutrition.targetCalories;
+      } catch (error) {
+        console.error(`❌ Full calculation error for plan ${planType}, using simple:`, error);
+        return getSimpleCaloriesForPlan(planType);
+      }
+    }
+    
+    // На раннем этапе используем простой расчет
+    console.log(`📝 WeightLossPlanScreen: simple calculation for plan "${planType}" (insufficient data for full)`);
+    return getSimpleCaloriesForPlan(planType);
   };
 
-  // Расчет TDEE пользователя
-  const calculateTDEE = () => {
-    if (!userProfile) return 2000; // fallback
+  // Fallback: простой расчет как раньше
+  const getSimpleCaloriesForPlan = (planType: string): number => {
+    if (!userProfile) return 2000;
     
     const { gender, age, weight, height, activityLevel } = userProfile;
     
-    // Формула Mifflin-St Jeor (более точная)
+    // Формула Mifflin-St Jeor
     let bmr;
     if (gender === 'male') {
       bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
@@ -63,7 +110,6 @@ const WeightLossPlanScreen: React.FC<WeightLossPlanScreenProps> = ({
       bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
     }
     
-    // Коэффициенты активности
     const activityMultipliers = {
       'sedentary': 1.2,
       'lightly-active': 1.375,
@@ -72,24 +118,32 @@ const WeightLossPlanScreen: React.FC<WeightLossPlanScreenProps> = ({
       'extra-active': 1.9
     };
     
-    return bmr * (activityMultipliers[activityLevel] || 1.375);
-  };
-  
-  const tdee = calculateTDEE();
-  const minCalories = userProfile?.gender === 'male' ? 1500 : 1200;
+    const tdee = bmr * (activityMultipliers[activityLevel] || 1.375);
+    const minCalories = gender === 'male' ? 1500 : 1200;
 
-  // Расчет калорий для каждого плана с безопасными ограничениями
-  const steadyCalories = Math.max(Math.round(tdee - 500), minCalories); // 0.5 кг/неделю
-  const moderateCalories = Math.max(Math.round(tdee - 750), minCalories); // 0.75 кг/неделю  
-  const aggressiveCalories = Math.max(Math.round(tdee - 1000), minCalories); // 1 кг/неделю (только если TDEE достаточно высокий)
+    // Определяем скорость похудения для каждого плана (согласованно с CalorieBudgetInfoScreen)
+    let weightLossRate;
+    if (planType === 'steady') {
+      weightLossRate = 0.25; // Изменено: было 0.5, теперь 0.25 кг/неделю для согласованности
+    } else if (planType === 'moderate') {
+      weightLossRate = 0.5; // Изменено: было 0.75, теперь 0.5 кг/неделю
+    } else {
+      weightLossRate = 0.75; // Изменено: было 1.0, теперь 0.75 кг/неделю
+    }
+    
+    // Рассчитываем дефицит на основе скорости
+    const dailyDeficit = (weightLossRate * 7000) / 7; // 7000 ккал на кг жира
+    
+    return Math.max(Math.round(tdee - dailyDeficit), minCalories);
+  };
 
   const planOptions = [
     { 
       id: 'steady', 
       label: t('onboarding.weightLossPlan.plans.steady.label'),
       description: t('onboarding.weightLossPlan.plans.steady.description'),
-      calories: steadyCalories,
-      weightLossPerWeek: 0.5,
+      calories: getCaloriesForPlan('steady'),
+      weightLossPerWeek: 0.25,
       recommendedForYou: true,
       icon: 'trending-down-outline'
     },
@@ -97,24 +151,38 @@ const WeightLossPlanScreen: React.FC<WeightLossPlanScreenProps> = ({
       id: 'moderate', 
       label: t('onboarding.weightLossPlan.plans.moderate.label'),
       description: t('onboarding.weightLossPlan.plans.moderate.description'),
-      calories: moderateCalories,
-      weightLossPerWeek: 0.75,
+      calories: getCaloriesForPlan('moderate'),
+      weightLossPerWeek: 0.5,
       recommendedForYou: false,
       icon: 'speedometer-outline'
     },
     { 
       id: 'aggressive', 
       label: t('onboarding.weightLossPlan.plans.aggressive.label'),
-      description: tdee >= 2500 
-        ? t('onboarding.weightLossPlan.plans.aggressive.descriptionAvailable')
-        : t('onboarding.weightLossPlan.plans.aggressive.descriptionUnavailable'),
-      calories: aggressiveCalories,
-      weightLossPerWeek: 1.0,
+      description: t('onboarding.weightLossPlan.plans.aggressive.description'),
+      calories: getCaloriesForPlan('aggressive'),
+      weightLossPerWeek: 0.75,
       recommendedForYou: false,
       icon: 'flash-outline',
-      disabled: tdee < 2500 // отключаем агрессивный план при низком TDEE
+      disabled: getCaloriesForPlan('aggressive') <= 1500 // отключаем если калории слишком низкие
     }
   ];
+  
+  // Функция обработки выбора плана снижения веса
+  const handlePlanSelect = (plan: string) => {
+    console.log('Selected weight loss plan:', plan);
+    // Обновляем локальное состояние немедленно
+    setLocalWeightLossPlan(plan);
+    // Обновляем состояние в родительском компоненте
+    onWeightLossPlanChange(plan);
+    
+    // Передаем выбранные калории в родительский компонент
+    const selectedOption = planOptions.find(option => option.id === plan);
+    if (selectedOption && onCalorieSelectionChange) {
+      console.log('Passing selected calories:', selectedOption.calories);
+      onCalorieSelectionChange(selectedOption.calories);
+    }
+  };
 
   return (
     <SafeAreaView edges={['top']} style={containers.safeArea}>
@@ -133,8 +201,20 @@ const WeightLossPlanScreen: React.FC<WeightLossPlanScreenProps> = ({
             <Text style={typography.screenSubtitle}>
               {t('onboarding.weightLossPlan.subtitle')}
             </Text>
+            
+            {/* Подпись о предварительных данных */}
+            {!hasCompleteData && (
+              <View style={{ marginTop: 12, marginBottom: 8 }}>
+                <Text style={[typography.screenSubtitle, { fontSize: 12, fontStyle: 'italic', color: palette.text.secondary }]}>
+                  {t('onboarding.weightLossPlan.preliminaryNote')}
+                </Text>
+                <Text style={[typography.screenSubtitle, { fontSize: 11, color: palette.text.disabled, marginTop: 4 }]}>
+                  {t('onboarding.weightLossPlan.refinementNote')}
+                </Text>
+              </View>
+            )}
 
-            <View style={[containers.optionsList, { marginTop: 20 }]}>
+            <View style={[options.optionsList, { marginTop: 20 }]}>
               {planOptions.map((option) => {
                 // Используем локальное состояние для отображения выбранного варианта
                 const isSelected = localWeightLossPlan === option.id;
@@ -145,19 +225,19 @@ const WeightLossPlanScreen: React.FC<WeightLossPlanScreenProps> = ({
                     style={[
                       options.optionContainer,
                       isSelected ? options.selectedOption : options.unselectedOption,
-                      weightLossPlanStyles.planOption,
-                      option.recommendedForYou && weightLossPlanStyles.recommendedOption,
+                      specialOptions.planOption,
+                      option.recommendedForYou && specialOptions.recommendedOption,
                       option.disabled && { opacity: 0.5 }
                     ]}
-                    onPress={() => !option.disabled && handleWeightLossPlanSelect(option.id)}
+                    onPress={() => !option.disabled && handlePlanSelect(option.id)}
                     activeOpacity={option.disabled ? 1 : 0.5}
                     disabled={option.disabled}
                     // Увеличиваем область нажатия для лучшего отклика
                     hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   >
                     {option.recommendedForYou && (
-                      <View style={weightLossPlanStyles.recommendedBadge}>
-                        <Text style={weightLossPlanStyles.recommendedBadgeText}>{t('onboarding.weightLossPlan.recommended')}</Text>
+                      <View style={specialOptions.recommendedBadge}>
+                        <Text style={specialOptions.recommendedBadgeText}>{t('onboarding.weightLossPlan.recommended')}</Text>
                       </View>
                     )}
                     
@@ -169,22 +249,22 @@ const WeightLossPlanScreen: React.FC<WeightLossPlanScreenProps> = ({
                       />
                     </View>
                     
-                    <View style={[options.optionTextContainer, weightLossPlanStyles.planTextContainer]}>
+                    <View style={[options.optionTextContainer, specialOptions.planTextContainer]}>
                       <Text style={typography.optionTitle}>
                         {option.label}
                       </Text>
-                      <Text style={weightLossPlanStyles.descriptionText}>
+                      <Text style={specialOptions.descriptionText}>
                         {option.description}
                       </Text>
                       
-                      <View style={weightLossPlanStyles.planDetails}>
-                        <View style={weightLossPlanStyles.planDetailItem}>
-                          <Text style={weightLossPlanStyles.planDetailLabel}>{t('onboarding.weightLossPlan.caloriesPerDay')}</Text>
-                          <Text style={weightLossPlanStyles.planDetailValue}>{option.calories}</Text>
+                      <View style={specialOptions.planDetails}>
+                        <View style={specialOptions.planDetailItem}>
+                          <Text style={specialOptions.planDetailLabel}>{t('onboarding.weightLossPlan.caloriesPerDay')}</Text>
+                          <Text style={specialOptions.planDetailValue}>{option.calories}</Text>
                         </View>
-                        <View style={weightLossPlanStyles.planDetailItem}>
-                          <Text style={weightLossPlanStyles.planDetailLabel}>{t('onboarding.weightLossPlan.lossPerWeek')}</Text>
-                          <Text style={weightLossPlanStyles.planDetailValue}>{option.weightLossPerWeek} {t('onboarding.weightLossPlan.kg')}</Text>
+                        <View style={specialOptions.planDetailItem}>
+                          <Text style={specialOptions.planDetailLabel}>{t('onboarding.weightLossPlan.lossPerWeek')}</Text>
+                          <Text style={specialOptions.planDetailValue}>{option.weightLossPerWeek} {t('onboarding.weightLossPlan.kg')}</Text>
                         </View>
                       </View>
                     </View>
@@ -202,7 +282,7 @@ const WeightLossPlanScreen: React.FC<WeightLossPlanScreenProps> = ({
               })}
             </View>
             
-            <Text style={weightLossPlanStyles.disclaimerText}>
+            <Text style={specialOptions.disclaimerText}>
               {t('onboarding.weightLossPlan.disclaimer')}
             </Text>
           </ScrollView>

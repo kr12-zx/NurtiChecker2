@@ -1,0 +1,1102 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "url": "={{ $('Webhook1').item.json.query.imageUrl }}",
+        "options": {}
+      },
+      "id": "1587ae2e-301d-49ad-b550-209e38a834f5",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1900,
+        -420
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-preview-05-20",
+        "options": {}
+      },
+      "id": "94eda0a7-9d5d-4d50-84fc-45f82d7aedee",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "position": [
+        1840,
+        120
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "uebwXI2R84KHmUXO",
+          "name": "Google Gemini(PaLM) Api zergovprotas@gmail.com PAID"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "41b2c7d9-ce0f-4a92-92ec-9a7c23eb2775",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        4300,
+        -640
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "chatId": "453258991",
+        "text": "пиздец в NutriChecker в ноде AI ассистент1",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2220,
+        100
+      ],
+      "id": "a79edc52-f20e-449e-b557-1690d66c3a1c",
+      "name": "Telegram",
+      "webhookId": "605d6cff-2783-4316-b899-8d2b9f281aa6",
+      "credentials": {
+        "telegramApi": {
+          "id": "jkybzjnBkt0NvzAI",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        1960,
+        100
+      ],
+      "id": "62583801-7cd1-4cae-bd67-fb32e3032d2f",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Получаем входящие данные от вебхука\nconst webhookData = $input.item.json;\nconst queryParams = webhookData.query || {};\n\n// Извлекаем URL изображения\nconst imageUrl = queryParams.imageUrl || null;\n\n// Проверяем наличие URL изображения\nif (!imageUrl) {\n  throw new Error('Отсутствует URL изображения (параметр imageUrl)');\n}\n\n// Извлекаем код языка (default: ru)\nconst language = queryParams.language || 'ru';\n\n// Парсим данные профиля пользователя\nlet userProfile = {};\ntry {\n  const userProfileStr = queryParams.userProfile || '{}';\n  userProfile = JSON.parse(decodeURIComponent(userProfileStr));\n} catch (error) {\n  console.error('Ошибка при парсинге профиля пользователя:', error);\n}\n\n// Добавляем дефолтные значения\nuserProfile = {\n  age: 30,\n  gender: 'not_specified',\n  weight: 70,\n  height: 170,\n  activityLevel: 2,\n  dietGoal: 'maintenance',\n  ...userProfile // Реальные данные перезапишут дефолтные, если они есть\n};\n\n// Парсим данные об аллергенах\nlet selectedAllergens = [];\nif (queryParams.selectedAllergenIds) {\n  selectedAllergens = queryParams.selectedAllergenIds.split(',').map(id => id.trim()).filter(id => id);\n}\n\nlet customAllergens = [];\ntry {\n  const customAllergensStr = queryParams.customAllergens || '[]';\n  customAllergens = JSON.parse(decodeURIComponent(customAllergensStr));\n  \n  // Проверяем, что это массив\n  if (!Array.isArray(customAllergens)) {\n    customAllergens = [];\n  }\n} catch (error) {\n  console.error('Ошибка при парсинге пользовательских аллергенов:', error);\n}\n\n// Формируем запрос к модели (на языке пользователя)\nlet userInstructions = \"\";\nif (language === 'ru') {\n  userInstructions = \"Please analyze this food image and give me detailed nutritional information for the entire portion shown in the photo.\";\n} else if (language === 'en') {\n  userInstructions = \"Please analyze this food image and give me detailed nutritional information for the entire portion shown in the photo.\";\n} else {\n  // Дефолт - русский\n  userInstructions = \"Please analyze this food image and give me detailed nutritional information for the entire portion shown in the photo.\";\n}\n\n// Собираем полный контекст\nconst processedData = {\n  // Для HTTP Request\n  imageUrl,\n  \n  // Для LLM\n  language,\n  userInstructions,\n  \n  // Контекст пользователя\n  userProfile,\n  allergens: {\n    selectedIds: selectedAllergens,\n    customItems: customAllergens\n  },\n  \n  // Метаданные\n  originalQuery: queryParams,\n  timestamp: new Date().toISOString()\n};\n\n// Возвращаем данные для следующей ноды, включая бинарные данные\nreturn {\n  json: processedData,\n  binary: $input.item.binary // Обязательно передаем бинарные данные дальше\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2160,
+        -420
+      ],
+      "id": "c6eb1ab4-b43f-41ac-956f-63a95e944620",
+      "name": "Set User Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Функция для безопасной обработки строковых значений в объектах\nfunction sanitizeStringValues(obj) {\n  if (!obj || typeof obj !== 'object') return obj;\n  \n  if (Array.isArray(obj)) {\n    return obj.map(item => sanitizeStringValues(item));\n  }\n  \n  const result = {};\n  for (const key in obj) {\n    if (typeof obj[key] === 'string') {\n      // Безопасно очищаем все строковые значения\n      result[key] = obj[key].replace(/[\\u0000-\\u001F\\u007F-\\u009F\\uFFFD]/g, '');\n    } else if (typeof obj[key] === 'object' && obj[key] !== null) {\n      // Рекурсивно обрабатываем вложенные объекты\n      result[key] = sanitizeStringValues(obj[key]);\n    } else {\n      // Числа, булевы и другие примитивы оставляем как есть\n      result[key] = obj[key];\n    }\n  }\n  \n  return result;\n}\n\n// Получаем результат с переводом\nconst translatedData = $node[\"pars_llm_trans\"].json;\nconst userData = $node[\"Set User Data\"].json;\n\n// Проверяем, выполнена ли нода Code\nlet codeNodeData;\ntry {\n  codeNodeData = $node[\"Code\"].json;\n  console.log(\"Нода Code выполнена успешно\");\n} catch (error) {\n  console.log(\"Нода Code не выполнена или недоступна:\", error.message);\n  codeNodeData = null;\n}\n\ntry {\n  // Используем переведенные данные, важно! Правильная структура данных с учетом foodData\n  let foodDataContainer = translatedData;\n  \n  // Получаем объект foodData, если он существует\n  let foodAnalysis = foodDataContainer.foodData || foodDataContainer;\n  \n  console.log(\"Структура данных перед проверкой:\", JSON.stringify(foodAnalysis).substring(0, 200));\n  \n  // Проверяем наличие необходимых полей\n  if (!foodAnalysis) {\n    console.error(\"Данные отсутствуют полностью\");\n    throw new Error('Полученные данные не содержат необходимой информации о пище');\n  }\n  \n  if (!foodAnalysis.foodName) {\n    console.error(\"Отсутствует имя продукта:\", JSON.stringify(foodAnalysis).substring(0, 300));\n    throw new Error('Полученные данные не содержат информации о названии пищи');\n  }\n  \n  if (!foodAnalysis.nutritionInfo) {\n    console.error(\"Отсутствует информация о питательной ценности:\", JSON.stringify(foodAnalysis).substring(0, 300));\n    throw new Error('Полученные данные не содержат информации о питательной ценности');\n  }\n  \n  // Адаптируем персональные рекомендации с учетом профиля пользователя\n  let personalizedRecommendations = null;\n  \n  if (userData && userData.userProfile) {\n    const profile = userData.userProfile;\n    const calories = foodAnalysis.nutritionInfo.calories || 0;\n    \n    // Basic personalization based on diet goals\n    if (profile.dietGoal === 'weight_loss' && calories > 500) {\n      personalizedRecommendations = {\n        calorieContext: `This portion (${calories} calories) represents a significant part of your recommended daily calorie intake`,\n        suggestion: \"Consider reducing the portion size or splitting this dish over multiple meals\"\n      };\n    } else if (profile.dietGoal === 'muscle_gain' && foodAnalysis.nutritionInfo.protein < 20) {\n      personalizedRecommendations = {\n        calorieContext: `This portion contains relatively low protein (${foodAnalysis.nutritionInfo.protein}g) for muscle building`,\n        suggestion: \"Consider adding a protein source to this dish\"\n      };\n    }\n  }\n  \n  // Проверяем аллергены\n  let allergenWarnings = [];\n  let isSafeForUser = true; // По умолчанию считаем продукт безопасным\n  \n  // Предпочитаем использовать данные об аллергенах из allergenAnalysis, если они есть\n  const allergenAnalysis = foodAnalysis.allergenAnalysis || {};\n  \n  // Проверяем, есть ли у пользователя аллергены и есть ли предупреждения в данных\n  if (allergenAnalysis.userAllergenWarnings) {\n    // Если предупреждения есть и это не пустой массив - используем их\n    if (Array.isArray(allergenAnalysis.userAllergenWarnings) && allergenAnalysis.userAllergenWarnings.length > 0) {\n      // Безопасно обрабатываем каждое предупреждение\n      allergenWarnings = allergenAnalysis.userAllergenWarnings;\n      isSafeForUser = false; // Если есть предупреждения, значит продукт небезопасен\n      console.log(\"Найдены предупреждения об аллергенах из анализа:\", JSON.stringify(allergenWarnings));\n    } else {\n      console.log(\"Предупреждений об аллергенах нет или они представлены пустым массивом\");\n    }\n    \n    // Если в данных есть флаг безопасности, используем его\n    if (allergenAnalysis.isSafeForUser !== undefined) {\n      isSafeForUser = Boolean(allergenAnalysis.isSafeForUser);\n      console.log(\"Используем флаг безопасности из данных:\", isSafeForUser);\n    }\n  } \n  \n  // Формируем финальный ответ
+  const response = {
+    id: foodDataContainer.id || `food_analysis_${Date.now()}`,
+    timestamp: foodDataContainer.timestamp || new Date().toISOString(),
+    foodData: {
+      ...foodAnalysis,
+      // Добавляем estimatedWeight на верхний уровень для удобства доступа
+      estimatedWeight: foodAnalysis.portionInfo?.estimatedWeight || 100
+    },
+    userContext: {
+      language: allergenAnalysis.language || userData.language || "ru",
+      allergenWarnings: allergenWarnings.length > 0 ? allergenWarnings.map(warning => ({
+        allergenId: String(warning.allergenId || "").trim(),
+        allergenName: String(warning.allergenName || "").trim(),
+        message: String(warning.message || "").trim()
+      })) : null,
+      isSafeForUser: isSafeForUser
+    },
+    personalizedRecommendations,
+    metadata: foodDataContainer.metadata || {
+      apiVersion: "1.0",
+      source: "NutriChecker AI Analysis"
+    }
+  };\n  \n  // Очищаем весь объект от потенциально проблемных символов\n  const sanitizedResponse = sanitizeStringValues(response);\n  \n  console.log(\"Успешно создан ответ с данными о продукте:\", foodAnalysis.foodName);\n  console.log(\"Ответ очищен и готов к отправке\");\n  \n  return sanitizedResponse;\n  \n} catch (error) {\n  console.error(\"Ошибка обработки результата:\", error.message);\n  \n  // Возвращаем ошибку с максимумом информации для диагностики\n  const errorResponse = {\n    id: `food_analysis_error_${Date.now()}`,\n    timestamp: new Date().toISOString(),\n    error: {\n      message: \"Failed to analyze food image\",\n      details: error.message\n    },\n    rawData: {\n      translatedDataStructure: typeof translatedData,\n      translatedDataSample: translatedData ? JSON.stringify(translatedData).substring(0, 500) : null\n    },\n    metadata: {\n      apiVersion: \"1.0\",\n      source: \"NutriChecker AI Analysis\"\n    }\n  };\n  \n  // Очищаем и возвращаем ответ с ошибкой\n  return sanitizeStringValues(errorResponse);\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4100,
+        -640
+      ],
+      "id": "e5e57434-ebf8-4eb5-9bb8-483f65f81079",
+      "name": "Process Results"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9707d770-bcfc-447c-96d0-1defcd3322ab",
+              "leftValue": "={{ $('Webhook1').item.json.query.selectedAllergenIds }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2900,
+        -320
+      ],
+      "id": "f5d7304a-9985-46fc-8fb7-18039d6f83ab",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"defaultAllergens\": [{\"id\":\"milk\",\"name\":\"Milk\",\"category\":\"food\",\"selected\":false,\"description\":\"Milk and dairy products, including lactose, casein and whey\",\"alternativeNames\":[\"lactose\",\"casein\",\"whey\",\"milk protein\",\"cream\"]},{\"id\":\"eggs\",\"name\":\"Eggs\",\"category\":\"food\",\"selected\":false,\"description\":\"Eggs and products containing eggs or egg protein\",\"alternativeNames\":[\"egg protein\",\"albumin\",\"lysozyme\",\"ovomucoid\"]},{\"id\":\"nuts\",\"name\":\"Nuts\",\"category\":\"food\",\"selected\":false,\"description\":\"Various types of nuts, including almonds, hazelnuts, walnuts, pistachios, etc.\",\"alternativeNames\":[\"hazelnut\",\"almond\",\"walnut\",\"pistachio\",\"cashew\",\"macadamia\"]},{\"id\":\"peanuts\",\"name\":\"Peanuts\",\"category\":\"food\",\"selected\":false,\"description\":\"Peanuts and peanut-based products, including peanut butter\",\"alternativeNames\":[\"peanut butter\",\"ground nut\"]},{\"id\":\"wheat\",\"name\":\"Wheat\",\"category\":\"food\",\"selected\":false,\"description\":\"Wheat and wheat products\",\"alternativeNames\":[\"gluten\",\"wheat flour\",\"semolina\",\"couscous\"]},{\"id\":\"gluten\",\"name\":\"Gluten\",\"category\":\"food\",\"selected\":false,\"description\":\"Protein found in wheat, rye, barley and some other grains\",\"alternativeNames\":[\"grain protein\",\"wheat protein\"]},{\"id\":\"soy\",\"name\":\"Soy\",\"category\":\"food\",\"selected\":false,\"description\":\"Soy and soy products, including soy protein, soy milk and soy sauce\",\"alternativeNames\":[\"soy protein\",\"soy lecithin\",\"soybean oil\",\"textured soy protein\"]},{\"id\":\"fish\",\"name\":\"Fish\",\"category\":\"food\",\"selected\":false,\"description\":\"Fish and fish products\",\"alternativeNames\":[\"fish broth\",\"fish sauce\",\"surimi\"]},{\"id\":\"shellfish\",\"name\":\"Shellfish\",\"category\":\"food\",\"selected\":false,\"description\":\"Shellfish, including mussels, oysters, squid and snails\",\"alternativeNames\":[\"mussels\",\"oysters\",\"squid\",\"snails\",\"scallops\"]},{\"id\":\"crustaceans\",\"name\":\"Crustaceans\",\"category\":\"food\",\"selected\":false,\"description\":\"Crustaceans, including shrimp, crabs, lobsters and crayfish\",\"alternativeNames\":[\"shrimp\",\"crabs\",\"lobsters\",\"crayfish\"]},{\"id\":\"sesame\",\"name\":\"Sesame\",\"category\":\"food\",\"selected\":false,\"description\":\"Sesame and sesame products, including sesame oil and tahini\",\"alternativeNames\":[\"sesame seeds\",\"tahini\",\"sesame oil\"]},{\"id\":\"celery\",\"name\":\"Celery\",\"category\":\"food\",\"selected\":false,\"description\":\"Celery and celery products\",\"alternativeNames\":[\"celery salt\",\"celery seeds\",\"celery root\"]},{\"id\":\"mustard\",\"name\":\"Mustard\",\"category\":\"food\",\"selected\":false,\"description\":\"Mustard and mustard products, including mustard oil\",\"alternativeNames\":[\"mustard seed\",\"mustard powder\",\"mustard oil\"]},{\"id\":\"lupin\",\"name\":\"Lupin\",\"category\":\"food\",\"selected\":false,\"description\":\"Lupin and lupin products, including lupin flour\",\"alternativeNames\":[\"lupin flour\",\"lupin seeds\"]},{\"id\":\"sulfites\",\"name\":\"Sulfites\",\"category\":\"additives\",\"selected\":false,\"description\":\"Sulfites used as preservatives in food and beverages\",\"alternativeNames\":[\"E220\",\"E221\",\"E222\",\"E223\",\"E224\",\"E226\",\"E227\",\"E228\",\"sulfur dioxide\",\"сульфит\",\"sulfito\"]},{\"id\":\"lactose\",\"name\":\"Lactose\",\"category\":\"food\",\"selected\":false,\"description\":\"Milk sugar found in milk and dairy products\",\"alternativeNames\":[\"milk sugar\",\"lactulose\"]},{\"id\":\"fructose\",\"name\":\"Fructose\",\"category\":\"food\",\"selected\":false,\"description\":\"Fruit sugar found in fruits, honey, and some vegetables\",\"alternativeNames\":[\"fruit sugar\",\"levulose\"]},{\"id\":\"nitrates\",\"name\":\"Nitrates/Nitrites\",\"category\":\"additives\",\"selected\":false,\"description\":\"Used as preservatives in meat products\",\"alternativeNames\":[\"E249\",\"E250\",\"E251\",\"E252\",\"sodium nitrite\",\"potassium nitrate\"]},{\"id\":\"msg\",\"name\":\"Monosodium Glutamate\",\"category\":\"additives\",\"selected\":false,\"description\":\"Flavor enhancer commonly used in prepared foods and snacks\",\"alternativeNames\":[\"E621\",\"MSG\",\"monosodium glutamate\",\"glutamic acid\"]},{\"id\":\"histamine\",\"name\":\"Histamine\",\"category\":\"food\",\"selected\":false,\"description\":\"Found in fermented products, some fish species and cheeses\",\"alternativeNames\":[\"aged cheeses\",\"tuna\",\"mackerel\",\"kimchi\",\"sauerkraut\"]},{\"id\":\"fragrance\",\"name\":\"Fragrance\",\"category\":\"cosmetic\",\"selected\":false,\"description\":\"Synthetic fragrances and perfumes used in cosmetics and personal care products\",\"alternativeNames\":[\"parfum\",\"perfume\",\"aroma\",\"essential oil blend\",\"fragrance mix\"]},{\"id\":\"parabens\",\"name\":\"Parabens\",\"category\":\"cosmetic\",\"selected\":false,\"description\":\"Preservatives commonly used in cosmetics and personal care products\",\"alternativeNames\":[\"methylparaben\",\"propylparaben\",\"butylparaben\",\"ethylparaben\",\"isobutylparaben\"]},{\"id\":\"formaldehyde\",\"name\":\"Formaldehyde\",\"category\":\"cosmetic\",\"selected\":false,\"description\":\"Preservative used in personal care products and cosmetics\",\"alternativeNames\":[\"formalin\",\"methanal\",\"quaternium-15\",\"DMDM hydantoin\",\"imidazolidinyl urea\"]},{\"id\":\"pphd\",\"name\":\"PPD (p-Phenylenediamine)\",\"category\":\"cosmetic\",\"selected\":false,\"description\":\"Chemical used in hair dyes and temporary tattoos\",\"alternativeNames\":[\"p-phenylenediamine\",\"para-phenylenediamine\",\"CI 76060\"]},{\"id\":\"lanolin\",\"name\":\"Lanolin\",\"category\":\"cosmetic\",\"selected\":false,\"description\":\"Wool wax used in moisturizers, lip balms and other cosmetics\",\"alternativeNames\":[\"wool alcohol\",\"wool wax\",\"wool fat\",\"adeps lanae\"]},{\"id\":\"sulfates\",\"name\":\"Sulfates\",\"category\":\"cosmetic\",\"selected\":false,\"description\":\"Surfactants used in cleansers, shampoos and body washes\",\"alternativeNames\":[\"sodium lauryl sulfate\",\"SLS\",\"sodium laureth sulfate\",\"SLES\",\"ammonium lauryl sulfate\"]},{\"id\":\"mit_cmit\",\"name\":\"MIT/CMIT\",\"category\":\"cosmetic\",\"selected\":false,\"description\":\"Preservatives Methylisothiazolinone and Methylchloroisothiazolinone\",\"alternativeNames\":[\"methylisothiazolinone\",\"MIT\",\"methylchloroisothiazolinone\",\"CMIT\",\"kathon cg\"]},{\"id\":\"acrylates\",\"name\":\"Acrylates/Methacrylates\",\"category\":\"cosmetic\",\"selected\":false,\"description\":\"Monomers used in nail products (gels, acrylics) and adhesives\",\"alternativeNames\":[\"acrylate\",\"methacrylate\",\"ethyl acrylate\",\"methyl methacrylate\",\"acrylic acid\"]},{\"id\":\"capb\",\"name\":\"Cocamidopropyl Betaine\",\"category\":\"cosmetic\",\"selected\":false,\"description\":\"Surfactant used in cleansers and shampoos, potential allergen\",\"alternativeNames\":[\"cocamidopropyl betaine\",\"CAPB\",\"coco betaine\"]},{\"id\":\"tea_tree_oil\",\"name\":\"Tea Tree Oil\",\"category\":\"cosmetic\",\"selected\":false,\"description\":\"Essential oil used in skincare, can be allergenic, especially when oxidized\",\"alternativeNames\":[\"melaleuca alternifolia leaf oil\",\"tea tree\"]},{\"id\":\"balsam_peru\",\"name\":\"Balsam of Peru\",\"category\":\"cosmetic\",\"selected\":false,\"description\":\"Fragrance ingredient derived from tree resin, common allergen\",\"alternativeNames\":[\"myroxylon pereirae resin\",\"peru balsam\",\"balsamum peruvianum\"]},{\"id\":\"quaternium_15\",\"name\":\"Quaternium-15\",\"category\":\"cosmetic\",\"selected\":false,\"description\":\"Preservative that releases formaldehyde, common allergen\",\"alternativeNames\":[\"q-15\",\"dowicil 200\",\"formaldehyde releaser\"]},{\"id\":\"nickel\",\"name\":\"Nickel\",\"category\":\"cosmetic\",\"selected\":false,\"description\":\"Metal often found in packaging, tools, or as contaminant, common contact allergen\",\"alternativeNames\":[\"nickel sulfate\",\"ni\"]},{\"id\":\"latex_cosmetic\",\"name\":\"Latex (Cosmetics)\",\"category\":\"cosmetic\",\"selected\":false,\"description\":\"Natural rubber latex found in applicators (sponges) or eyelash glue\",\"alternativeNames\":[\"natural rubber latex\",\"rubber\"]},{\"id\":\"chlorine\",\"name\":\"Chlorine\",\"category\":\"household\",\"selected\":false,\"description\":\"Found in cleaning products, bleach and water purifiers\",\"alternativeNames\":[\"sodium hypochlorite\",\"calcium hypochlorite\",\"chlorine bleach\",\"dichlor\"]},{\"id\":\"ammonia\",\"name\":\"Ammonia\",\"category\":\"household\",\"selected\":false,\"description\":\"Chemical found in many household cleaners and glass cleaners\",\"alternativeNames\":[\"ammonium hydroxide\",\"aqua ammonia\",\"household ammonia\"]},{\"id\":\"benzalkonium\",\"name\":\"Benzalkonium Chloride\",\"category\":\"household\",\"selected\":false,\"description\":\"Disinfectant used in household cleaners and personal care products\",\"alternativeNames\":[\"BAC\",\"alkyl dimethyl benzyl ammonium chloride\",\"quaternary ammonium compounds\"]},{\"id\":\"phthalates\",\"name\":\"Phthalates\",\"category\":\"household\",\"selected\":false,\"description\":\"Used in plastics, vinyl flooring, and some household products\",\"alternativeNames\":[\"DEP\",\"DBP\",\"DEHP\",\"BBP\",\"dibutyl phthalate\",\"фталат\",\"ftalato\"]},{\"id\":\"latex\",\"name\":\"Latex\",\"category\":\"household\",\"selected\":false,\"description\":\"Found in rubber gloves, balloons, and certain household items\",\"alternativeNames\":[\"natural rubber latex\",\"natural rubber\"]},{\"id\":\"artificial_colors\",\"name\":\"Artificial Colors\",\"category\":\"additives\",\"selected\":false,\"description\":\"Synthetic dyes used in food, medicines and other products\",\"alternativeNames\":[\"tartrazine\",\"Yellow 5\",\"Red 40\",\"Blue 1\",\"FD&C colors\",\"E102\",\"E129\"]},{\"id\":\"benzoates\",\"name\":\"Benzoates\",\"category\":\"additives\",\"selected\":false,\"description\":\"Preservatives used in foods, beverages and cosmetics\",\"alternativeNames\":[\"sodium benzoate\",\"potassium benzoate\",\"E211\",\"E212\",\"benzoic acid\",\"E210\"]},{\"id\":\"carrageenan\",\"name\":\"Carrageenan\",\"category\":\"additives\",\"selected\":false,\"description\":\"Thickener used in foods and personal care products\",\"alternativeNames\":[\"irish moss extract\",\"E407\",\"carrageenin\",\"red algae extract\"]}]\n}",
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2740,
+        -40
+      ],
+      "id": "b0788086-f299-4c12-bf83-c6719a616e80",
+      "name": "Set Default Allergens"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Task: Analyze a list of ingredients and identify potential allergens based on a comprehensive allergen reference list, with robust multilingual support and safety-first approach.\n\nInputs:\n1. `INGREDIENT_LIST`: JSON array of ingredient objects from food analysis.\n2. `ALLERGEN_REFERENCE_LIST`: JSON array of allergen definitions with IDs, names, and alternative names.\n3. `USER_ALLERGENS`: List of allergen IDs that the user has specified as their allergies.\n\nInstructions:\n0. Check if the INGREDIENT_LIST may contain the user's allergens\n1. Examine each ingredient in the `INGREDIENT_LIST` carefully, regardless of language.\n2. For each ingredient, determine if it matches any allergen by checking:\n   a) DIRECT MATCH: If it directly corresponds to an allergen in `ALLERGEN_REFERENCE_LIST`\n   b) DERIVED MATCH: If it contains or is derived from any allergen in the list\n   c) CROSS-CONTAMINATION: If it is commonly produced with allergen cross-contamination\n   d) PARTIAL MATCH: If it contains substrings that suggest presence of an allergen (e.g., \"пшеничная мука\" contains \"пшеница\" which corresponds to \"wheat\")\n\n3. For multilingual support:\n   a) Recognize key allergen terms in multiple languages (e.g., \"пшеница\"=\"wheat\", \"молоко\"=\"milk\", \"Кофе\"=\"coffee\")\n   b) Apply language-agnostic matching for ingredient analysis\n   c) Consider both explicit and implicit linguistic relationships between ingredients and allergens\n   d) CRITICAL: If user allergen is in a different language than ingredients, use multilingual matching to detect corresponding allergens (e.g., \"coffee\" in ingredients should match \"Кофе\" in user allergens)\n   e) Common translations to check: English-Russian, Russian-English, English-Spanish, Spanish-English\n\n4. For each matched ingredient, add an `allergenIds` field with an array of matched allergen IDs.\n\n5. Create an `allergenAnalysis` object with:\n   a) `detectedAllergens`: Array of objects with:\n      - allergenId: String identifier for the allergen\n      - name: Human-readable name of the allergen\n      - sourceIngredient: Ingredient containing this allergen\n      - confidence: \"high\", \"medium\", or \"low\" based on match certainty\n\n   b) `userAllergenWarnings`: Array of warning objects specifically about the user's allergens:\n      - allergenId: ID of the user's allergen\n      - allergenName: Name of the user's allergen\n      - message: Clear warning message about the presence/possibility of this allergen\n\n   c) `isSafeForUser`: Boolean indicating product safety. CRITICAL: Set to FALSE if ANY of the following are true:\n      - Any user allergen is detected in any ingredient (direct or derived)\n      - Any user allergen appears in `userAllergenWarnings`\n      - There is any uncertainty or risk regarding user's specific allergens\n      - Any ingredient contains a substance that is linguistically equivalent to a user allergen in any language\n      The value should ONLY be TRUE if there is high confidence the food is completely safe regarding user allergens.\n\n6. Return a valid JSON object with these fields:\n   - `modifiedIngredients`: The original ingredients with added allergenIds\n   - `allergenAnalysis`: The complete allergen analysis object\n\nSAFETY RULES:\n1. ALWAYS prioritize user safety over false positives\n2. When in doubt about a potential allergen, include it in warnings\n3. For any ingredient with ambiguous composition, assume potential allergen presence\n4. A product is only safe if there is HIGH CONFIDENCE it contains NO traces of user allergens\n5. If a user allergen name in one language (e.g., \"Кофе\") matches an ingredient in another language (e.g., \"coffee\"), ALWAYS consider it a match and set isSafeForUser to FALSE\n\n`INGREDIENT_LIST`:\n{{ $json['ingredients-data'] }}\n\n`ALLERGEN_REFERENCE_LIST`:\n{{ JSON.stringify($json.defaultAllergens) }}\n\n`USER_ALLERGENS`:\n{{ $('Webhook1').item.json.query.selectedAllergenIds }}\n\nReturn only a valid JSON object without any additional text or markdown formatting.",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        2940,
+        -40
+      ],
+      "id": "8271e91c-2754-4a15-b610-e51dee1cedde",
+      "name": "LLM 2 - Match Allergens",
+      "alwaysOutputData": true,
+      "executeOnce": false,
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "453258991",
+        "text": "пиздец в NutriChecker в ноде LLM 2 - Match Allergens",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3360,
+        220
+      ],
+      "id": "04a5d106-9825-4b3f-9397-9a50b359f231",
+      "name": "Telegram3",
+      "webhookId": "605d6cff-2783-4316-b899-8d2b9f281aa6",
+      "credentials": {
+        "telegramApi": {
+          "id": "jkybzjnBkt0NvzAI",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash-001",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2940,
+        200
+      ],
+      "id": "5b93c1f2-22b9-4bba-8517-9ade07b6eff5",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "uebwXI2R84KHmUXO",
+          "name": "Google Gemini(PaLM) Api zergovprotas@gmail.com PAID"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert food analysis AI for the NutriChecker app. Your task is to analyze food images and provide detailed nutritional information and ingredient analysis.\n\nFIRST STEP: Determine what type of food image is shown:\n1. PREPARED DISH (e.g., omelet on a plate, soup, salad)\n2. PACKAGED FOOD PRODUCT (e.g., jar of chocolate spread, packaged bread, candy)\n3. NON-FOOD ITEM or UNRECOGNIZABLE IMAGE\n\nRULES FOR PORTION SIZE:\n- For PREPARED DISHES: Analyze the specific portion shown in the image (e.g., the bowl of soup, slice of pizza)\n- For PACKAGED PRODUCTS: Identify the TOTAL package size/volume (e.g., 500g jar, 1L bottle) and calculate nutrition for the ENTIRE package. Assume the user has consumed the entire package unless clearly visible that it's partially consumed.\n\nINSTRUCTIONS FOR FOOD ANALYSIS:\n- Analyze ONLY food items. If the image shows non-food items or is unrecognizable, return the error format below.\n- For BOTH prepared dishes AND packaged foods, identify all ingredients to the best of your ability.\n- For packaged foods, try to read the ingredients list and total package size/weight from the label if visible.\n- For prepared dishes, estimate the likely ingredients based on visual appearance.\n- Always provide nutritional values based on the rules above: specific portion for prepared dishes, entire package for packaged products.\n- If an ingredient list is visible on a package, prioritize that information.\n- If nutritional information is visible on a package, use that data rather than estimating.\n- For estimated values, be as accurate as possible based on standard nutritional databases.\n\nLANGUAGE REQUIREMENTS:\n- All responses MUST be in English ONLY, regardless of the language parameter in the request.\n- Always use standard English names for all fields including food names, ingredients, descriptions, and recommendations.\n- Do not attempt to translate any content into other languages.\n\nRETURN YOUR ANALYSIS IN THIS JSON FORMAT (with no explanations or additional text):\n\n```json\n{\n  \"foodName\": \"Name of the food/dish/product\",\n  \"imageType\": \"prepared_dish\" OR \"packaged_product\" OR \"unrecognized\",\n  \"ingredients\": [\n    {\"name\": \"ingredient1\"},\n    {\"name\": \"ingredient2\"},\n    {\"name\": \"ingredient3\"}\n  ],\n  \"portionInfo\": {\n    \"description\": \"Detailed portion description (e.g.: large bowl of soup, 500g jar of chocolate spread)\",\n    \"estimatedWeight\": 250, // weight in grams or volume in ml\n    \"measurementUnit\": \"g\" // \"g\" or \"ml\"\n  },\n  \"nutritionInfo\": {\n    \"calories\": 350, // in kcal for the entire portion/package\n    \"protein\": 15, // in grams for the entire portion/package\n    \"carbs\": 40, // in grams for the entire portion/package\n    \"sugars\": 5, // in grams for the entire portion/package\n    \"fat\": 10, // in grams for the entire portion/package\n    \"saturatedFat\": 2, // in grams for the entire portion/package\n    \"fiber\": 3, // in grams for the entire portion/package\n    \"sodium\": 0.5, // in grams for the entire portion/package\n    \"glycemicIndex\": 65, // if applicable, otherwise null\n    \"vitamins\": [\"A\", \"C\", \"D\"], // array of main vitamins\n    \"minerals\": [\"Calcium\", \"Iron\"] // array of main minerals\n  },\n  \"analysis\": {\n    \"healthBenefits\": [\"High protein content\", \"Rich in vitamin C\"],\n    \"healthConcerns\": [\"High sugar content\", \"High in saturated fats\"],\n    \"overallHealthScore\": 65 // scale from 0 to 100\n  },\n  \"recommendedIntake\": {\n    \"description\": \"Recommendations for consumption frequency and context\",\n    \"maxFrequency\": \"daily\" // for example: \"daily\", \"2-3 times per week\", \"rarely\"\n  },\n  \"packageInfo\": {\n    \"totalSize\": \"500\", // for packaged products only: total size of package\n    \"sizeUnit\": \"g\", // for packaged products only: unit of measurement (g, ml, oz, etc.)\n    \"servingsPerPackage\": 10 // for packaged products only: if stated on label\n  }\n}\n\nFOR UNRECOGNIZABLE OR NON-FOOD IMAGES, return only:\n{\n  \"imageType\": \"unrecognized\",\n  \"error\": \"Detailed description of why the image couldn't be analyzed (not food, poor quality, etc.)\"\n}\n\nEXAMPLES:\n\nExample 1 - Prepared Dish:\n{\n  \"foodName\": \"Vegetable Omelet\",\n  \"imageType\": \"prepared_dish\",\n  \"ingredients\": [\n    {\"name\": \"eggs\"},\n    {\"name\": \"bell peppers\"},\n    {\"name\": \"onions\"},\n    {\"name\": \"cheese\"},\n    {\"name\": \"salt\"},\n    {\"name\": \"pepper\"},\n    {\"name\": \"cooking oil\"}\n  ],\n  \"portionInfo\": {\n    \"description\": \"Medium omelet on plate\",\n    \"estimatedWeight\": 180,\n    \"measurementUnit\": \"g\"\n  },\n  \"nutritionInfo\": {\n    \"calories\": 240,\n    \"protein\": 14,\n    \"carbs\": 6,\n    \"sugars\": 2,\n    \"fat\": 18,\n    \"saturatedFat\": 5,\n    \"fiber\": 1,\n    \"sodium\": 0.4,\n    \"glycemicIndex\": 15,\n    \"vitamins\": [\"A\", \"D\", \"B12\"],\n    \"minerals\": [\"Calcium\", \"Iron\", \"Selenium\"]\n  },\n  \"analysis\": {\n    \"healthBenefits\": [\"High protein content\", \"Good source of vitamins\"],\n    \"healthConcerns\": [\"Moderate cholesterol content\"],\n    \"overallHealthScore\": 75\n  },\n  \"recommendedIntake\": {\n    \"description\": \"Can be included in a balanced diet as a protein source\",\n    \"maxFrequency\": \"2-3 times per week\"\n  },\n  \"packageInfo\": null\n}\n\nExample 2 - Packaged Product:\n{\n  \"foodName\": \"Nutella Hazelnut Chocolate Spread\",\n  \"imageType\": \"packaged_product\",\n  \"ingredients\": [\n    {\"name\": \"sugar\"},\n    {\"name\": \"palm oil\"},\n    {\"name\": \"hazelnuts\"},\n    {\"name\": \"cocoa\"},\n    {\"name\": \"skim milk powder\"},\n    {\"name\": \"whey powder\"},\n    {\"name\": \"lecithin\"},\n    {\"name\": \"vanillin\"}\n  ],\n  \"portionInfo\": {\n    \"description\": \"Full jar of chocolate spread\",\n    \"estimatedWeight\": 400,\n    \"measurementUnit\": \"g\"\n  },\n  \"nutritionInfo\": {\n    \"calories\": 2160, // calories for the entire 400g jar\n    \"protein\": 20,\n    \"carbs\": 240,\n    \"sugars\": 228,\n    \"fat\": 120,\n    \"saturatedFat\": 40,\n    \"fiber\": 8,\n    \"sodium\": 0.16,\n    \"glycemicIndex\": 33,\n    \"vitamins\": [\"E\"],\n    \"minerals\": [\"Calcium\", \"Iron\"]\n  },\n  \"analysis\": {\n    \"healthBenefits\": [\"Contains antioxidants from cocoa\", \"Source of energy\"],\n    \"healthConcerns\": [\"High sugar content\", \"Contains palm oil\"],\n    \"overallHealthScore\": 30\n  },\n  \"recommendedIntake\": {\n    \"description\": \"Best consumed in small amounts as an occasional treat\",\n    \"maxFrequency\": \"occasionally\"\n  },\n  \"packageInfo\": {\n    \"totalSize\": \"400\",\n    \"sizeUnit\": \"g\",\n    \"servingsPerPackage\": 20\n  }\n}\n\nRemember to focus ONLY on food products and provide the most accurate analysis possible based on the visible information in the image. For packaged products, calculate nutrition for the ENTIRE package by default. All responses must be in English only.",
+        "hasOutputParser": true,
+        "options": {
+          "passthroughBinaryImages": true
+        }
+      },
+      "id": "3872f8e1-d8dc-4341-99fa-1b5ce81d886c",
+      "name": "LLM 1 - Extract Data_main",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        1840,
+        -100
+      ],
+      "typeVersion": 1.7,
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Получаем результат от первой LLM\nconst llmNode = $node[\"LLM 1 - Extract Data_main\"];\nconst llmResult = llmNode.json.output || llmNode.json.text || \"{}\";\n\n// Более надежное получение данных из Set User Data\nconst userDataRaw = $node[\"Set User Data\"].json;\n// Обрабатываем случай, когда данные представлены массивом\nconst userData = Array.isArray(userDataRaw) ? userDataRaw[0] : userDataRaw;\n\n// Добавляем отладочную информацию\nconsole.log(\"userData format:\", typeof userDataRaw, \"is array:\", Array.isArray(userDataRaw));\nconsole.log(\"userData.language:\", userData.language);\n\n// Очищаем и парсим JSON результат\nfunction cleanJsonString(str) {\n  // Извлекаем содержимое между маркерами ```json и ```\n  const jsonMatch = str.match(/```json\\s*([\\s\\S]*?)\\s*```/);\n  \n  if (jsonMatch && jsonMatch[1]) {\n    return jsonMatch[1].trim();\n  }\n  \n  // Если формат не соответствует ожидаемому, попробуем обычную очистку\n  return str\n    .replace(/^```json\\s*/g, '')\n    .replace(/\\s*```$/g, '')\n    .trim();\n}\n\ntry {\n  // Очищаем JSON-строку и парсим\n  const cleanedJson = cleanJsonString(llmResult);\n  const foodAnalysis = JSON.parse(cleanedJson);\n  \n  // Выбираем язык для перевода - НЕ ПЕРЕЗАПИСЫВАЕМ ЗНАЧЕНИЕ!\n  const targetLanguage = userData.language || 'ru';\n  console.log(\"Final targetLanguage:\", targetLanguage);\n  \n  // Проверяем, что данные существуют\n  if (!foodAnalysis.foodName) {\n    throw new Error('Данные для перевода некорректны');\n  }\n  \n  // Создаем объект для перевода только необходимых полей\n  const fieldsToTranslate = {\n    foodName: foodAnalysis.foodName,\n    ingredients: foodAnalysis.ingredients,\n    portionDescription: foodAnalysis.portionInfo?.description,\n    healthBenefits: foodAnalysis.analysis?.healthBenefits,\n    healthConcerns: foodAnalysis.analysis?.healthConcerns,\n    recommendationDescription: foodAnalysis.recommendedIntake?.description,\n    maxFrequency: foodAnalysis.recommendedIntake?.maxFrequency\n  };\n  \n  // Подготавливаем промпт для LLM перевода\n  const translationData = {\n    originalData: foodAnalysis,\n    fieldsToTranslate: fieldsToTranslate,\n    targetLanguage: targetLanguage,  // Передаем неизмененный язык\n    // Сохраняем оригинальный результат для последующей обработки\n    originalResult: llmResult\n  };\n  \n  // Добавляем метаданные для отладки\n  translationData._debug = {\n    originalLanguage: userData.language,\n    finalLanguage: targetLanguage,\n    timestamp: new Date().toISOString()\n  };\n  \n  return translationData;\n  \n} catch (error) {\n  console.error(\"Ошибка подготовки данных для перевода:\", error.message);\n  \n  // Если произошла ошибка, передаем оригинальные данные дальше\n  return {\n    error: error.message,\n    originalResult: llmResult\n  };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2620,
+        -320
+      ],
+      "id": "d5570f41-aad3-4330-8b33-7277d2af4684",
+      "name": "Prepare Translation"
+    },
+    {
+      "parameters": {
+        "chatId": "453258991",
+        "text": "пиздец в NutriChecker в ноде AI ассистент3",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4060,
+        -240
+      ],
+      "id": "4df84f35-0b36-4f6b-87e9-640bad629734",
+      "name": "Telegram2",
+      "webhookId": "605d6cff-2783-4316-b899-8d2b9f281aa6",
+      "credentials": {
+        "telegramApi": {
+          "id": "jkybzjnBkt0NvzAI",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a precision translator. Your task is to translate specific text fields into this language '{{ $('Prepare Translation').item.json.targetLanguage }}' WITHOUT CHANGING ANY MEANING, ADDING ANY NEW INFORMATION, OR IGNORING INPUT DATA.\n\nThe input data describes a specific food item that has been analyzed. You must translate EXACTLY these fields and ONLY these fields:\n- foodName: {{ $('Prepare Translation').item.json.fieldsToTranslate.foodName }}\n- ingredients: {{ $('Prepare Translation').item.json.originalData.ingredients.map(i => i.name).join(', ') }}\n- portionDescription: \"{{ $('Prepare Translation').item.json.fieldsToTranslate.portionDescription }}\"\n- healthBenefits: {{ $('Prepare Translation').item.json.fieldsToTranslate.healthBenefits[0] }}\n- healthConcerns: {{ $('Prepare Translation').item.json.fieldsToTranslate.healthConcerns }}\n- recommendationDescription: {{ $('Prepare Translation').item.json.fieldsToTranslate.recommendationDescription }}\n- maxFrequency: {{ $('Prepare Translation').item.json.fieldsToTranslate.maxFrequency }}\n{% if $json.originalData.allergenAnalysis && $json.originalData.allergenAnalysis.detectedAllergens && $json.originalData.allergenAnalysis.detectedAllergens.length > 0 %}\n- detectedAllergenName: \"{{ $json.originalData.allergenAnalysis.detectedAllergens[0].name }}\"\n- sourceIngredient: \"{{ $json.originalData.allergenAnalysis.detectedAllergens[0].sourceIngredient }}\"\n{% endif %}\n{% if $json.originalData.allergenAnalysis && $json.originalData.allergenAnalysis.userAllergenWarnings && $json.originalData.allergenAnalysis.userAllergenWarnings.length > 0 %}\n- userAllergenName1: \"{{ $json.originalData.allergenAnalysis.userAllergenWarnings[0].allergenName }}\"\n- userAllergenMessage1: \"{{ $json.originalData.allergenAnalysis.userAllergenWarnings[0].message }}\"\n{% endif %}\n{% if $json.originalData.allergenAnalysis && $json.originalData.allergenAnalysis.userAllergenWarnings && $json.originalData.allergenAnalysis.userAllergenWarnings.length > 1 %}\n- userAllergenName2: \"{{ $json.originalData.allergenAnalysis.userAllergenWarnings[1].allergenName }}\"\n- userAllergenMessage2: \"{{ $json.originalData.allergenAnalysis.userAllergenWarnings[1].message }}\"\n{% endif %}\n\nReturn ONLY a valid JSON with these fields translated:\n\n```json\n{\n  \"foodName\": \"TRANSLATED TEXT HERE\",\n  \"ingredients\": [\n    {\"name\": \"TRANSLATED INGREDIENT 1\"},\n    {\"name\": \"TRANSLATED INGREDIENT 2\"}\n  ],\n  \"portionDescription\": \"TRANSLATED DESCRIPTION HERE\",\n  \"healthBenefits\": \"TRANSLATED BENEFIT HERE\",\n  \"healthConcerns\": \"TRANSLATED CONCERNS HERE\", \n  \"recommendationDescription\": \"TRANSLATED RECOMMENDATION HERE\",\n  \"maxFrequency\": \"TRANSLATED FREQUENCY HERE\"\n  {% if $json.originalData.allergenAnalysis && $json.originalData.allergenAnalysis.detectedAllergens && $json.originalData.allergenAnalysis.detectedAllergens.length > 0 %}\n  ,\n  \"detectedAllergenName\": \"TRANSLATED ALLERGEN NAME\",\n  \"sourceIngredient\": \"TRANSLATED SOURCE INGREDIENT\"\n  {% endif %}\n  {% if $json.originalData.allergenAnalysis && $json.originalData.allergenAnalysis.userAllergenWarnings && $json.originalData.allergenAnalysis.userAllergenWarnings.length > 0 %}\n  ,\n  \"userAllergenName1\": \"TRANSLATED ALLERGEN NAME 1\",\n  \"userAllergenMessage1\": \"TRANSLATED WARNING MESSAGE 1\"\n  {% endif %}\n  {% if $json.originalData.allergenAnalysis && $json.originalData.allergenAnalysis.userAllergenWarnings && $json.originalData.allergenAnalysis.userAllergenWarnings.length > 1 %}\n  ,\n  \"userAllergenName2\": \"TRANSLATED ALLERGEN NAME 2\", \n  \"userAllergenMessage2\": \"TRANSLATED WARNING MESSAGE 2\"\n  {% endif %}\n}\n```\n```",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        3680,
+        -340
+      ],
+      "id": "26af5901-f49f-4b1b-bc53-5c9d4ff7a183",
+      "name": "Translation LLM",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Получаем результаты анализа пищи и аллергенов\nconst foodData = $node[\"Prepare Translation\"].json;\nconst allergenData = $node[\"LLM 2 - Match Allergens\"].json;\n\ntry {\n  // Парсим ответ LLM 2, если он в формате строки\n  let allergenAnalysis = allergenData;\n  if (typeof allergenData === 'string') {\n    // Очищаем от markdown и парсим\n    const jsonMatch = allergenData.match(/```json\\s*([\\s\\S]*?)\\s*```/);\n    const cleanedData = jsonMatch && jsonMatch[1] ? jsonMatch[1] : allergenData.replace(/^```json\\s*/g, '').replace(/\\s*```$/g, '');\n    allergenAnalysis = JSON.parse(cleanedData);\n  } else if (allergenData.output) {\n    // Если это результат LLM с полем output\n    const jsonMatch = allergenData.output.match(/```json\\s*([\\s\\S]*?)\\s*```/);\n    const cleanedData = jsonMatch && jsonMatch[1] ? jsonMatch[1] : allergenData.output.replace(/^```json\\s*/g, '').replace(/\\s*```$/g, '');\n    allergenAnalysis = JSON.parse(cleanedData);\n  }\n  \n  // Если оригинальных данных нет, используем то что есть\n  let originalData = foodData.originalData;\n  \n  // Объединяем данные\n  if (allergenAnalysis.ingredients && Array.isArray(allergenAnalysis.ingredients)) {\n    originalData.ingredients = allergenAnalysis.ingredients;\n  }\n  \n  // Добавляем информацию об аллергенах в оригинальные данные\n  if (allergenAnalysis.allergenAnalysis) {\n    originalData.allergenAnalysis = allergenAnalysis.allergenAnalysis;\n  }\n  \n  // Вернуть данные в том же формате, как ожидает Prepare Translation\n  return {\n    ...foodData,\n    originalData\n  };\n  \n} catch (error) {\n  console.error(\"Ошибка при объединении данных об аллергенах:\", error.message);\n  \n  // В случае ошибки пропустить данные дальше без изменений\n  return foodData;\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3260,
+        -200
+      ],
+      "id": "e5104102-7cf7-4dba-b7f0-3990f0e55515",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "path": "445b7e5d-d5af-4d06-9096-155ed9b1c4bb1",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        -400
+      ],
+      "id": "0f569f25-b1b0-4d33-a678-8008140358e7",
+      "name": "Webhook1",
+      "webhookId": "445b7e5d-d5af-4d06-9096-155ed9b1c4bb"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2be18e1e-ac0c-4514-999e-f85d7836face",
+              "name": "query.selectedAllergenIds",
+              "value": "={{ $('Webhook1').item.json.query.selectedAllergenIds }}",
+              "type": "string"
+            },
+            {
+              "id": "05535b3b-e0ec-4d02-b5a9-ff27c8ff8988",
+              "name": "query.allergenDetails",
+              "value": "={{ $('Webhook1').item.json.query.allergenDetails }}",
+              "type": "string"
+            },
+            {
+              "id": "0e93b9a4-f8d8-42d6-ad7c-eb5d77c8e5de",
+              "name": "query.customAllergens",
+              "value": "={{ $('Webhook1').item.json.query.customAllergens }}",
+              "type": "string"
+            },
+            {
+              "id": "1fca1394-7257-4361-9291-4ad103a96113",
+              "name": "ingredients-data",
+              "value": "={{ $('Function').item.json.extractedIngredients }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2580,
+        -40
+      ],
+      "id": "ae5be7c5-57ce-48b1-9703-4bf7e401f41d",
+      "name": "prepare all"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Получаем данные из LLM 1\nconst outputData = $input.item.json.output;\nconst result = { ...($input.item.json) };\n\n// Парсим JSON из строки\ntry {\n  // Сначала проверим, если output - это строка с JSON, начинающаяся с ```json\n  if (typeof outputData === 'string') {\n    // Извлекаем чистый JSON\n    let jsonStr = outputData;\n    if (outputData.includes('```json')) {\n      jsonStr = outputData.replace(/```json\\n|\\n```/g, '');\n    }\n    \n    // Декодируем escape-последовательности\n    jsonStr = jsonStr.replace(/\\\\\"/g, '\"').replace(/\\\\n/g, '\\n');\n    \n    const parsedData = JSON.parse(jsonStr);\n    \n    // Извлекаем ингредиенты\n    if (parsedData.ingredients && Array.isArray(parsedData.ingredients)) {\n      // Преобразуем объекты в массив названий\n      result.extractedIngredients = parsedData.ingredients.map(ing => \n        typeof ing === 'object' ? (ing.name || '') : ing\n      ).filter(name => name.trim() !== '');\n    }\n  }\n} catch (e) {\n  console.log('Ошибка при парсинге ингредиентов:', e.message);\n  result.extractedIngredients = [];\n  result.error = e.message;\n}\n\n// Если ингредиенты не были получены, возвращаем пустой массив\nif (!result.extractedIngredients) {\n  result.extractedIngredients = [];\n}\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2460,
+        -320
+      ],
+      "id": "6a528ae5-b9d8-4f4c-bb4f-87ec045036ae",
+      "name": "Function"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "23b4e1ca-9578-476d-ba33-01518b0e2b7b",
+              "name": "output_LLM_tranlation",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "f7c3907a-3edc-4351-9b63-2f9f313f15d8",
+              "name": "originalData.nutritionInfo",
+              "value": "={{ $('Prepare Translation').item.json.originalData.nutritionInfo }}",
+              "type": "object"
+            },
+            {
+              "id": "fcc3e60f-579f-4213-876f-589a3f65a3ab",
+              "name": "originalData.portionInfo",
+              "value": "={{ $('Prepare Translation').item.json.originalData.portionInfo }}",
+              "type": "object"
+            },
+            {
+              "id": "e0c4216d-2aa4-44e4-84da-ef6571aedc78",
+              "name": "originalData.nutritionInfo.vitamins",
+              "value": "={{ $('Prepare Translation').item.json.originalData.nutritionInfo.vitamins }}",
+              "type": "array"
+            },
+            {
+              "id": "2cf113a8-0aed-4f3c-826b-5b49f4a98991",
+              "name": "originalData.nutritionInfo.minerals",
+              "value": "={{ $('Prepare Translation').item.json.originalData.nutritionInfo.minerals }}",
+              "type": "array"
+            },
+            {
+              "id": "111ce5c8-64a6-4cea-9e05-f1ecabbcdd14",
+              "name": "originalData.analysis.overallHealthScore",
+              "value": "={{ $('Prepare Translation').item.json.originalData.analysis.overallHealthScore }}",
+              "type": "number"
+            },
+            {
+              "id": "380c554c-d979-4be8-b5af-03b779203ff1",
+              "name": "targetLanguage",
+              "value": "={{ $('Prepare Translation').item.json.targetLanguage }}",
+              "type": "string"
+            },
+            {
+              "id": "4f5bf6dd-2e52-45bc-9c25-0c75df608569",
+              "name": "originalData.allergenAnalysis.isSafeForUser",
+              "value": "={{ $('Edit Fields1').item.json.originalData.allergenAnalysis.isSafeForUser }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3660,
+        -620
+      ],
+      "id": "9c193993-1792-45f5-8e78-2544364e5b55",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Получаем данные из предыдущей ноды\nconst inputData = $input.item.json;\n\n// Парсим JSON из строки LLM перевода\nfunction parseJsonFromMarkdown(markdownString) {\n  if (!markdownString) return {};\n  \n  try {\n    const jsonMatch = markdownString.match(/```json\\s*([\\s\\S]*?)\\s*```/);\n    if (jsonMatch && jsonMatch[1]) {\n      return JSON.parse(jsonMatch[1].trim());\n    }\n    \n    const jsonString = markdownString\n      .replace(/^```json\\s*/g, '')\n      .replace(/\\s*```$/g, '')\n      .trim();\n    \n    return JSON.parse(jsonString);\n  } catch (error) {\n    console.log(\"Ошибка парсинга JSON из markdown:\", error);\n    return {};\n  }\n}\n\n// Получаем переведенные данные\nconst translatedData = parseJsonFromMarkdown(inputData.output_LLM_tranlation);\n\n// Берем оригинальные данные\nconst originalData = inputData.originalData || {};\n\n// Создаем итоговый результат\nconst mergedResult = {\n  foodName: translatedData.foodName,\n  ingredients: Array.isArray(translatedData.ingredients) \n    ? translatedData.ingredients \n    : translatedData.ingredients?.split(',').map(name => ({ name: name.trim() })) || [],\n  portionDescription: translatedData.portionDescription || originalData.portionInfo?.description,\n  nutritionInfo: originalData.nutritionInfo || {},\n  analysis: {\n    ...originalData.analysis,\n    healthBenefits: translatedData.healthBenefits ? [translatedData.healthBenefits] : [],\n    healthConcerns: translatedData.healthConcerns \n      ? (typeof translatedData.healthConcerns === 'string' \n         ? translatedData.healthConcerns.split(',').map(c => c.trim()) \n         : Array.isArray(translatedData.healthConcerns) \n           ? translatedData.healthConcerns \n           : [String(translatedData.healthConcerns)])\n      : []\n  },\n  recommendedIntake: {\n    description: translatedData.recommendationDescription,\n    maxFrequency: translatedData.maxFrequency\n  },\n  targetLanguage: inputData.targetLanguage || \"ru\"\n};\n\n// ИСПРАВЛЕННАЯ ЛОГИКА: Строим allergenAnalysis из переведенных данных\nmergedResult.allergenAnalysis = {\n  // Берем isSafeForUser из originalData\n  isSafeForUser: originalData.allergenAnalysis?.isSafeForUser ?? true,\n  \n  // Строим detectedAllergens из переведенных данных\n  detectedAllergens: [],\n  \n  // Строим userAllergenWarnings из переведенных данных  \n  userAllergenWarnings: []\n};\n\n// Добавляем detectedAllergens если есть переведенные данные\nif (translatedData.detectedAllergenName) {\n  mergedResult.allergenAnalysis.detectedAllergens.push({\n    allergenId: \"wheat\", // Можно взять из оригинальных данных или оставить статично\n    name: translatedData.detectedAllergenName,\n    sourceIngredient: translatedData.sourceIngredient || \"\",\n    confidence: \"high\" // Статично или из оригинальных данных\n  });\n}\n\n// Добавляем первое предупреждение\nif (translatedData.userAllergenName1 && translatedData.userAllergenMessage1) {\n  mergedResult.allergenAnalysis.userAllergenWarnings.push({\n    allergenId: \"fish\", // Можно сделать динамически\n    allergenName: translatedData.userAllergenName1,\n    message: translatedData.userAllergenMessage1\n  });\n}\n\n// Добавляем второе предупреждение\nif (translatedData.userAllergenName2 && translatedData.userAllergenMessage2) {\n  mergedResult.allergenAnalysis.userAllergenWarnings.push({\n    allergenId: \"wheat\", // Можно сделать динамически\n    allergenName: translatedData.userAllergenName2,\n    message: translatedData.userAllergenMessage2\n  });\n}\n\nconsole.log(\"✅ Построены данные об аллергенах:\", {\n  isSafeForUser: mergedResult.allergenAnalysis.isSafeForUser,\n  detectedAllergens: mergedResult.allergenAnalysis.detectedAllergens.length,\n  userAllergenWarnings: mergedResult.allergenAnalysis.userAllergenWarnings.length\n});\n\n// Метаданные для отладки\nmergedResult._meta = {\n  processedAt: new Date().toISOString(),\n  hadTranslationData: !!translatedData.foodName,\n  hadAllergenWarnings: mergedResult.allergenAnalysis.userAllergenWarnings.length > 0,\n  isSafeForUser: mergedResult.allergenAnalysis.isSafeForUser,\n  originalSafetyFlag: originalData.allergenAnalysis?.isSafeForUser,\n  usedDirectSafetyFlag: true\n};\n\nconsole.log(\"🔍 Финальный allergenAnalysis:\", mergedResult.allergenAnalysis);\n\nreturn {\n  json: mergedResult\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3880,
+        -620
+      ],
+      "id": "935c78de-6c99-49a7-9e47-3b6558569a35",
+      "name": "pars_llm_trans"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        3680,
+        -100
+      ],
+      "id": "3d50cc29-6681-41cf-a66b-e362e437aeca",
+      "name": "Google Gemini Chat Model5",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "uebwXI2R84KHmUXO",
+          "name": "Google Gemini(PaLM) Api zergovprotas@gmail.com PAID"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "meals_scan",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "imageUrl",
+              "fieldValue": "={{ $('Webhook1').item.json.query.imageUrl }}"
+            },
+            {
+              "fieldId": "dish",
+              "fieldValue": "={{ $json.originalData.foodName }}"
+            },
+            {
+              "fieldId": "description",
+              "fieldValue": "={{ $json.originalData.portionInfo.description }}"
+            },
+            {
+              "fieldId": "ingridients",
+              "fieldValue": "={{ $json.originalData.ingredients[0].name }}"
+            },
+            {
+              "fieldId": "kcal",
+              "fieldValue": "={{ $json.originalData.nutritionInfo.calories }}"
+            },
+            {
+              "fieldId": "prot",
+              "fieldValue": "={{ $json.originalData.nutritionInfo.protein }}"
+            },
+            {
+              "fieldId": "carb",
+              "fieldValue": "={{ $json.originalData.nutritionInfo.carbs }}"
+            },
+            {
+              "fieldId": "fat",
+              "fieldValue": "={{ $json.originalData.nutritionInfo.fat }}"
+            },
+            {
+              "fieldId": "sugar",
+              "fieldValue": "={{ $json.originalData.nutritionInfo.sugars }}"
+            },
+            {
+              "fieldId": "mailid",
+              "fieldValue": "={{ $('Webhook1').item.json.query.userId }}"
+            },
+            {
+              "fieldId": "fiber",
+              "fieldValue": "={{ $json.originalData.nutritionInfo.fiber }}"
+            },
+            {
+              "fieldId": "sodium",
+              "fieldValue": "={{ $json.originalData.nutritionInfo.sodium }}"
+            },
+            {
+              "fieldId": "glycemicIndex",
+              "fieldValue": "={{ $json.originalData.nutritionInfo.glycemicIndex }}"
+            },
+            {
+              "fieldId": "minerals",
+              "fieldValue": "={{ $json.originalData.nutritionInfo.minerals }}"
+            },
+            {
+              "fieldId": "healthBenefits",
+              "fieldValue": "={{ $json.originalData.analysis.healthBenefits }}"
+            },
+            {
+              "fieldId": "healthConcerns",
+              "fieldValue": "={{ $json.originalData.analysis.healthConcerns }}"
+            },
+            {
+              "fieldId": "overallHealthScore",
+              "fieldValue": "={{ $json.originalData.analysis.overallHealthScore }}"
+            },
+            {
+              "fieldId": "vitamins",
+              "fieldValue": "={{ $json.originalData.nutritionInfo.vitamins }}"
+            },
+            {
+              "fieldId": "targetLanguage",
+              "fieldValue": "={{ $json.targetLanguage }}"
+            },
+            {
+              "fieldId": "recommendedIntakeDescr",
+              "fieldValue": "={{ $json.originalData.recommendedIntake.description }}"
+            },
+            {
+              "fieldId": "recommendedIntakeMaxFrequency",
+              "fieldValue": "={{ $json.originalData.recommendedIntake.maxFrequency }}"
+            },
+            {
+              "fieldId": "grams",
+              "fieldValue": "={{ $json.originalData.portionInfo.estimatedWeight }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2780,
+        -500
+      ],
+      "id": "fd9cb578-d87a-42ba-8abc-1ae4e2fe78e2",
+      "name": "add_meals_scan",
+      "credentials": {
+        "supabaseApi": {
+          "id": "8RKkUwkeVmyvS58y",
+          "name": "Supabase account NutriCheker"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "meals_scan",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "imageUrl",
+              "condition": "eq",
+              "keyValue": "={{ $('Webhook1').item.json.query.imageUrl }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "messageAllergen",
+              "fieldValue": "={{ $json.originalData.allergenAnalysis.userAllergenWarnings[0].message }}"
+            },
+            {
+              "fieldId": "allergenName",
+              "fieldValue": "={{ $json.originalData.allergenAnalysis.userAllergenWarnings[0].allergenName }}"
+            },
+            {
+              "fieldId": "allergenId",
+              "fieldValue": "={{ $json.originalData.allergenAnalysis.userAllergenWarnings[0].allergenId }}"
+            },
+            {
+              "fieldId": "isSafeForUser",
+              "fieldValue": "={{ $json.originalData.allergenAnalysis.isSafeForUser }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3460,
+        -40
+      ],
+      "id": "5c6e56a6-8ee5-4191-a17d-186eb5bf86ef",
+      "name": "add_meals_scan_Allergens",
+      "alwaysOutputData": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "8RKkUwkeVmyvS58y",
+          "name": "Supabase account NutriCheker"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "profiles",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "locale",
+              "fieldValue": "={{ $json.query.language }}"
+            },
+            {
+              "fieldId": "mailid",
+              "fieldValue": "={{ $json.query.userId }}"
+            },
+            {
+              "fieldId": "ip",
+              "fieldValue": "={{ $json.headers['x-real-ip'] }}"
+            },
+            {
+              "fieldId": "country",
+              "fieldValue": "={{ $json.headers['cf-ipcountry'] }}"
+            },
+            {
+              "fieldId": "selectedAllergenIds",
+              "fieldValue": "={{ $json.query.selectedAllergenIds }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1900,
+        -620
+      ],
+      "id": "94406ec3-cf2d-4400-9aef-003e99c6cf29",
+      "name": "update_profile",
+      "credentials": {
+        "supabaseApi": {
+          "id": "8RKkUwkeVmyvS58y",
+          "name": "Supabase account NutriCheker"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "24151978-b024-462d-b41d-5f6179bb14dd",
+              "name": "originalData.allergenAnalysis.detectedAllergens[0].allergenId",
+              "value": "={{ $json.originalData.allergenAnalysis.detectedAllergens[0].allergenId }}",
+              "type": "string"
+            },
+            {
+              "id": "full-allergen-analysis",
+              "name": "originalData.allergenAnalysis",
+              "value": "={{ $json.originalData.allergenAnalysis }}",
+              "type": "object"
+            },
+            {
+              "id": "6e4d6ead-6744-4eff-9e1e-a3fab6679be0",
+              "name": "originalData.allergenAnalysis.detectedAllergens[0].name",
+              "value": "={{ $json.originalData.allergenAnalysis.detectedAllergens[0].name }}",
+              "type": "string"
+            },
+            {
+              "id": "5a0fac9e-7c85-4da4-9c37-6f0429e6ebe2",
+              "name": "originalData.allergenAnalysis.detectedAllergens[0].sourceIngredient",
+              "value": "={{ $json.originalData.allergenAnalysis.detectedAllergens[0].sourceIngredient }}",
+              "type": "string"
+            },
+            {
+              "id": "3c547672-d501-4ace-a92d-a1fdd5aaaeb0",
+              "name": "originalData.allergenAnalysis.detectedAllergens[0].confidence",
+              "value": "={{ $json.originalData.allergenAnalysis.detectedAllergens[0].confidence }}",
+              "type": "string"
+            },
+            {
+              "id": "6a88d356-075a-4f4f-85aa-b3f2a8105510",
+              "name": "originalData.allergenAnalysis.userAllergenWarnings[0].allergenId",
+              "value": "={{ $json.originalData.allergenAnalysis.userAllergenWarnings[0].allergenId }}",
+              "type": "string"
+            },
+            {
+              "id": "aaf9df54-6536-4b25-8461-766b78dec7ea",
+              "name": "originalData.allergenAnalysis.userAllergenWarnings[0].allergenName",
+              "value": "={{ $json.originalData.allergenAnalysis.userAllergenWarnings[0].allergenName }}",
+              "type": "string"
+            },
+            {
+              "id": "771609c9-5099-4e43-b60e-fc9f80d937fa",
+              "name": "originalData.allergenAnalysis.userAllergenWarnings[0].message",
+              "value": "={{ $json.originalData.allergenAnalysis.userAllergenWarnings[0].message }}",
+              "type": "string"
+            },
+            {
+              "id": "5d0905d2-87fc-4ffe-97a6-9bbb9fd52c20",
+              "name": "originalData.allergenAnalysis.isSafeForUser",
+              "value": "={{ $json.originalData.allergenAnalysis.isSafeForUser }}",
+              "type": "boolean"
+            },
+            {
+              "id": "83476602-e800-4a36-8bfb-5f4db8ad5a2d",
+              "name": "fieldsToTranslate.ingredients",
+              "value": "={{ $('Prepare Translation').item.json.fieldsToTranslate.ingredients }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3440,
+        -320
+      ],
+      "id": "1dd71c8d-29b9-4d50-9b57-6fdf391384d6",
+      "name": "Edit Fields1"
+    }
+  ],
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Set User Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "LLM 1 - Extract Data_main",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "LLM 1 - Extract Data_main",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set User Data": {
+      "main": [
+        [
+          {
+            "node": "LLM 1 - Extract Data_main",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Results": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "prepare all",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Default Allergens": {
+      "main": [
+        [
+          {
+            "node": "LLM 2 - Match Allergens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM 2 - Match Allergens": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "LLM 2 - Match Allergens",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM 1 - Extract Data_main": {
+      "main": [
+        [
+          {
+            "node": "Function",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Translation": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "add_meals_scan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Translation LLM": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "add_meals_scan_Allergens",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "update_profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "prepare all": {
+      "main": [
+        [
+          {
+            "node": "Set Default Allergens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function": {
+      "main": [
+        [
+          {
+            "node": "Prepare Translation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "pars_llm_trans",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "pars_llm_trans": {
+      "main": [
+        [
+          {
+            "node": "Process Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Translation LLM",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update_profile": {
+      "main": [
+        [],
+        []
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Translation LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Webhook1": [
+      {
+        "headers": {
+          "connection": "upgrade",
+          "host": "ttagent.website",
+          "x-real-ip": "172.69.138.145",
+          "x-forwarded-for": "2800:2222:1000:7b9:548a:85ae:da3f:8497, 172.69.138.145",
+          "x-forwarded-proto": "https",
+          "cf-ray": "94c49e78ad60f203-GRU",
+          "accept-encoding": "gzip, br",
+          "cdn-loop": "cloudflare; loops=1",
+          "accept-language": "ru",
+          "user-agent": "NutriChecker/16 CFNetwork/3826.500.131 Darwin/24.5.0",
+          "cf-visitor": "{\"scheme\":\"https\"}",
+          "priority": "u=3, i",
+          "content-type": "application/json",
+          "cf-connecting-ip": "2800:2222:1000:7b9:548a:85ae:da3f:8497",
+          "cf-ipcountry": "AR",
+          "accept": "application/json"
+        },
+        "params": {},
+        "query": {
+          "imageUrl": "https://firebasestorage.googleapis.com/v0/b/nutrichecker-41993.firebasestorage.app/o/food_analysis%2F1749346171057.jpg?alt=media&token=a9e5804d-537d-4949-89e9-9567a2bad7fa",
+          "language": "ru",
+          "userId": "2025060610563760851@nutrichecker.top",
+          "userProfile": "{\"age\":30,\"gender\":\"not_specified\",\"weight\":70,\"height\":170,\"activityLevel\":2,\"dietGoal\":\"maintenance\"}",
+          "selectedAllergenIds": "Fish,Wheat",
+          "customAllergens": "",
+          "allergenDetails": "[{\"id\":\"fish\",\"englishName\":\"Fish\"},{\"id\":\"wheat\",\"englishName\":\"Wheat\"}]",
+          "_t": "1749346174772"
+        },
+        "body": {},
+        "webhookUrl": "https://ttagent.website/webhook/445b7e5d-d5af-4d06-9096-155ed9b1c4bb1",
+        "executionMode": "production"
+      }
+    ]
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3f98e65bbc53fb913ce632c695b32ab3b2d3d92ced38c3d4d86ebd2965460fa1"
+  }
+}

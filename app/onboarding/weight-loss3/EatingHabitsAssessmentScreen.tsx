@@ -3,7 +3,7 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from '../../../i18n/i18n';
 import { OnboardingLayout } from './unifiedLayouts';
-import { eatingHabitsAssessment as eatingHabitsStyles, options, palette, typography } from './unifiedStyles';
+import { useOptionsStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface EatingHabitsAssessmentScreenProps {
   onContinue: () => void;
@@ -21,6 +21,9 @@ const EatingHabitsAssessmentScreen: React.FC<EatingHabitsAssessmentScreenProps> 
   // Добавляем локальное состояние для мгновенного отклика
   const [localAssessment, setLocalAssessment] = React.useState<string | null>(eatingHabitsAssessment || 'improving');
   const { t } = useTranslation();
+  const palette = usePalette();
+  const options = useOptionsStyles();
+  const typography = useTypographyStyles();
   
   // Обновляем локальное состояние при изменении пропсов
   React.useEffect(() => {
@@ -81,7 +84,7 @@ const EatingHabitsAssessmentScreen: React.FC<EatingHabitsAssessmentScreenProps> 
               style={[
                 options.optionContainer,
                 isSelected ? options.selectedOption : options.unselectedOption,
-                eatingHabitsStyles.assessmentOption
+                { marginBottom: 16 }
               ]}
               onPress={() => handleAssessmentSelect(option.id)}
               activeOpacity={0.5}
@@ -96,11 +99,11 @@ const EatingHabitsAssessmentScreen: React.FC<EatingHabitsAssessmentScreenProps> 
                 />
               </View>
               
-              <View style={[options.optionTextContainer, eatingHabitsStyles.assessmentTextContainer]}>
+              <View style={[options.optionTextContainer, { flex: 1 }]}>
                 <Text style={typography.optionTitle}>
                   {option.label}
                 </Text>
-                <Text style={eatingHabitsStyles.descriptionText}>
+                <Text style={[typography.optionDescription, { marginTop: 4 }]}>
                   {option.description}
                 </Text>
               </View>
@@ -118,9 +121,9 @@ const EatingHabitsAssessmentScreen: React.FC<EatingHabitsAssessmentScreenProps> 
         })}
       </View>
       
-      <View style={eatingHabitsStyles.tipContainer}>
-        <Ionicons name="bulb-outline" size={20} color={palette.primary} style={eatingHabitsStyles.tipIcon} />
-        <Text style={eatingHabitsStyles.tipText}>
+      <View style={{ marginTop: 20, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'flex-start' }}>
+        <Ionicons name="bulb-outline" size={20} color={palette.primary} style={{ marginRight: 12, marginTop: 2 }} />
+        <Text style={[typography.caption, { flex: 1 }]}>
           {t('onboarding.eatingHabitsAssessment.tip')}
         </Text>
       </View>

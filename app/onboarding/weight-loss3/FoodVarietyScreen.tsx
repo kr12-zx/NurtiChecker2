@@ -3,7 +3,7 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from '../../../i18n/i18n';
 import { OnboardingLayout } from './unifiedLayouts';
-import { foodVarietyStyles, options, palette, typography } from './unifiedStyles';
+import { useOptionsStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface FoodVarietyScreenProps {
   onContinue: () => void;
@@ -21,6 +21,9 @@ const FoodVarietyScreen: React.FC<FoodVarietyScreenProps> = ({
   // Добавляем локальное состояние для мгновенного отклика
   const [localFoodVariety, setLocalFoodVariety] = React.useState<string | null>(foodVariety || 'sometimes');
   const { t } = useTranslation();
+  const palette = usePalette();
+  const options = useOptionsStyles();
+  const typography = useTypographyStyles();
   
   // Обновляем локальное состояние при изменении пропсов
   React.useEffect(() => {
@@ -81,7 +84,7 @@ const FoodVarietyScreen: React.FC<FoodVarietyScreenProps> = ({
               style={[
                 options.optionContainer,
                 isSelected ? options.selectedOption : options.unselectedOption,
-                foodVarietyStyles.varietyOption
+                { marginBottom: 16 }
               ]}
               onPress={() => handleFoodVarietySelect(option.id)}
               activeOpacity={0.5}
@@ -96,11 +99,11 @@ const FoodVarietyScreen: React.FC<FoodVarietyScreenProps> = ({
                 />
               </View>
               
-              <View style={[options.optionTextContainer, foodVarietyStyles.varietyTextContainer]}>
+              <View style={[options.optionTextContainer, { flex: 1 }]}>
                 <Text style={typography.optionTitle}>
                   {option.label}
                 </Text>
-                <Text style={foodVarietyStyles.descriptionText}>
+                <Text style={[typography.optionDescription, { marginTop: 4 }]}>
                   {option.description}
                 </Text>
               </View>

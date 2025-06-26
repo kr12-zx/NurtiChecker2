@@ -1,0 +1,301 @@
+{
+  "name": "NutriChecker - Add Meal Dashboard",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "add-meal",
+        "httpMethod": "GET",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "11d3315b-9a7a-4abf-bc56-8017c69d79c5",
+      "name": "Webhook - Add Meal",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [-660, 100],
+      "webhookId": "add-meal"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-required-fields",
+              "leftValue": "={{ $json.query.userId }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "isNotEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "validate-input",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [-440, 100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://bespxpyftmnhbynchywl.supabase.co/rest/v1/meals_scan",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "dish",
+              "value": "={{ $json.query.dish || 'Unknown Dish' }}"
+            },
+            {
+              "name": "grams",
+              "value": "={{ $json.query.grams || 100 }}"
+            },
+            {
+              "name": "kcal",
+              "value": "={{ $json.query.kcal || 0 }}"
+            },
+            {
+              "name": "prot",
+              "value": "={{ $json.query.prot || 0 }}"
+            },
+            {
+              "name": "fat",
+              "value": "={{ $json.query.fat || 0 }}"
+            },
+            {
+              "name": "carb",
+              "value": "={{ $json.query.carb || 0 }}"
+            },
+            {
+              "name": "sugar",
+              "value": "={{ $json.query.sugar || 0 }}"
+            },
+            {
+              "name": "fiber",
+              "value": "={{ $json.query.fiber || 0 }}"
+            },
+            {
+              "name": "sodium",
+              "value": "={{ $json.query.sodium || 0 }}"
+            },
+            {
+              "name": "glycemicIndex",
+              "value": "={{ $json.query.glycemicIndex || 0 }}"
+            },
+            {
+              "name": "saturatedFat",
+              "value": "={{ $json.query.saturatedFat || 0 }}"
+            },
+            {
+              "name": "vitamins",
+              "value": "={{ JSON.stringify($json.query.vitamins || []) }}"
+            },
+            {
+              "name": "minerals",
+              "value": "={{ JSON.stringify($json.query.minerals || []) }}"
+            },
+            {
+              "name": "healthBenefits",
+              "value": "={{ JSON.stringify($json.query.healthBenefits || []) }}"
+            },
+            {
+              "name": "healthConcerns",
+              "value": "={{ JSON.stringify($json.query.healthConcerns || []) }}"
+            },
+            {
+              "name": "overallHealthScore",
+              "value": "={{ $json.query.overallHealthScore || 50 }}"
+            },
+            {
+              "name": "recommendedIntakeDescr",
+              "value": "={{ $json.query.recommendedIntakeDescr || '' }}"
+            },
+            {
+              "name": "packageInfo",
+              "value": "={{ $json.query.packageInfo || '' }}"
+            },
+            {
+              "name": "targetLanguage",
+              "value": "={{ $json.query.targetLanguage || 'en' }}"
+            },
+            {
+              "name": "originalResult",
+              "value": "={{ JSON.stringify($json.query.originalResult || {}) }}"
+            },
+            {
+              "name": "isSafeForUser",
+              "value": "={{ $json.query.isSafeForUser !== false }}"
+            },
+            {
+              "name": "allergenId",
+              "value": "={{ $json.query.allergenId || null }}"
+            },
+            {
+              "name": "allergenName",
+              "value": "={{ $json.query.allergenName || null }}"
+            },
+            {
+              "name": "messageAllergen",
+              "value": "={{ $json.query.messageAllergen || null }}"
+            },
+            {
+              "name": "recommendedIntakeMaxFrequency",
+              "value": "={{ $json.query.recommendedIntakeMaxFrequency || 'daily' }}"
+            },
+            {
+              "name": "mailid",
+              "value": "={{ $json.query.userId }}"
+            },
+            {
+              "name": "eaten_at",
+              "value": "={{ $json.query.eaten_at || new Date().toISOString() }}"
+            },
+            {
+              "name": "eaten_day",
+              "value": "={{ $json.query.eaten_day || new Date().toISOString().split('T')[0] }}"
+            },
+            {
+              "name": "imageUrl",
+              "value": "={{ $json.query.imageUrl || '' }}"
+            },
+            {
+              "name": "ingridients",
+              "value": "={{ $json.query.ingredients || $json.query.ingridients || '' }}"
+            },
+            {
+              "name": "description",
+              "value": "={{ $json.query.description || '' }}"
+            },
+            {
+              "name": "deleted",
+              "value": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "insert-meal-data",
+      "name": "Insert Meal Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [-220, 100],
+      "credentials": {
+        "supabaseApi": {
+          "id": "8RKkUwkeVmyvS58y",
+          "name": "Supabase account NutriCheker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Meal data added successfully\",\n  \"userId\": \"{{ $('Webhook - Add Meal').item.json.body.userId }}\",\n  \"meal\": {\n    \"id\": {{ $('Insert Meal Data').item.json[0].id }},\n    \"dish\": \"{{ $('Insert Meal Data').item.json[0].dish }}\",\n    \"kcal\": {{ $('Insert Meal Data').item.json[0].kcal }},\n    \"grams\": {{ $('Insert Meal Data').item.json[0].grams }},\n    \"overallHealthScore\": {{ $('Insert Meal Data').item.json[0].overallHealthScore }}\n  },\n  \"timestamp\": \"{{ new Date().toISOString() }}\"\n}",
+        "options": {}
+      },
+      "id": "success-response",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [0, 100]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": false,\n  \"message\": \"Missing required fields: userId\",\n  \"error\": \"VALIDATION_ERROR\",\n  \"timestamp\": \"{{ new Date().toISOString() }}\"\n}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "error-response",
+      "name": "Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [-220, 300]
+    }
+  ],
+  "connections": {
+    "Webhook - Add Meal": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Insert Meal Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Meal Data": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3f98e65bbc53fb913ce632c695b32ab3b2d3d92ced38c3d4d86ebd2965460fa1"
+  },
+  "id": "add-meal-dashboard",
+  "tags": [
+    {
+      "createdAt": "2024-12-25T10:00:00.000Z",
+      "updatedAt": "2024-12-25T10:00:00.000Z",
+      "id": "nutrichecker",
+      "name": "nutrichecker"
+    }
+  ]
+} 

@@ -3,7 +3,7 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import { useTranslation } from '../../../i18n/i18n';
 import { OnboardingLayout } from './unifiedLayouts';
-import { calorieBudgetIntro, usePalette } from './unifiedStyles';
+import { useCardStyles, usePalette, useProgramContainerStyles } from './unifiedStyles';
 
 interface CalorieBudgetIntroScreenProps {
   onContinue: () => void;
@@ -20,8 +20,10 @@ const CalorieBudgetIntroScreen: React.FC<CalorieBudgetIntroScreenProps> = ({
   goalWeight = 70,
   weightUnits = 'кг'
 }) => {
-  // Получаем палитру цветов
+  // Получаем палитру цветов и динамические стили
   const palette = usePalette();
+  const programStyles = useProgramContainerStyles();
+  const cardStyles = useCardStyles();
   const { t } = useTranslation();
 
   // Определяем разницу в весе
@@ -34,96 +36,98 @@ const CalorieBudgetIntroScreen: React.FC<CalorieBudgetIntroScreenProps> = ({
       onContinue={onContinue}
       onBack={onBack}
     >
-      <View style={calorieBudgetIntro.programContainer}>
-        <Text style={calorieBudgetIntro.programTitle}>{t('onboarding.welcome.program')}</Text>
+      <View style={programStyles.programContainer}>
+        <Text style={programStyles.programTitle}>{t('onboarding.welcome.program')}</Text>
         
-        <View style={calorieBudgetIntro.programContent}>
-          <View style={[calorieBudgetIntro.programItem, calorieBudgetIntro.activeItem]}>
-            <View style={calorieBudgetIntro.programIconContainer}>
-              <Ionicons name="trending-down-outline" size={20} color={palette.primary} />
+        <View style={programStyles.programContent}>
+          <View style={[programStyles.programItem, programStyles.activeItem]}>
+            <View style={programStyles.programIconContainer}>
+              <Ionicons name="trending-down-outline" size={20} color={palette.white} />
             </View>
-            <Text style={calorieBudgetIntro.programText}>
+            <Text style={programStyles.programText}>
               {t('onboarding.calorieBudgetIntro.weightReduction', { amount: weightDifference, units: weightUnits })}
             </Text>
-            <View style={calorieBudgetIntro.programCheckmark}>
-              <Ionicons name="checkmark" size={16} color={palette.primary} />
+            <View style={programStyles.programCheckmark}>
+              <Ionicons name="checkmark" size={16} color={palette.white} />
             </View>
           </View>
           
-          <View style={[calorieBudgetIntro.programItem, calorieBudgetIntro.activeItem]}>
-            <View style={calorieBudgetIntro.programIconContainer}>
-              <Ionicons name="scale-outline" size={20} color={palette.primary} />
+          <View style={[programStyles.programItem, programStyles.activeItem]}>
+            <View style={programStyles.programIconContainer}>
+              <Ionicons name="scale-outline" size={20} color={palette.white} />
             </View>
-            <Text style={calorieBudgetIntro.programText}>
+            <Text style={programStyles.programText}>
               {t('onboarding.calorieBudgetIntro.targetWeight', { weight: goalWeight, units: weightUnits })}
             </Text>
-            <View style={calorieBudgetIntro.programCheckmark}>
-              <Ionicons name="checkmark" size={16} color={palette.primary} />
+            <View style={programStyles.programCheckmark}>
+              <Ionicons name="checkmark" size={16} color={palette.white} />
             </View>
           </View>
           
-          <View style={[calorieBudgetIntro.programItem, calorieBudgetIntro.nextStepItem]}>
-            <View style={calorieBudgetIntro.programIconContainer}>
-              <Ionicons name="calculator-outline" size={20} color={palette.primary} />
+          <View style={[programStyles.programItem, programStyles.nextStepItem]}>
+            <View style={programStyles.programIconContainer}>
+              <Ionicons name="calculator-outline" size={20} color={palette.white} />
             </View>
-            <Text style={calorieBudgetIntro.programText}>
+            <Text style={programStyles.programText}>
               {t('onboarding.calorieBudgetIntro.calorieBudget')}
             </Text>
           </View>
           
-          <View style={[calorieBudgetIntro.programItem, calorieBudgetIntro.inactiveItem]}>
-            <View style={calorieBudgetIntro.programIconContainer}>
+          <View style={[programStyles.programItem, programStyles.inactiveItem]}>
+            <View style={programStyles.programIconContainer}>
               <Ionicons name="calendar-outline" size={20} color={palette.text.disabled} />
             </View>
-            <Text style={[calorieBudgetIntro.programText, calorieBudgetIntro.inactiveText]}>
+            <Text style={[programStyles.programText, programStyles.inactiveText]}>
               {t('onboarding.calorieBudgetIntro.calorieSchedule')}
             </Text>
           </View>
           
-          <View style={[calorieBudgetIntro.programItem, calorieBudgetIntro.inactiveItem]}>
-            <View style={calorieBudgetIntro.programIconContainer}>
+          <View style={[programStyles.programItem, programStyles.inactiveItem]}>
+            <View style={programStyles.programIconContainer}>
               <Ionicons name="nutrition-outline" size={20} color={palette.text.disabled} />
             </View>
-            <Text style={[calorieBudgetIntro.programText, calorieBudgetIntro.inactiveText]}>
+            <Text style={[programStyles.programText, programStyles.inactiveText]}>
               {t('onboarding.calorieBudgetIntro.nutritionStrategy')}
             </Text>
           </View>
           
-          <View style={[calorieBudgetIntro.programItem, calorieBudgetIntro.inactiveItem]}>
-            <View style={calorieBudgetIntro.programIconContainer}>
+          <View style={[programStyles.programItem, programStyles.inactiveItem]}>
+            <View style={programStyles.programIconContainer}>
               <Ionicons name="time-outline" size={20} color={palette.text.disabled} />
             </View>
-            <Text style={[calorieBudgetIntro.programText, calorieBudgetIntro.inactiveText]}>
+            <Text style={[programStyles.programText, programStyles.inactiveText]}>
               {t('onboarding.calorieBudgetIntro.intermittentFasting')}
             </Text>
           </View>
         </View>
       </View>
       
-      <View style={calorieBudgetIntro.infoContainer}>
-        <Text style={calorieBudgetIntro.infoTitle}>{t('onboarding.calorieBudgetIntro.whatIs')}</Text>
-        <Text style={calorieBudgetIntro.infoText}>
+      <View style={cardStyles.infoContainer}>
+        <Text style={cardStyles.infoTitle}>{t('onboarding.calorieBudgetIntro.whatIs')}</Text>
+        <Text style={cardStyles.infoText}>
           {t('onboarding.calorieBudgetIntro.explanation')}
         </Text>
         
-        <View style={calorieBudgetIntro.infoIcon}>
-          <Ionicons name="flame-outline" size={20} color={palette.primary} />
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 12 }}>
+          <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: palette.primary, justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+            <Ionicons name="flame-outline" size={20} color={palette.white} />
+          </View>
+          <Text style={cardStyles.infoText}>
+            {t('onboarding.calorieBudgetIntro.deficitExplanation')}
+          </Text>
         </View>
-        <Text style={calorieBudgetIntro.infoText}>
-          {t('onboarding.calorieBudgetIntro.deficitExplanation')}
-        </Text>
         
-        <View style={calorieBudgetIntro.infoIcon}>
-          <Ionicons name="calculator-outline" size={20} color={palette.primary} />
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 12 }}>
+          <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: palette.primary, justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+            <Ionicons name="calculator-outline" size={20} color={palette.white} />
+          </View>
+          <Text style={cardStyles.infoText}>
+            {t('onboarding.calorieBudgetIntro.personalCalculation')}
+          </Text>
         </View>
-        <Text style={calorieBudgetIntro.infoText}>
-          {t('onboarding.calorieBudgetIntro.personalCalculation')}
-        </Text>
       </View>
     </OnboardingLayout>
   );
 };
-
-// Локальных стилей больше нет - все стили вынесены в унифицированный модуль unifiedStyles.ts
 
 export default CalorieBudgetIntroScreen;

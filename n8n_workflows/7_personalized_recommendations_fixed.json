@@ -1,0 +1,612 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "get-recommendations",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "ab0ab307-3245-481e-832a-65e663b9a1cc",
+      "name": "Webhook - Get Recommendations",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -940,
+        340
+      ],
+      "webhookId": "get-recommendations"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-user-id",
+              "leftValue": "={{ $json.userId || $json.emailId }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "isNotEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "216ed461-6800-4492-a806-fe6cb446e9bc",
+      "name": "Validate Request",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -700,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://bespxpyftmnhbynchywl.supabase.co/rest/v1/webhook_events",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "email_id",
+              "value": "=eq.{{ $json.userId || $json.emailId }}"
+            },
+            {
+              "name": "event_type",
+              "value": "eq.onboarding_completed"
+            },
+            {
+              "name": "select",
+              "value": "payload"
+            },
+            {
+              "name": "order",
+              "value": "sent_at.desc"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "db5584e9-63c3-41d4-8aec-18098b93ca5c",
+      "name": "Get User Profile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -320,
+        100
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "8RKkUwkeVmyvS58y",
+          "name": "Supabase account NutriCheker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://bespxpyftmnhbynchywl.supabase.co/rest/v1/profiles",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "mailid",
+              "value": "=eq.{{ $json.userId || $json.emailId }}"
+            },
+            {
+              "name": "select",
+              "value": "locale,timezone,timezone_offset,country"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "07839ed6-cc25-4a33-8277-57964bd5d817",
+      "name": "Get User Settings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -300,
+        300
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "8RKkUwkeVmyvS58y",
+          "name": "Supabase account NutriCheker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://bespxpyftmnhbynchywl.supabase.co/rest/v1/meals_added",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "mailid",
+              "value": "=eq.{{ $json.userId || $json.emailId }}"
+            },
+            {
+              "name": "eaten_at",
+              "value": "=gte.{{ new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() }}"
+            },
+            {
+              "name": "deleted",
+              "value": "eq.false"
+            },
+            {
+              "name": "select",
+              "value": "dish,grams,kcal,prot,fat,carb,sugar,fiber,sodium,vitamins,minerals,eaten_at,eaten_day,overallhealthscore"
+            },
+            {
+              "name": "order",
+              "value": "eaten_at.desc"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3bb6357f-d8aa-43b0-905a-c8088d8fefc2",
+      "name": "Get Weekly Meals",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -300,
+        480
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "8RKkUwkeVmyvS58y",
+          "name": "Supabase account NutriCheker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-profile-data",
+              "leftValue": "={{ $('Get User Profile').all().length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b7e9c347-0303-4a13-a228-a9d5f733ec21",
+      "name": "Check Profile Exists",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        140,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Обработка и структурирование данных пользователя\nconst profileData = $('Get User Profile').all()[0]?.payload ? JSON.parse($('Get User Profile').all()[0].payload) : {};\nconst settingsData = $('Get User Settings').all()[0] || {};\nconst mealsData = $('Get Weekly Meals').all() || [];\n\n// Извлекаем данные профиля из payload\nconst profile = profileData.profile || {};\nconst settings = profileData.settings || {};\n\n// Рассчитываем возраст\nconst calculateAge = (birthday) => {\n  if (!birthday) return null;\n  const birthDate = new Date(birthday);\n  const today = new Date();\n  let age = today.getFullYear() - birthDate.getFullYear();\n  const monthDiff = today.getMonth() - birthDate.getMonth();\n  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {\n    age--;\n  }\n  return age;\n};\n\n// Агрегируем данные о питании за неделю\nconst aggregateNutrition = (meals) => {\n  if (!meals || meals.length === 0) {\n    return {\n      totalCalories: 0,\n      totalProtein: 0,\n      totalFat: 0,\n      totalCarbs: 0,\n      totalSugar: 0,\n      totalFiber: 0,\n      totalSodium: 0,\n      avgCaloriesPerDay: 0,\n      avgProteinPerDay: 0,\n      avgFatPerDay: 0,\n      avgCarbsPerDay: 0,\n      daysWithData: 0,\n      vitamins: [],\n      minerals: [],\n      avgHealthScore: 0,\n      mealCount: 0\n    };\n  }\n\n  const totals = meals.reduce((acc, meal) => {\n    acc.calories += parseFloat(meal.kcal || 0);\n    acc.protein += parseFloat(meal.prot || 0);\n    acc.fat += parseFloat(meal.fat || 0);\n    acc.carbs += parseFloat(meal.carb || 0);\n    acc.sugar += parseFloat(meal.sugar || 0);\n    acc.fiber += parseFloat(meal.fiber || 0);\n    acc.sodium += parseFloat(meal.sodium || 0);\n    acc.healthScore += parseFloat(meal.overallhealthscore || 0);\n    \n    // Собираем витамины и минералы\n    if (meal.vitamins) {\n      try {\n        const vitamins = typeof meal.vitamins === 'string' ? JSON.parse(meal.vitamins) : meal.vitamins;\n        if (Array.isArray(vitamins)) {\n          acc.vitamins = [...new Set([...acc.vitamins, ...vitamins])];\n        }\n      } catch (e) {}\n    }\n    \n    if (meal.minerals) {\n      try {\n        const minerals = typeof meal.minerals === 'string' ? JSON.parse(meal.minerals) : meal.minerals;\n        if (Array.isArray(minerals)) {\n          acc.minerals = [...new Set([...acc.minerals, ...minerals])];\n        }\n      } catch (e) {}\n    }\n    \n    return acc;\n  }, {\n    calories: 0,\n    protein: 0,\n    fat: 0,\n    carbs: 0,\n    sugar: 0,\n    fiber: 0,\n    sodium: 0,\n    healthScore: 0,\n    vitamins: [],\n    minerals: []\n  });\n\n  // Подсчитываем уникальные дни\n  const uniqueDays = [...new Set(meals.map(meal => meal.eaten_day))].length;\n  \n  return {\n    totalCalories: Math.round(totals.calories),\n    totalProtein: Math.round(totals.protein * 10) / 10,\n    totalFat: Math.round(totals.fat * 10) / 10,\n    totalCarbs: Math.round(totals.carbs * 10) / 10,\n    totalSugar: Math.round(totals.sugar * 10) / 10,\n    totalFiber: Math.round(totals.fiber * 10) / 10,\n    totalSodium: Math.round(totals.sodium * 10) / 10,\n    avgCaloriesPerDay: uniqueDays > 0 ? Math.round(totals.calories / uniqueDays) : 0,\n    avgProteinPerDay: uniqueDays > 0 ? Math.round((totals.protein / uniqueDays) * 10) / 10 : 0,\n    avgFatPerDay: uniqueDays > 0 ? Math.round((totals.fat / uniqueDays) * 10) / 10 : 0,\n    avgCarbsPerDay: uniqueDays > 0 ? Math.round((totals.carbs / uniqueDays) * 10) / 10 : 0,\n    daysWithData: uniqueDays,\n    vitamins: totals.vitamins,\n    minerals: totals.minerals,\n    avgHealthScore: meals.length > 0 ? Math.round(totals.healthScore / meals.length) : 0,\n    mealCount: meals.length\n  };\n};\n\n// Получаем исходный запрос\nconst originalRequest = $('Webhook - Get Recommendations').all()[0] || {};\n\n// Формируем структурированные данные\nconst structuredData = {\n  user: {\n    emailId: profileData.user?.emailId || originalRequest.userId || originalRequest.emailId,\n    age: calculateAge(profile.birthday),\n    timezone: profileData.user?.timezone || settingsData.timezone || 'UTC',\n    timezoneOffset: profileData.user?.timezoneOffset || settingsData.timezone_offset || 0,\n    locale: settingsData.locale || 'en',\n    country: settingsData.country || 'Unknown'\n  },\n  profile: {\n    // Физические параметры\n    gender: profile.gender,\n    height: profile.height,\n    currentWeight: profile.currentWeight,\n    goalWeight: profile.goalWeight,\n    weightLossRate: profile.weightLossRate,\n    \n    // Цели и активность\n    primaryGoal: profile.primaryGoal,\n    activityLevel: profile.activityLevel,\n    \n    // Пищевые предпочтения\n    dietPreference: profile.dietPreference,\n    nutritionFocus: profile.nutritionFocus,\n    mealFrequency: profile.mealFrequency,\n    foodPreferences: profile.foodPreferences,\n    foodVariety: profile.foodVariety,\n    \n    // Психологический профиль\n    confidenceLevel: profile.confidenceLevel,\n    challenges: profile.challenges || [],\n    mainObstacle: profile.mainObstacle,\n    stressResponse: profile.stressResponse,\n    adaptability: profile.adaptability,\n    challengesView: profile.challengesView,\n    setbacksResponse: profile.setbacksResponse,\n    decisionMaking: profile.decisionMaking,\n    difficultSituationsHandling: profile.difficultSituationsHandling,\n    temptationResponse: profile.temptationResponse,\n    eatingHabitsAssessment: profile.eatingHabitsAssessment\n  },\n  settings: {\n    weightUnit: settings.weightUnit || 'kg',\n    heightUnit: settings.heightUnit || 'cm',\n    system: settings.system || 'metric'\n  },\n  weeklyNutrition: aggregateNutrition(mealsData)\n};\n\nreturn [{ json: structuredData }];"
+      },
+      "id": "fd229329-0623-4614-9f7f-907bacd99bb4",
+      "name": "Process User Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        340,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Ты опытный диетолог и нутрициолог с глубокими знаниями в области персонализированного питания. Твоя задача - проанализировать данные пользователя и дать персонализированные рекомендации.\n\n**ДАННЫЕ ПОЛЬЗОВАТЕЛЯ:**\n\n**Личная информация:**\n- Возраст: {{ $json.user.age || 'не указан' }} лет\n- Пол: {{ $json.profile.gender || 'не указан' }}\n- Рост: {{ $json.profile.height || 'не указан' }} см\n- Текущий вес: {{ $json.profile.currentWeight || 'не указан' }} кг\n- Целевой вес: {{ $json.profile.goalWeight || 'не указан' }} кг\n- Страна: {{ $json.user.country }}\n- Язык: {{ $json.user.locale }}\n\n**Цели и активность:**\n- Основная цель: {{ $json.profile.primaryGoal || 'не указана' }}\n- Скорость похудения: {{ $json.profile.weightLossRate || 'не указана' }} кг/неделю\n- Уровень активности: {{ $json.profile.activityLevel || 'не указан' }}\n\n**Пищевые предпочтения:**\n- Тип диеты: {{ $json.profile.dietPreference || 'стандартная' }}\n- Фокус питания: {{ $json.profile.nutritionFocus || 'сбалансированное' }}\n- Частота приемов пищи: {{ $json.profile.mealFrequency || '3 раза в день' }}\n- Пищевые предпочтения: {{ $json.profile.foodPreferences || 'не указаны' }}\n- Разнообразие еды: {{ $json.profile.foodVariety || 'не указано' }}\n\n**Психологический профиль:**\n- Уровень уверенности (1-5): {{ $json.profile.confidenceLevel || 'не указан' }}\n- Основные вызовы: {{ ($json.profile.challenges || []).join(', ') || 'не указаны' }}\n- Главное препятствие: {{ $json.profile.mainObstacle || 'не указано' }}\n- Реакция на стресс: {{ $json.profile.stressResponse || 'не указана' }}\n- Адаптивность: {{ $json.profile.adaptability || 'не указана' }}\n- Отношение к вызовам: {{ $json.profile.challengesView || 'не указано' }}\n- Реакция на неудачи: {{ $json.profile.setbacksResponse || 'не указана' }}\n- Принятие решений: {{ $json.profile.decisionMaking || 'не указано' }}\n- Справление с трудностями: {{ $json.profile.difficultSituationsHandling || 'не указано' }}\n- Контроль соблазнов: {{ $json.profile.temptationResponse || 'не указан' }}\n- Оценка пищевых привычек: {{ $json.profile.eatingHabitsAssessment || 'не указана' }}\n\n**СТАТИСТИКА ПИТАНИЯ ЗА НЕДЕЛЮ:**\n- Дней с данными о питании: {{ $json.weeklyNutrition.daysWithData }}/7\n- Количество приемов пищи: {{ $json.weeklyNutrition.mealCount }}\n- Общие калории за неделю: {{ $json.weeklyNutrition.totalCalories }} ккал\n- Среднее калорий в день: {{ $json.weeklyNutrition.avgCaloriesPerDay }} ккал\n- Общий белок: {{ $json.weeklyNutrition.totalProtein }}г (среднее: {{ $json.weeklyNutrition.avgProteinPerDay }}г/день)\n- Общий жир: {{ $json.weeklyNutrition.totalFat }}г (среднее: {{ $json.weeklyNutrition.avgFatPerDay }}г/день)\n- Общие углеводы: {{ $json.weeklyNutrition.totalCarbs }}г (среднее: {{ $json.weeklyNutrition.avgCarbsPerDay }}г/день)\n- Общий сахар: {{ $json.weeklyNutrition.totalSugar }}г\n- Общая клетчатка: {{ $json.weeklyNutrition.totalFiber }}г\n- Общий натрий: {{ $json.weeklyNutrition.totalSodium }}мг\n- Средний рейтинг здоровья продуктов: {{ $json.weeklyNutrition.avgHealthScore }}/100\n- Витамины в рационе: {{ $json.weeklyNutrition.vitamins.join(', ') || 'данные отсутствуют' }}\n- Минералы в рационе: {{ $json.weeklyNutrition.minerals.join(', ') || 'данные отсутствуют' }}\n\n**ЗАДАЧА:**\nПроанализируй все данные и создай персонализированные рекомендации. Ответ должен быть в формате JSON со следующей структурой:\n\n```json\n{\n  \"nutritionRecommendations\": {\n    \"day1\": {\n      \"breakfast\": \"конкретное блюдо с кратким обоснованием\",\n      \"lunch\": \"конкретное блюдо с кратким обоснованием\",\n      \"dinner\": \"конкретное блюдо с кратким обоснованием\",\n      \"snacks\": [\"перекус 1\", \"перекус 2\"]\n    },\n    \"day2\": {\n      \"breakfast\": \"конкретное блюдо с кратким обоснованием\",\n      \"lunch\": \"конкретное блюдо с кратким обоснованием\",\n      \"dinner\": \"конкретное блюдо с кратким обоснованием\",\n      \"snacks\": [\"перекус 1\", \"перекус 2\"]\n    },\n    \"generalAdvice\": \"общий совет по питанию на основе анализа\"\n  },\n  \"vitaminsAndMinerals\": {\n    \"currentStatus\": \"анализ текущего потребления витаминов и минералов\",\n    \"deficiencies\": [\"список возможных дефицитов\"],\n    \"recommendations\": {\n      \"increase\": [\"что увеличить в рационе\"],\n      \"decrease\": [\"что уменьшить в рационе\"],\n      \"maintain\": [\"что поддерживать на текущем уровне\"]\n    },\n    \"specificAdvice\": \"конкретные советы по витаминам и минералам\"\n  },\n  \"psychologicalSupport\": {\n    \"motivationalMessage\": \"мотивирующее сообщение с учетом психологического профиля\",\n    \"challengeStrategy\": \"стратегия преодоления основных вызовов\",\n    \"practicalTips\": [\"практические советы для достижения целей\"]\n  }\n}\n```\n\n**ВАЖНЫЕ ТРЕБОВАНИЯ:**\n1. Учитывай психологический профиль пользователя (особенно эмоциональное переедание, уровень уверенности)\n2. Рекомендации должны соответствовать основной цели (похудение/набор веса/поддержание)\n3. Учитывай реальные данные о питании за неделю, а не только теоретические нормы\n4. Отвечай на языке пользователя ({{ $json.user.locale === 'ru' ? 'русский' : $json.user.locale === 'es' ? 'испанский' : 'английский' }})\n5. Блюда должны быть конкретными и реалистичными\n6. Учитывай культурные особенности страны пользователя\n7. Рекомендации по витаминам должны основываться на фактическом потреблении\n\nОтвечай ТОЛЬКО в формате JSON, без дополнительного текста.",
+        "hasOutputParser": true,
+        "outputParser": {
+          "type": "jsonOutputParser"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        560,
+        340
+      ],
+      "id": "41f34001-d688-482d-8766-748d320b2b03",
+      "name": "Generate AI Recommendations"
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {
+          "maxTokens": 2000,
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        580,
+        500
+      ],
+      "id": "9057c5a6-1b7f-4150-ae5b-3ad376292b6e",
+      "name": "OpenAI GPT-4",
+      "credentials": {
+        "openAiApi": {
+          "id": "N0hzwZufNaOfZEUt",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "a4c1bb7c-4c89-46ec-8f1f-57927c0911f3",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        940,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": 400,
+        "responseBody": "{\n  \"error\": \"Missing required field: userId or emailId\",\n  \"message\": \"Please provide userId or emailId in request body\"\n}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "0012f0d3-3b8d-4f4a-ab0a-1a4388ee0393",
+      "name": "Error - Missing User",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": 404,
+        "responseBody": "{\n  \"error\": \"User profile not found\",\n  \"message\": \"No onboarding data found for this user. Please complete onboarding first.\"\n}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "d8026338-9181-450b-b913-f0ca7ebf0e00",
+      "name": "Error - No Profile",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        340,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://bespxpyftmnhbynchywl.supabase.co/rest/v1/webhook_events",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_id",
+              "value": "={{ $('Process User Data').all()[0].json.user.emailId }}"
+            },
+            {
+              "name": "event_type",
+              "value": "recommendations_generated"
+            },
+            {
+              "name": "webhook_url",
+              "value": "get-recommendations"
+            },
+            {
+              "name": "payload",
+              "value": "={{ JSON.stringify({\n  request: $('Webhook - Get Recommendations').all()[0],\n  response: $json,\n  timestamp: new Date().toISOString()\n}) }}"
+            },
+            {
+              "name": "response_status",
+              "value": 200
+            },
+            {
+              "name": "success",
+              "value": true
+            },
+            {
+              "name": "email_id",
+              "value": "={{ $('Process User Data').all()[0].json.user.emailId }}"
+            },
+            {
+              "name": "sent_at",
+              "value": "={{ new Date().toISOString() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5edc2600-41ac-4b82-9a4a-0599e8c1fec3",
+      "name": "Log Success",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        960,
+        480
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "8RKkUwkeVmyvS58y",
+          "name": "Supabase account NutriCheker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -60,
+        340
+      ],
+      "id": "5fcc1378-5d06-4315-978c-6caef3cb5287",
+      "name": "Wait",
+      "webhookId": "c681e466-8726-4d4e-82ae-5797c7489b6b"
+    }
+  ],
+  "connections": {
+    "Webhook - Get Recommendations": {
+      "main": [
+        [
+          {
+            "node": "Validate Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Request": {
+      "main": [
+        [
+          {
+            "node": "Get User Profile",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get User Settings",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Weekly Meals",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error - Missing User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Profile": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Settings": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Weekly Meals": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Profile Exists": {
+      "main": [
+        [
+          {
+            "node": "Process User Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error - No Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process User Data": {
+      "main": [
+        [
+          {
+            "node": "Generate AI Recommendations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate AI Recommendations": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI GPT-4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate AI Recommendations",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Check Profile Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3f98e65bbc53fb913ce632c695b32ab3b2d3d92ced38c3d4d86ebd2965460fa1"
+  }
+} 

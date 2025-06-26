@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { ScrollView, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from '../../../i18n/i18n';
 import ButtonFooter from './components/ButtonFooter';
-import { containers, options, palette, temptationResponseStyles, typography } from './unifiedStyles';
+import { useContainerStyles, useOptionsStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface TemptationResponseScreenProps {
   onContinue: () => void;
@@ -29,8 +29,11 @@ const TemptationResponseScreen: React.FC<TemptationResponseScreenProps> = ({
     setLocalTemptationResponse(temptationResponse);
   }, [temptationResponse]);
   
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  // Получаем динамические стили
+  const palette = usePalette();
+  const containers = useContainerStyles();
+  const options = useOptionsStyles();
+  const typography = useTypographyStyles();
   
   // Функция обработки выбора реакции на искушения
   const handleTemptationResponseSelect = (response: string) => {
@@ -97,7 +100,7 @@ const TemptationResponseScreen: React.FC<TemptationResponseScreenProps> = ({
                     style={[
                       options.optionContainer,
                       isSelected ? options.selectedOption : options.unselectedOption,
-                      temptationResponseStyles.responseOption
+                      { marginBottom: 16 }
                     ]}
                     onPress={() => handleTemptationResponseSelect(option.id)}
                     activeOpacity={0.5}
@@ -112,11 +115,11 @@ const TemptationResponseScreen: React.FC<TemptationResponseScreenProps> = ({
                       />
                     </View>
                     
-                    <View style={[options.optionTextContainer, temptationResponseStyles.responseTextContainer]}>
+                    <View style={[options.optionTextContainer, { flex: 1 }]}>
                       <Text style={typography.optionTitle}>
                         {option.label}
                       </Text>
-                      <Text style={temptationResponseStyles.descriptionText}>
+                      <Text style={[typography.optionDescription, { marginTop: 4 }]}>
                         {option.description}
                       </Text>
                     </View>
@@ -146,7 +149,5 @@ const TemptationResponseScreen: React.FC<TemptationResponseScreenProps> = ({
     </SafeAreaView>
   );
 };
-
-// Локальных стилей больше нет - все стили вынесены в унифицированный модуль unifiedStyles.ts
 
 export default TemptationResponseScreen;

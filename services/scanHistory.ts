@@ -41,9 +41,14 @@ export const saveScanToHistory = async (scanData: Omit<ScanHistoryItem, 'id' | '
     const year = now.getFullYear();
     const scanDate = `${day}.${month}.${year}`;
     
+    // Безопасно обрабатываем поле name (может прийти объект)
+    const safeName = typeof scanData.name === 'string' ? scanData.name : 
+      (scanData.name as any)?.name || (scanData.name as any)?.title || 'Unknown product';
+    
     // Создаем новый элемент истории
     const newItem: ScanHistoryItem = {
       ...scanData,
+      name: safeName, // Используем безопасное имя
       id,
       date: timeString,
       timestamp,
@@ -128,6 +133,35 @@ export const deleteScanFromHistory = async (id: string): Promise<boolean> => {
     return true;
   } catch (error) {
     console.error('Ошибка при удалении из истории:', error);
+    throw error;
+  }
+};
+
+/**
+ * Обновляет элемент истории по ID
+ */
+export const updateScanById = async (id: string, updates: Partial<Omit<ScanHistoryItem, 'id' | 'timestamp'>>): Promise<boolean> => {
+  try {
+    const currentHistory = await getScanHistory();
+    const itemIndex = currentHistory.findIndex(scan => scan.id === id);
+    
+    if (itemIndex === -1) {
+      console.warn(`Элемент с ID ${id} не найден в истории`);
+      return false;
+    }
+    
+    // Обновляем элемент
+    currentHistory[itemIndex] = {
+      ...currentHistory[itemIndex],
+      ...updates
+    };
+    
+    // Сохраняем обновленную историю
+    await AsyncStorage.setItem(SCAN_HISTORY_KEY, JSON.stringify(currentHistory));
+    console.log(`Элемент с ID ${id} успешно обновлен в истории`);
+    return true;
+  } catch (error) {
+    console.error('Ошибка при обновлении элемента истории:', error);
     throw error;
   }
 };

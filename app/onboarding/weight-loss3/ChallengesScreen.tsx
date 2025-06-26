@@ -4,7 +4,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from '../../../i18n/i18n';
 import { Challenge } from '../../types/onboarding';
 import { OnboardingLayout } from './unifiedLayouts';
-import { challengesScreen, options, typography, usePalette } from './unifiedStyles';
+import { useOptionsStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface ChallengesScreenProps {
   onContinue: () => void;
@@ -22,9 +22,16 @@ const ChallengesScreen: React.FC<ChallengesScreenProps> = ({
   // Добавляем локальное состояние для мгновенного отклика
   const [localChallenges, setLocalChallenges] = React.useState<Challenge[]>(challenges.length > 0 ? challenges : ['emotional-eating']);
   
-  // Получаем палитру цветов
+  // Получаем динамические стили
   const palette = usePalette();
+  const options = useOptionsStyles();
+  const typography = useTypographyStyles();
   const { t } = useTranslation();
+  
+  // Динамические стили для этого экрана
+  const optionsContainerStyle = {
+    marginTop: 20,
+  };
   
   // Обновляем локальное состояние при изменении пропсов
   React.useEffect(() => {
@@ -107,7 +114,7 @@ const ChallengesScreen: React.FC<ChallengesScreenProps> = ({
       onContinue={onContinue}
       onBack={onBack}
     >
-      <View style={challengesScreen.optionsContainer}>
+      <View style={optionsContainerStyle}>
         {challengeOptions.map((option) => {
           // Используем локальное состояние для отображения выбранных вариантов
           const isSelected = localChallenges.includes(option.id);
@@ -146,7 +153,7 @@ const ChallengesScreen: React.FC<ChallengesScreenProps> = ({
                 isSelected ? options.selectedCheckIconContainer : options.unselectedCheckIconContainer
               ]}>
                 {isSelected && (
-                  <Ionicons name="checkmark" size={16} color={palette.text.white} />
+                  <Ionicons name="checkmark" size={16} color={palette.white} />
                 )}
               </View>
             </TouchableOpacity>

@@ -1,0 +1,548 @@
+{
+  "name": "NutriChecker - Daily Advice with In-App Notifications",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 9,
+              "minute": 0
+            }
+          ]
+        }
+      },
+      "id": "daily-trigger",
+      "name": "Daily Trigger (9:00 AM)",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [1060, 500]
+    },
+    {
+      "parameters": {
+        "url": "=https://bespxpyftmnhbynchywl.supabase.co/rest/v1/push_tokens",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "is_active",
+              "value": "eq.true"
+            },
+            {
+              "name": "select",
+              "value": "user_id,push_token,platform"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-active-users",
+      "name": "Get Active Users",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1280, 500],
+      "credentials": {
+        "supabaseApi": {
+          "id": "8RKkUwkeVmyvS58y",
+          "name": "Supabase account NutriCheker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "valid-token",
+              "leftValue": "={{ $json.push_token }}",
+              "rightValue": "test",
+              "operator": {
+                "type": "string",
+                "operation": "notContains",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "filter-valid-tokens",
+      "name": "Filter Valid Tokens",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1520, 500]
+    },
+    {
+      "parameters": {
+        "url": "=https://bespxpyftmnhbynchywl.supabase.co/rest/v1/profiles?uuid=eq.{{ $json.user_id }}&select=mailid",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1700, 500],
+      "id": "get-mailid",
+      "name": "Get MailID from Profile",
+      "credentials": {
+        "supabaseApi": {
+          "id": "8RKkUwkeVmyvS58y",
+          "name": "Supabase account NutriCheker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://bespxpyftmnhbynchywl.supabase.co/rest/v1/meals_added",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "mailid",
+              "value": "=eq.{{ $json.mailid }}"
+            },
+            {
+              "name": "created_at",
+              "value": "=gte.{{ new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() }}"
+            },
+            {
+              "name": "select",
+              "value": "mailid,dish,kcal,sugar,prot,fat,carb,overallhealthscore,healthconcerns,grams"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fetch-user-meals",
+      "name": "Fetch User Meals",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1860, 500],
+      "credentials": {
+        "supabaseApi": {
+          "id": "8RKkUwkeVmyvS58y",
+          "name": "Supabase account NutriCheker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Group meals by mailid and sum nutrition data\nconst mealsData = $input.all().map(item => item.json);\nconsole.log('Input meals:', mealsData.length);\n\n// Group meals by mailid\nconst mealsByMailid = {};\nmealsData.forEach(meal => {\n  const mailid = meal.mailid;\n  if (mailid) {\n    if (!mealsByMailid[mailid]) {\n      mealsByMailid[mailid] = [];\n    }\n    mealsByMailid[mailid].push(meal);\n  }\n});\n\nconsole.log('Grouped mailids:', Object.keys(mealsByMailid));\n\n// Create summed output for each mailid\nconst results = [];\nObject.keys(mealsByMailid).forEach(mailid => {\n  const userMeals = mealsByMailid[mailid];\n  console.log(`${mailid}: ${userMeals.length} meals`);\n  \n  // Sum all nutrition data\n  let totalKcal = 0;\n  let totalSugar = 0;\n  let totalProt = 0;\n  let totalFat = 0;\n  let totalCarb = 0;\n  let totalGrams = 0;\n  let totalHealthScore = 0;\n  const dishes = [];\n  \n  userMeals.forEach(meal => {\n    totalKcal += Number(meal.kcal || 0);\n    totalSugar += Number(meal.sugar || 0);\n    totalProt += Number(meal.prot || 0);\n    totalFat += Number(meal.fat || 0);\n    totalCarb += Number(meal.carb || 0);\n    totalGrams += Number(meal.grams || 0);\n    totalHealthScore += Number(meal.overallhealthscore || 0);\n    \n    if (meal.dish) {\n      dishes.push(meal.dish);\n    }\n  });\n  \n  // Calculate average health score\n  const avgHealthScore = userMeals.length > 0 ? Math.round(totalHealthScore / userMeals.length) : 0;\n  \n  results.push({\n    [mailid]: {\n      total_meals: userMeals.length,\n      total_kcal: totalKcal,\n      total_sugar: totalSugar,\n      total_prot: Math.round(totalProt * 10) / 10,\n      total_fat: Math.round(totalFat * 10) / 10,\n      total_carb: Math.round(totalCarb * 10) / 10,\n      total_grams: totalGrams,\n      avg_health_score: avgHealthScore,\n      dishes: dishes\n    }\n  });\n});\n\nconsole.log('Results:', results.length);\nreturn results.map(item => ({ json: item }));"
+      },
+      "id": "combine-user-data",
+      "name": "Combine User Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2020, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process each user's data individually\nconst inputData = $input.all().map(item => item.json);\nconst results = [];\n\ninputData.forEach(userDataObj => {\n  // Get the mailid (key) and data (value)\n  const mailid = Object.keys(userDataObj)[0];\n  const userData = userDataObj[mailid];\n  \n  results.push({\n    mailid: mailid,\n    total_meals: userData.total_meals,\n    total_kcal: userData.total_kcal,\n    total_sugar: userData.total_sugar,\n    total_prot: userData.total_prot,\n    total_fat: userData.total_fat,\n    total_carb: userData.total_carb,\n    total_grams: userData.total_grams,\n    avg_health_score: userData.avg_health_score,\n    dishes: userData.dishes\n  });\n});\n\nreturn results.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2280, 380],
+      "id": "prepare-data",
+      "name": "Prepare Data"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Ты опытный диетолог и нутрициолог. Дай краткий персонализированный совет по питанию на основе данных пользователя за последнюю неделю. \n\nСтатистика питания за неделю:\n- Количество приемов пищи: {{ $json.total_meals }}\n- Общие калории: {{ $json.total_kcal }} ккал\n- Общий белок: {{ $json.total_prot }}г\n- Общий жир: {{ $json.total_fat }}г\n- Общие углеводы: {{ $json.total_carb }}г\n- Общий сахар: {{ $json.total_sugar }}г\n- Средний рейтинг здоровья: {{ $json.avg_health_score }}/100\n- Продукты: {{ $json.dishes.join(', ') }}\n\nПользователь ID: {{ $json.mailid }}\n\nВАЖНО: Верни ответ строго в следующем JSON формате:\n{\n  \"mailid\": \"{{ $json.mailid }}\",\n  \"advice\": \"твой совет здесь (максимум 80 символов, дружелюбно и мотивирующе)\"\n}\n\nСовет должен быть кратким, конкретным и без упоминания ID пользователя в тексте совета.",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [2540, 380],
+      "id": "generate-ai-advice",
+      "name": "Generate AI Advice"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Parse single AI response\nconst response = $json.output;\n\ntry {\n  // Try to parse as JSON first\n  const parsed = JSON.parse(response);\n  return {\n    mailid: parsed.mailid,\n    advice: parsed.advice\n  };\n} catch (error) {\n  // If not JSON, try to extract mailid with regex\n  const mailidMatch = response.match(/([a-zA-Z0-9]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})/);\n  const mailid = mailidMatch ? mailidMatch[1] : null;\n  \n  // Clean advice by removing mailid\n  let advice = response;\n  if (mailid) {\n    advice = advice.replace(mailid, '').trim();\n    advice = advice.replace(/[{}\",\\n]/g, '').trim();\n  }\n  \n  return {\n    mailid: mailid,\n    advice: advice\n  };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2940, 380],
+      "id": "parse-advice",
+      "name": "Parse Advice"
+    },
+    {
+      "parameters": {
+        "url": "=https://bespxpyftmnhbynchywl.supabase.co/rest/v1/push_tokens?select=mailid,push_token,platform&mailid=eq.{{ $json.mailid }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [3160, 380],
+      "id": "get-push-token",
+      "name": "Get Push Token",
+      "credentials": {
+        "supabaseApi": {
+          "id": "8RKkUwkeVmyvS58y",
+          "name": "Supabase account NutriCheker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "mailid-field",
+              "name": "mailid",
+              "value": "={{ $json.mailid }}",
+              "type": "string"
+            },
+            {
+              "id": "advice-field",
+              "name": "advice",
+              "value": "={{ $('Parse Advice').item.json.advice }}",
+              "type": "string"
+            },
+            {
+              "id": "push-token-field",
+              "name": "push_token",
+              "value": "={{ $json.push_token }}",
+              "type": "string"
+            },
+            {
+              "id": "platform-field",
+              "name": "platform",
+              "value": "={{ $json.platform }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [3380, 380],
+      "id": "prepare-notification-data",
+      "name": "Prepare Notification Data"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://exp.host/--/api/v2/push/send",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $json.push_token }}\",\n  \"title\": \"🥗 Ваш ежедневный совет\",\n  \"body\": \"{{ $json.advice }}\",\n  \"data\": {\n    \"type\": \"nutrition_advice\",\n    \"timestamp\": \"{{ new Date().toISOString() }}\",\n    \"advice\": \"{{ $json.advice }}\",\n    \"mailid\": \"{{ $json.mailid }}\"\n  },\n  \"sound\": \"default\"\n}",
+        "options": {}
+      },
+      "id": "send-push-notification",
+      "name": "Send Push Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [3700, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://bespxpyftmnhbynchywl.supabase.co/rest/v1/in_app_notifications",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_id",
+              "value": "={{ $json.mailid }}"
+            },
+            {
+              "name": "notification_type",
+              "value": "daily_advice"
+            },
+            {
+              "name": "title",
+              "value": "🥗 Ваш ежедневный совет"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.advice }}"
+            },
+            {
+              "name": "is_read",
+              "value": false
+            },
+            {
+              "name": "priority",
+              "value": "normal"
+            },
+            {
+              "name": "data",
+              "value": "={{ JSON.stringify({ type: 'daily_advice', advice: $json.advice, generated_at: new Date().toISOString() }) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "save-in-app-notification",
+      "name": "Save In-App Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [3700, 460],
+      "credentials": {
+        "supabaseApi": {
+          "id": "8RKkUwkeVmyvS58y",
+          "name": "Supabase account NutriCheker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://bespxpyftmnhbynchywl.supabase.co/rest/v1/sent_notifications",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "push_token",
+              "value": "={{ $json.push_token }}"
+            },
+            {
+              "name": "notification_type",
+              "value": "nutrition_advice"
+            },
+            {
+              "name": "title",
+              "value": "🥗 Ваш ежедневный совет"
+            },
+            {
+              "name": "body",
+              "value": "={{ $json.advice }}"
+            },
+            {
+              "name": "data",
+              "value": "={{ JSON.stringify({ type: 'nutrition_advice', mailid: $json.mailid }) }}"
+            },
+            {
+              "name": "status",
+              "value": "={{ $('Send Push Notification').item.json.data && $('Send Push Notification').item.json.data.status === 'ok' ? 'sent' : 'failed' }}"
+            },
+            {
+              "name": "mailid",
+              "value": "={{ $json.mailid }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "log-notification",
+      "name": "Log Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [3960, 380],
+      "credentials": {
+        "supabaseApi": {
+          "id": "8RKkUwkeVmyvS58y",
+          "name": "Supabase account NutriCheker"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Daily Trigger (9:00 AM)": {
+      "main": [
+        [
+          {
+            "node": "Get Active Users",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Active Users": {
+      "main": [
+        [
+          {
+            "node": "Filter Valid Tokens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Valid Tokens": {
+      "main": [
+        [
+          {
+            "node": "Get MailID from Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get MailID from Profile": {
+      "main": [
+        [
+          {
+            "node": "Fetch User Meals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch User Meals": {
+      "main": [
+        [
+          {
+            "node": "Combine User Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine User Data": {
+      "main": [
+        [
+          {
+            "node": "Prepare Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Data": {
+      "main": [
+        [
+          {
+            "node": "Generate AI Advice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate AI Advice": {
+      "main": [
+        [
+          {
+            "node": "Parse Advice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Advice": {
+      "main": [
+        [
+          {
+            "node": "Get Push Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Push Token": {
+      "main": [
+        [
+          {
+            "node": "Prepare Notification Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Notification Data": {
+      "main": [
+        [
+          {
+            "node": "Send Push Notification",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save In-App Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Push Notification": {
+      "main": [
+        [
+          {
+            "node": "Log Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save In-App Notification": {
+      "main": [
+        [
+          {
+            "node": "Log Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3f98e65bbc53fb913ce632c695b32ab3b2d3d92ced38c3d4d86ebd2965460fa1"
+  }
+} 

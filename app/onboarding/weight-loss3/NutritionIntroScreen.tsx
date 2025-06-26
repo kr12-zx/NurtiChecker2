@@ -4,7 +4,7 @@ import { ScrollView, Text, useColorScheme, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from '../../../i18n/i18n';
 import ButtonFooter from './components/ButtonFooter';
-import { containers, nutritionIntro, palette, typography } from './unifiedStyles';
+import { useCardStyles, useContainerStyles, usePalette, useProgramContainerStyles, useTypographyStyles } from './unifiedStyles';
 
 interface NutritionIntroScreenProps {
   onContinue: () => void;
@@ -24,6 +24,13 @@ const NutritionIntroScreen: React.FC<NutritionIntroScreenProps> = ({
   const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+
+  // Используем хуки для получения динамических стилей
+  const containers = useContainerStyles();
+  const typography = useTypographyStyles();
+  const palette = usePalette();
+  const programStyles = useProgramContainerStyles();
+  const cardStyles = useCardStyles();
 
   const calorieScheduleText = useFlexibleCalories 
     ? t('onboarding.nutritionIntro.flexibleSchedule')
@@ -47,111 +54,111 @@ const NutritionIntroScreen: React.FC<NutritionIntroScreenProps> = ({
               {t('onboarding.nutritionIntro.subtitle')}
             </Text>
             
-            <View style={nutritionIntro.programContainer}>
-              <Text style={nutritionIntro.programTitle}>{t('onboarding.nutritionIntro.program')}</Text>
+            <View style={programStyles.programContainer}>
+              <Text style={programStyles.programTitle}>{t('onboarding.nutritionIntro.program')}</Text>
               
-              <View style={nutritionIntro.programContent}>
-                <View style={[nutritionIntro.programItem, nutritionIntro.activeItem]}>
-                  <View style={nutritionIntro.programIconContainer}>
-                    <Ionicons name="trending-down-outline" size={20} color={palette.primary} />
+              <View style={programStyles.programContent}>
+                <View style={[programStyles.programItem, programStyles.activeItem]}>
+                  <View style={programStyles.programIconContainer}>
+                    <Ionicons name="trending-down-outline" size={20} color={palette.white} />
                   </View>
-                  <Text style={nutritionIntro.programText}>
+                  <Text style={programStyles.programText}>
                     {t('onboarding.nutritionIntro.weightLoss')}
                   </Text>
-                  <View style={nutritionIntro.programCheckmark}>
-                    <Ionicons name="checkmark" size={16} color={palette.primary} />
+                  <View style={programStyles.programCheckmark}>
+                    <Ionicons name="checkmark" size={16} color={palette.white} />
                   </View>
                 </View>
                 
-                <View style={[nutritionIntro.programItem, nutritionIntro.activeItem]}>
-                  <View style={nutritionIntro.programIconContainer}>
-                    <Ionicons name="calculator-outline" size={20} color={palette.primary} />
+                <View style={[programStyles.programItem, programStyles.activeItem]}>
+                  <View style={programStyles.programIconContainer}>
+                    <Ionicons name="calculator-outline" size={20} color={palette.white} />
                   </View>
-                  <Text style={nutritionIntro.programText}>
+                  <Text style={programStyles.programText}>
                     {t('onboarding.nutritionIntro.kcalPerDay', { calories: calorieBudget })}
                   </Text>
-                  <View style={nutritionIntro.programCheckmark}>
-                    <Ionicons name="checkmark" size={16} color={palette.primary} />
+                  <View style={programStyles.programCheckmark}>
+                    <Ionicons name="checkmark" size={16} color={palette.white} />
                   </View>
                 </View>
                 
-                <View style={[nutritionIntro.programItem, nutritionIntro.activeItem]}>
-                  <View style={nutritionIntro.programIconContainer}>
-                    <Ionicons name="speedometer-outline" size={20} color={palette.primary} />
+                <View style={[programStyles.programItem, programStyles.activeItem]}>
+                  <View style={programStyles.programIconContainer}>
+                    <Ionicons name="speedometer-outline" size={20} color={palette.white} />
                   </View>
-                  <Text style={nutritionIntro.programText}>
+                  <Text style={programStyles.programText}>
                     {t('onboarding.nutritionIntro.lossPerWeek', { rate: weightLossRate })}
                   </Text>
-                  <View style={nutritionIntro.programCheckmark}>
-                    <Ionicons name="checkmark" size={16} color={palette.primary} />
+                  <View style={programStyles.programCheckmark}>
+                    <Ionicons name="checkmark" size={16} color={palette.white} />
                   </View>
                 </View>
                 
-                <View style={[nutritionIntro.programItem, nutritionIntro.activeItem]}>
-                  <View style={nutritionIntro.programIconContainer}>
-                    <Ionicons name="calendar-outline" size={20} color={palette.primary} />
+                <View style={[programStyles.programItem, programStyles.activeItem]}>
+                  <View style={programStyles.programIconContainer}>
+                    <Ionicons name="calendar-outline" size={20} color={palette.white} />
                   </View>
-                  <Text style={nutritionIntro.programText}>
+                  <Text style={programStyles.programText}>
                     {calorieScheduleText}
                   </Text>
-                  <View style={nutritionIntro.programCheckmark}>
-                    <Ionicons name="checkmark" size={16} color={palette.primary} />
+                  <View style={programStyles.programCheckmark}>
+                    <Ionicons name="checkmark" size={16} color={palette.white} />
                   </View>
                 </View>
                 
-                <View style={[nutritionIntro.programItem, nutritionIntro.nextStepItem]}>
-                  <View style={nutritionIntro.programIconContainer}>
-                    <Ionicons name="nutrition-outline" size={20} color={palette.primary} />
+                <View style={[programStyles.programItem, programStyles.nextStepItem]}>
+                  <View style={programStyles.programIconContainer}>
+                    <Ionicons name="nutrition-outline" size={20} color={palette.white} />
                   </View>
-                  <Text style={nutritionIntro.programText}>
+                  <Text style={programStyles.programText}>
                     {t('onboarding.nutritionIntro.nutritionStrategy')}
                   </Text>
                 </View>
                 
-                <View style={[nutritionIntro.programItem, nutritionIntro.inactiveItem]}>
-                  <View style={nutritionIntro.programIconContainer}>
+                <View style={[programStyles.programItem, programStyles.inactiveItem]}>
+                  <View style={programStyles.programIconContainer}>
                     <Ionicons name="time-outline" size={20} color={palette.text.disabled} />
                   </View>
-                  <Text style={[nutritionIntro.programText, nutritionIntro.inactiveText]}>
+                  <Text style={[programStyles.programText, programStyles.inactiveText]}>
                     {t('onboarding.nutritionIntro.intermittentFasting')}
                   </Text>
                 </View>
               </View>
             </View>
             
-            <View style={nutritionIntro.infoContainer}>
-              <Text style={nutritionIntro.infoTitle}>{t('onboarding.nutritionIntro.whyImportant')}</Text>
+            <View style={cardStyles.infoContainer}>
+              <Text style={cardStyles.infoTitle}>{t('onboarding.nutritionIntro.whyImportant')}</Text>
               
-              <View style={nutritionIntro.infoItem}>
-                <View style={nutritionIntro.infoIconContainer}>
+              <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 12 }}>
+                <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: palette.surface, justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
                   <Ionicons name="battery-charging-outline" size={20} color={palette.primary} />
                 </View>
-                <Text style={nutritionIntro.infoText}>
+                <Text style={cardStyles.infoText}>
                   {t('onboarding.nutritionIntro.infoItems.energy')}
                 </Text>
               </View>
               
-              <View style={nutritionIntro.infoItem}>
-                <View style={nutritionIntro.infoIconContainer}>
+              <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 12 }}>
+                <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: palette.surface, justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
                   <Ionicons name="pizza-outline" size={20} color={palette.primary} />
                 </View>
-                <Text style={nutritionIntro.infoText}>
+                <Text style={cardStyles.infoText}>
                   {t('onboarding.nutritionIntro.infoItems.quality')}
                 </Text>
               </View>
               
-              <View style={nutritionIntro.infoItem}>
-                <View style={nutritionIntro.infoIconContainer}>
+              <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 12 }}>
+                <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: palette.surface, justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
                   <Ionicons name="pulse-outline" size={20} color={palette.primary} />
                 </View>
-                <Text style={nutritionIntro.infoText}>
+                <Text style={cardStyles.infoText}>
                   {t('onboarding.nutritionIntro.infoItems.wellbeing')}
                 </Text>
               </View>
             </View>
             
-            <View style={nutritionIntro.nextStepsContainer}>
-              <Text style={nutritionIntro.nextStepsText}>
+            <View style={cardStyles.noteContainer}>
+              <Text style={cardStyles.noteText}>
                 {t('onboarding.nutritionIntro.nextSteps')}
               </Text>
             </View>

@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { useTranslation } from '../i18n/i18n';
 
 // Ширина экрана для расчета сдвига при скролле
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -40,16 +41,8 @@ const CalorieAwareDatePicker: React.FC<CalorieAwareDatePickerProps> = ({
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   
-  // Перевод дней недели на русский
-  const dayNamesRu = {
-    'Mo': 'Пн',
-    'Tu': 'Вт',
-    'We': 'Ср',
-    'Th': 'Чт',
-    'Fr': 'Пт',
-    'Sa': 'Сб',
-    'Su': 'Вс'
-  };
+  // Локализация
+  const { t } = useTranslation();
   
   // Генерируем массив дат для календаря (7 дней назад, сегодня и 7 дней вперед)
   const today = new Date();
@@ -194,9 +187,9 @@ const CalorieAwareDatePicker: React.FC<CalorieAwareDatePickerProps> = ({
         }}
       >
         {dates.map((date, index) => {
-          // Получаем английское сокращение дня недели и преобразуем в русское
+          // Получаем английское сокращение дня недели и преобразуем в локализованное
           const engDayName = date.toLocaleDateString('en-US', { weekday: 'short' }).substring(0, 2);
-          const dayName = dayNamesRu[engDayName as keyof typeof dayNamesRu];
+          const dayName = t(`common.daysShort.${engDayName}`);
           const dayNumber = date.getDate();
           const isSelected = isSameDay(date, selectedDate);
           
@@ -204,27 +197,35 @@ const CalorieAwareDatePicker: React.FC<CalorieAwareDatePickerProps> = ({
           let indicatorColor = '';
           let showIndicator = false;
           
-          // Для всех дат используем только реальные данные о потреблении калорий
-          const matchingData = calorieData.find(d => {
-            const dDate = new Date(d.date);
-            return dDate.getDate() === date.getDate() && 
-                   dDate.getMonth() === date.getMonth() && 
-                   dDate.getFullYear() === date.getFullYear();
-          });
+          // ВАЖНО: Никогда не показываем индикаторы для будущих дат!
+          const today = new Date();
+          const todayCalendar = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+          const dateCalendar = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+          const isFuture = dateCalendar > todayCalendar;
           
-          if (matchingData && matchingData.consumed > 0) {
-            showIndicator = true;
+          if (!isFuture) {
+            // Для всех дат используем только реальные данные о потреблении калорий
+            const matchingData = calorieData.find(d => {
+              const dDate = new Date(d.date);
+              return dDate.getDate() === date.getDate() && 
+                     dDate.getMonth() === date.getMonth() && 
+                     dDate.getFullYear() === date.getFullYear();
+            });
             
-            // Применяем простые правила определения цвета
-            if (matchingData.consumed > matchingData.goal * 1.05) {
-              indicatorColor = '#FF6B6B'; // Красный для перебора
-            } 
-            else if (matchingData.consumed >= matchingData.goal * 0.95 && 
-                     matchingData.consumed <= matchingData.goal * 1.05) {
-              indicatorColor = '#FFD166'; // Желтый для нормы
-            } 
-            else if (matchingData.consumed > 0) {
-              indicatorColor = '#4CD964'; // Зеленый для недобора
+            if (matchingData && matchingData.consumed > 0) {
+              showIndicator = true;
+              
+              // Применяем простые правила определения цвета
+              if (matchingData.consumed > matchingData.goal * 1.05) {
+                indicatorColor = '#FF6B6B'; // Красный для перебора
+              } 
+              else if (matchingData.consumed >= matchingData.goal * 0.95 && 
+                       matchingData.consumed <= matchingData.goal * 1.05) {
+                indicatorColor = '#FFD166'; // Желтый для нормы
+              } 
+              else if (matchingData.consumed > 0) {
+                indicatorColor = '#4CD964'; // Зеленый для недобора
+              }
             }
           }
           

@@ -70,7 +70,7 @@ export default function DietsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F8F8',
+    backgroundColor: '#F2F2F7',
     paddingHorizontal: 16,
   },
   darkContainer: {

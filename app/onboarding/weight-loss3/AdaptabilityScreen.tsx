@@ -3,7 +3,7 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from '../../../i18n/i18n';
 import { OnboardingLayout } from './unifiedLayouts';
-import { adaptability as adaptabilityStyles, options, typography, usePalette } from './unifiedStyles';
+import { useOptionsStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface AdaptabilityScreenProps {
   onContinue: () => void;
@@ -21,8 +21,10 @@ const AdaptabilityScreen: React.FC<AdaptabilityScreenProps> = ({
   // Добавляем локальное состояние для мгновенного отклика
   const [localAdaptability, setLocalAdaptability] = React.useState<string | null>(adaptability || 'adapt-time');
   
-  // Получаем палитру цветов
+  // Получаем динамические стили
   const palette = usePalette();
+  const options = useOptionsStyles();
+  const typography = useTypographyStyles();
   const { t } = useTranslation();
   
   // Обновляем локальное состояние при изменении пропсов
@@ -73,7 +75,7 @@ const AdaptabilityScreen: React.FC<AdaptabilityScreenProps> = ({
       onContinue={onContinue}
       onBack={onBack}
     >
-      <View style={adaptabilityStyles.optionsContainer}>
+      <View style={{ marginTop: 20 }}>
         {adaptabilityOptions.map((option) => {
           // Используем локальное состояние для отображения выбранного варианта
           const isSelected = localAdaptability === option.id;
@@ -84,7 +86,7 @@ const AdaptabilityScreen: React.FC<AdaptabilityScreenProps> = ({
               style={[
                 options.optionContainer,
                 isSelected ? options.selectedOption : options.unselectedOption,
-                adaptabilityStyles.adaptabilityOption
+                { marginBottom: 16 }
               ]}
               onPress={() => handleAdaptabilitySelect(option.id)}
               activeOpacity={0.5}
@@ -99,11 +101,11 @@ const AdaptabilityScreen: React.FC<AdaptabilityScreenProps> = ({
                 />
               </View>
               
-              <View style={[options.optionTextContainer, adaptabilityStyles.adaptabilityTextContainer]}>
+              <View style={[options.optionTextContainer, { flex: 1 }]}>
                 <Text style={typography.optionTitle}>
                   {option.label}
                 </Text>
-                <Text style={adaptabilityStyles.descriptionText}>
+                <Text style={[typography.optionDescription, { marginTop: 4 }]}>
                   {option.description}
                 </Text>
               </View>
@@ -113,7 +115,7 @@ const AdaptabilityScreen: React.FC<AdaptabilityScreenProps> = ({
                 isSelected ? options.selectedCheckIconContainer : options.unselectedCheckIconContainer
               ]}>
                 {isSelected && (
-                  <Ionicons name="checkmark" size={16} color={palette.text.white} />
+                  <Ionicons name="checkmark" size={16} color={palette.white} />
                 )}
               </View>
             </TouchableOpacity>

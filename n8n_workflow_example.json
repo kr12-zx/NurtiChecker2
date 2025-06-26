@@ -1,0 +1,201 @@
+{
+  "name": "NutriChecker Onboarding Webhook",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "onboarding",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "onboarding-webhook"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Обработка и валидация данных онбординга\nconst payload = $input.first().json.body;\n\n// Проверяем обязательные поля\nif (!payload.user || !payload.user.emailId) {\n  throw new Error('Missing required field: user.emailId');\n}\n\nif (!payload.event || !payload.event.type) {\n  throw new Error('Missing required field: event.type');\n}\n\n// Извлекаем основные данные\nconst emailId = payload.user.emailId;\nconst eventType = payload.event.type;\nconst profile = payload.profile || {};\nconst settings = payload.settings || {};\n\n// Подготавливаем данные для базы\nconst processedData = {\n  emailId,\n  eventType,\n  profile: {\n    // Основные данные\n    birthday: profile.birthday || null,\n    gender: profile.gender || 'prefer-not-to-say',\n    height: profile.height || null,\n    currentWeight: profile.currentWeight || null,\n    goalWeight: profile.goalWeight || null,\n    weightLossRate: profile.weightLossRate || null,\n    primaryGoal: profile.primaryGoal || 'lose-weight',\n    \n    // Активность и диета\n    activityLevel: profile.activityLevel || null,\n    dietPreference: profile.dietPreference || null,\n    mealFrequency: profile.mealFrequency || null,\n    \n    // План похудения\n    weightLossPlan: profile.weightLossPlan || null,\n    exerciseIntent: profile.exerciseIntent || false,\n    showCalorieTutorial: profile.showCalorieTutorial || true,\n    useFlexibleCalories: profile.useFlexibleCalories || false,\n    intermittentFasting: profile.intermittentFasting || false,\n    \n    // Питание\n    nutritionFocus: profile.nutritionFocus || null,\n    foodPreferences: profile.foodPreferences || null,\n    foodVariety: profile.foodVariety || null,\n    mealFeelings: profile.mealFeelings || null,\n    \n    // Психология\n    confidenceLevel: profile.confidenceLevel || 3,\n    stressResponse: profile.stressResponse || null,\n    adaptability: profile.adaptability || null,\n    challengesView: profile.challengesView || null,\n    setbacksResponse: profile.setbacksResponse || null,\n    decisionMaking: profile.decisionMaking || null,\n    difficultSituationsHandling: profile.difficultSituationsHandling || null,\n    temptationResponse: profile.temptationResponse || null,\n    \n    // Медицинские данные\n    medicationUse: profile.medicationUse || null,\n    mainObstacle: profile.mainObstacle || null,\n    eatingHabitsAssessment: profile.eatingHabitsAssessment || null,\n    \n    // Препятствия\n    challenges: profile.challenges || []\n  },\n  settings: {\n    weightUnit: settings.weightUnit || 'kg',\n    heightUnit: settings.heightUnit || 'cm',\n    system: settings.system || 'metric'\n  },\n  rawPayload: payload,\n  processedAt: new Date().toISOString()\n};\n\nconsole.log('Processed onboarding data:', processedData);\n\nreturn [{ json: processedData }];"
+      },
+      "id": "process-data",
+      "name": "Process Data",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM process_onboarding_webhook($1::jsonb)",
+        "additionalFields": {
+          "queryParameters": "={{ JSON.stringify($json.rawPayload) }}"
+        }
+      },
+      "id": "save-to-database",
+      "name": "Save to Database",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "credentials": {
+        "postgres": {
+          "id": "your-postgres-credentials-id",
+          "name": "NutriChecker Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.eventType }}",
+              "operation": "equal",
+              "value2": "paywall_reached"
+            }
+          ]
+        }
+      },
+      "id": "check-event-type",
+      "name": "Check Event Type",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Отправка уведомления о достижении paywall\nconst data = $input.first().json;\n\nconst notification = {\n  type: 'paywall_reached',\n  user: {\n    emailId: data.emailId,\n    profile: data.profile\n  },\n  timestamp: new Date().toISOString(),\n  message: `User ${data.emailId} reached paywall`\n};\n\nconsole.log('Paywall notification:', notification);\n\nreturn [{ json: notification }];"
+      },
+      "id": "paywall-notification",
+      "name": "Paywall Notification",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1120, 200]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Отправка уведомления о завершении онбординга\nconst data = $input.first().json;\n\nconst notification = {\n  type: 'onboarding_completed',\n  user: {\n    emailId: data.emailId,\n    profile: data.profile\n  },\n  timestamp: new Date().toISOString(),\n  message: `User ${data.emailId} completed onboarding`\n};\n\nconsole.log('Completion notification:', notification);\n\nreturn [{ json: notification }];"
+      },
+      "id": "completion-notification",
+      "name": "Completion Notification",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1120, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true, message: 'Onboarding data processed successfully', userId: $('Save to Database').first().json[0].user_id, eventType: $('Process Data').first().json.eventType } }}"
+      },
+      "id": "webhook-response",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO webhook_events (user_id, event_type, webhook_url, payload, response_status, success) VALUES ((SELECT id FROM onboarding_users WHERE email_id = $1), $2, $3, $4::jsonb, 200, true)",
+        "additionalFields": {
+          "queryParameters": "={{ $('Process Data').first().json.emailId }},{{ $('Process Data').first().json.eventType }},webhook_processed,{{ JSON.stringify($('Process Data').first().json.rawPayload) }}"
+        }
+      },
+      "id": "log-webhook",
+      "name": "Log Webhook Event",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [900, 500],
+      "credentials": {
+        "postgres": {
+          "id": "your-postgres-credentials-id",
+          "name": "NutriChecker Database"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Process Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Data": {
+      "main": [
+        [
+          {
+            "node": "Save to Database",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log Webhook Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to Database": {
+      "main": [
+        [
+          {
+            "node": "Check Event Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Event Type": {
+      "main": [
+        [
+          {
+            "node": "Paywall Notification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Completion Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paywall Notification": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Completion Notification": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "versionId": "1"
+} 

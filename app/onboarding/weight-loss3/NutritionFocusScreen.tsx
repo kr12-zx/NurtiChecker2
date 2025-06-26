@@ -3,7 +3,7 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from '../../../i18n/i18n';
 import { OnboardingLayout } from './unifiedLayouts';
-import { nutritionFocus as nutritionFocusStyles, options, typography, usePalette } from './unifiedStyles';
+import { useOptionsStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface NutritionFocusScreenProps {
   onContinue: () => void;
@@ -27,8 +27,10 @@ const NutritionFocusScreen: React.FC<NutritionFocusScreenProps> = ({
     setLocalNutritionFocus(nutritionFocus);
   }, [nutritionFocus]);
   
-  // Используем хук usePalette вместо прямого useColorScheme
+  // Используем хуки для динамических стилей
   const palette = usePalette();
+  const options = useOptionsStyles();
+  const typography = useTypographyStyles();
   
   // Функция обработки выбора фокуса питания
   const handleNutritionFocusSelect = (focus: string) => {
@@ -74,57 +76,59 @@ const NutritionFocusScreen: React.FC<NutritionFocusScreenProps> = ({
       onContinue={onContinue}
       onBack={onBack}
     >
-            <View style={{ marginTop: 20 }}>
-              {nutritionOptions.map((option) => {
-                // Используем локальное состояние для отображения выбранного варианта
-                const isSelected = localNutritionFocus === option.id;
-                
-                return (
-                  <TouchableOpacity
-                    key={option.id}
-                    style={[
-                      options.optionContainer,
-                      isSelected ? options.selectedOption : options.unselectedOption,
-                      option.recommended && nutritionFocusStyles.recommendedOption,
-                      nutritionFocusStyles.nutritionOption
-                    ]}
-                    onPress={() => handleNutritionFocusSelect(option.id)}
-                    activeOpacity={0.5}
-                    // Увеличиваем область нажатия для лучшего отклика
-                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                  >
-                    <View style={options.optionIconContainer}>
-                      <Ionicons
-                        name={option.icon as any}
-                        size={24}
-                        color={isSelected ? palette.primary : palette.text.secondary}
-                      />
-                    </View>
-                    
-                    <View style={[options.optionTextContainer, nutritionFocusStyles.nutritionTextContainer]}>
-                      <Text style={typography.optionTitle}>
-                        {option.label}
-                      </Text>
-                      <Text style={nutritionFocusStyles.descriptionText}>
-                        {option.description}
-                      </Text>
-                      {option.recommended && (
-                        <Text style={nutritionFocusStyles.recommendedText}>{t('onboarding.nutritionFocus.recommended')}</Text>
-                      )}
-                    </View>
-                    
-                    <View style={[
-                      options.checkIconContainer,
-                      isSelected ? options.selectedCheckIconContainer : options.unselectedCheckIconContainer
-                    ]}>
-                      {isSelected && (
-                        <Ionicons name="checkmark" size={16} color={palette.white} />
-                      )}
-                    </View>
-                  </TouchableOpacity>
-                );
-                              })}
+      <View style={{ marginTop: 20 }}>
+        {nutritionOptions.map((option) => {
+          // Используем локальное состояние для отображения выбранного варианта
+          const isSelected = localNutritionFocus === option.id;
+          
+          return (
+            <TouchableOpacity
+              key={option.id}
+              style={[
+                options.optionContainer,
+                isSelected ? options.selectedOption : options.unselectedOption,
+                option.recommended && { borderColor: palette.primary, borderWidth: 2 },
+                { marginBottom: 16 }
+              ]}
+              onPress={() => handleNutritionFocusSelect(option.id)}
+              activeOpacity={0.5}
+              // Увеличиваем область нажатия для лучшего отклика
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <View style={options.optionIconContainer}>
+                <Ionicons
+                  name={option.icon as any}
+                  size={24}
+                  color={isSelected ? palette.primary : palette.text.secondary}
+                />
               </View>
+              
+              <View style={[options.optionTextContainer, { flex: 1 }]}>
+                <Text style={typography.optionTitle}>
+                  {option.label}
+                </Text>
+                <Text style={[typography.optionDescription, { marginTop: 4 }]}>
+                  {option.description}
+                </Text>
+                {option.recommended && (
+                  <Text style={[typography.caption, { color: palette.success, marginTop: 4 }]}>
+                    {t('onboarding.nutritionFocus.recommended')}
+                  </Text>
+                )}
+              </View>
+              
+              <View style={[
+                options.checkIconContainer,
+                isSelected ? options.selectedCheckIconContainer : options.unselectedCheckIconContainer
+              ]}>
+                {isSelected && (
+                  <Ionicons name="checkmark" size={16} color={palette.white} />
+                )}
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     </OnboardingLayout>
   );
 };

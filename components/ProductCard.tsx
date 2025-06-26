@@ -1,9 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import React from 'react';
-import { Alert, Image, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useTranslation } from '../i18n/i18n';
 import { navigateToProductDetail } from '../services/navigationService';
 import { deleteScanFromHistory, ScanHistoryItem } from '../services/scanHistory';
+import { getThumbnailUrl } from '../utils/imageUtils';
 
 interface MacroData {
   protein: number | undefined;
@@ -30,6 +32,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete }) => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const { t } = useTranslation();
+
+  // Функция для обрезки длинных названий
+  const truncateProductName = (name: string, maxLength: number = 28): string => {
+    if (name.length <= maxLength) {
+      return name;
+    }
+    return name.substring(0, maxLength).trim() + '...';
+  };
 
   // Функция для перехода на экран продукта с использованием унифицированного сервиса
   const handleProductPress = () => {
@@ -67,15 +77,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete }) => {
   // Функция для удаления продукта
   const handleDelete = async () => {
     Alert.alert(
-      'Удалить продукт',
-      `Вы уверены, что хотите удалить "${product.name}" из истории?`,
+      t('common.deleteProduct'),
+      t('common.deleteProductConfirm', { productName: product.name }),
       [
         {
-          text: 'Отмена',
+          text: t('common.cancel'),
           style: 'cancel',
         },
         {
-          text: 'Удалить',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -85,7 +95,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete }) => {
               }
             } catch (error) {
               console.error('Ошибка при удалении продукта:', error);
-              Alert.alert('Ошибка', 'Не удалось удалить продукт');
+              Alert.alert(t('common.error'), t('common.failedToDeleteProduct'));
             }
           },
         },
@@ -97,7 +107,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete }) => {
     <TouchableOpacity onPress={handleProductPress}>
       <View style={[styles.card, isDark && styles.darkCard]}>
         {product.imageUrl ? (
-          <Image source={{ uri: product.imageUrl }} style={styles.image} />
+          <Image 
+            source={{ uri: getThumbnailUrl(product.imageUrl) || product.imageUrl }} 
+            style={styles.image}
+            contentFit="cover"
+            cachePolicy="memory-disk"
+            transition={200}
+            placeholder={{ blurhash: 'LGF5?xYk^6#M@-5c,1J5@[or[Q6.' }}
+            onError={(error) => {
+              console.warn('❌ Ошибка загрузки изображения в ProductCard:', error);
+            }}
+            recyclingKey={product.id} // Помогает с переиспользованием изображений
+          />
         ) : (
           <View style={[styles.imagePlaceholder, isDark && styles.darkImagePlaceholder]}>
             <Text style={styles.imagePlaceholderText}>{product.name.charAt(0)}</Text>
@@ -111,7 +132,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete }) => {
               numberOfLines={1} 
               ellipsizeMode="tail"
             >
-              {product.name}
+              {truncateProductName(product.name)}
             </Text>
             
             {/* Кнопка удаления в правом верхнем углу */}
@@ -160,7 +181,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 12,
-    marginBottom: 12,
+    marginBottom: 6,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -206,6 +227,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'normal',
     color: '#000000',
+    maxWidth: '85%',
+    marginRight: 8,
   },
   darkText: {
     color: '#FFFFFF',

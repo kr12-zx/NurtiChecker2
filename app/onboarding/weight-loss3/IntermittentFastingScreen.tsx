@@ -3,7 +3,7 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from '../../../i18n/i18n';
 import { OnboardingLayout } from './unifiedLayouts';
-import { intermittentFasting, options, palette, typography } from './unifiedStyles';
+import { useOptionsStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface IntermittentFastingScreenProps {
   onContinue: () => void;
@@ -26,6 +26,11 @@ const IntermittentFastingScreen: React.FC<IntermittentFastingScreenProps> = ({
   React.useEffect(() => {
     setLocalUseIntermittentFasting(useIntermittentFasting);
   }, [useIntermittentFasting]);
+  
+  // Используем хуки для динамических стилей
+  const palette = usePalette();
+  const options = useOptionsStyles();
+  const typography = useTypographyStyles();
   
   // Функция обработки выбора интервального голодания
   const handleIntermittentFastingSelect = (use: boolean) => {
@@ -52,7 +57,7 @@ const IntermittentFastingScreen: React.FC<IntermittentFastingScreenProps> = ({
         Перед началом интервального голодания рекомендуется проконсультироваться с врачом.
       </Text>
 
-      <View style={intermittentFasting.optionsContainer}>
+      <View style={{ marginTop: 20 }}>
         {fastingOptions.map((option) => {
           // Используем локальное состояние для отображения выбранного варианта
           const isSelected = localUseIntermittentFasting === option.id;
@@ -63,7 +68,8 @@ const IntermittentFastingScreen: React.FC<IntermittentFastingScreenProps> = ({
               style={[
                 options.optionContainer,
                 isSelected ? options.selectedOption : options.unselectedOption,
-                option.recommended && intermittentFasting.recommendedOption
+                option.recommended && { borderColor: palette.success, borderWidth: 2 },
+                { marginBottom: 16 }
               ]}
               onPress={() => handleIntermittentFastingSelect(option.id)}
               activeOpacity={0.5}
@@ -78,12 +84,14 @@ const IntermittentFastingScreen: React.FC<IntermittentFastingScreenProps> = ({
                 />
               </View>
               
-              <View style={options.optionTextContainer}>
+              <View style={[options.optionTextContainer, { flex: 1 }]}>
                 <Text style={typography.optionTitle}>
                   {option.label}
                 </Text>
                 {option.recommended && (
-                  <Text style={[intermittentFasting.recommendedText, { color: palette.success }]}>Рекомендуется</Text>
+                  <Text style={[typography.caption, { color: palette.success, marginTop: 4 }]}>
+                    Рекомендуется
+                  </Text>
                 )}
               </View>
               
@@ -92,7 +100,7 @@ const IntermittentFastingScreen: React.FC<IntermittentFastingScreenProps> = ({
                 isSelected ? options.selectedCheckIconContainer : options.unselectedCheckIconContainer
               ]}>
                 {isSelected && (
-                  <Ionicons name="checkmark" size={16} color={palette.text.white} />
+                  <Ionicons name="checkmark" size={16} color={palette.white} />
                 )}
               </View>
             </TouchableOpacity>

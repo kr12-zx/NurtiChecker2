@@ -3,7 +3,7 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from '../../../i18n/i18n';
 import { OnboardingLayout } from './unifiedLayouts';
-import { options, typography, usePalette, weightManagement } from './unifiedStyles';
+import { useOptionsStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface WeightManagementObstacleScreenProps {
   onContinue: () => void;
@@ -24,6 +24,8 @@ const WeightManagementObstacleScreen: React.FC<WeightManagementObstacleScreenPro
   
   // Получаем текущую палитру цветов
   const palette = usePalette();
+  const options = useOptionsStyles();
+  const typography = useTypographyStyles();
   
   // Обновляем локальное состояние при изменении пропсов
   React.useEffect(() => {
@@ -32,7 +34,7 @@ const WeightManagementObstacleScreen: React.FC<WeightManagementObstacleScreenPro
   
   // Функция обработки выбора основного препятствия
   const handleObstacleSelect = (obstacle: string) => {
-    console.log('Выбрано основное препятствие:', obstacle);
+    console.log('Selected main obstacle:', obstacle);
     // Обновляем локальное состояние немедленно
     setLocalMainObstacle(obstacle);
     // Обновляем состояние в родительском компоненте
@@ -79,7 +81,7 @@ const WeightManagementObstacleScreen: React.FC<WeightManagementObstacleScreenPro
       onContinue={onContinue}
       onBack={onBack}
     >
-      <View style={weightManagement.optionsContainer}>
+      <View style={{ marginTop: 20 }}>
         {obstacleOptions.map((option) => {
           // Используем локальное состояние для отображения выбранного варианта
           const isSelected = localMainObstacle === option.id;
@@ -90,7 +92,7 @@ const WeightManagementObstacleScreen: React.FC<WeightManagementObstacleScreenPro
               style={[
                 options.optionContainer,
                 isSelected ? options.selectedOption : options.unselectedOption,
-                weightManagement.obstacleOption
+                { marginBottom: 16 }
               ]}
               onPress={() => handleObstacleSelect(option.id)}
               activeOpacity={0.5}
@@ -105,11 +107,11 @@ const WeightManagementObstacleScreen: React.FC<WeightManagementObstacleScreenPro
                 />
               </View>
               
-              <View style={[options.optionTextContainer, weightManagement.obstacleTextContainer]}>
+              <View style={[options.optionTextContainer, { flex: 1 }]}>
                 <Text style={typography.optionTitle}>
                   {option.label}
                 </Text>
-                <Text style={weightManagement.descriptionText}>
+                <Text style={[typography.optionDescription, { marginTop: 4 }]}>
                   {option.description}
                 </Text>
               </View>
@@ -119,7 +121,7 @@ const WeightManagementObstacleScreen: React.FC<WeightManagementObstacleScreenPro
                 isSelected ? options.selectedCheckIconContainer : options.unselectedCheckIconContainer
               ]}>
                 {isSelected && (
-                  <Ionicons name="checkmark" size={16} color={palette.text.white} />
+                  <Ionicons name="checkmark" size={16} color={palette.white} />
                 )}
               </View>
             </TouchableOpacity>
@@ -127,8 +129,8 @@ const WeightManagementObstacleScreen: React.FC<WeightManagementObstacleScreenPro
         })}
       </View>
       
-      <View style={weightManagement.helpNoteContainer}>
-        <Text style={weightManagement.helpNoteText}>
+      <View style={{ marginTop: 20, paddingHorizontal: 20 }}>
+        <Text style={[typography.caption, { textAlign: 'center' }]}>
           {t('onboarding.weightManagementObstacle.helpNote')}
         </Text>
       </View>

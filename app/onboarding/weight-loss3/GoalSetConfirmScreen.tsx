@@ -3,7 +3,7 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import { useTranslation } from '../../../i18n/i18n';
 import { OnboardingLayout } from './unifiedLayouts';
-import { goalSetConfirm, palette } from './unifiedStyles';
+import { useCardStyles, usePalette, useProgramContainerStyles } from './unifiedStyles';
 
 interface GoalSetConfirmScreenProps {
   onContinue: () => void;
@@ -23,6 +23,11 @@ const GoalSetConfirmScreen: React.FC<GoalSetConfirmScreenProps> = ({
   primaryGoal = 'lose-weight'
 }) => {
   const { t } = useTranslation();
+  
+  // Получаем динамические стили
+  const palette = usePalette();
+  const programStyles = useProgramContainerStyles();
+  const cardStyles = useCardStyles();
   
   // Определяем разницу в весе
   const weightDifference = Math.abs(currentWeight - goalWeight);
@@ -47,80 +52,80 @@ const GoalSetConfirmScreen: React.FC<GoalSetConfirmScreenProps> = ({
       onBack={onBack}
     >
             
-            <View style={goalSetConfirm.programContainer}>
-              <Text style={goalSetConfirm.programTitle}>{t('onboarding.welcome.program')}</Text>
-              
-              <View style={goalSetConfirm.programContent}>
-                <View style={[goalSetConfirm.programItem, goalSetConfirm.activeItem]}>
-                  <View style={goalSetConfirm.programIconContainer}>
-                    <Ionicons name="trending-down-outline" size={20} color={palette.primary} />
-                  </View>
-                  <Text style={goalSetConfirm.programText}>
-                    {t('onboarding.goalSetConfirm.weightReduction', { amount: weightDifference, units: weightUnits })}
-                  </Text>
-                  <View style={goalSetConfirm.programCheckmark}>
-                    <Ionicons name="checkmark" size={16} color={palette.primary} />
-                  </View>
-                </View>
-                
-                <View style={[goalSetConfirm.programItem, goalSetConfirm.activeItem]}>
-                  <View style={goalSetConfirm.programIconContainer}>
-                    <Ionicons name="scale-outline" size={20} color={palette.primary} />
-                  </View>
-                  <Text style={goalSetConfirm.programText}>
-                    {t('onboarding.goalSetConfirm.targetWeight', { weight: goalWeight, units: weightUnits })}
-                  </Text>
-                  <View style={goalSetConfirm.programCheckmark}>
-                    <Ionicons name="checkmark" size={16} color={palette.primary} />
-                  </View>
-                </View>
-                
-                <View style={[goalSetConfirm.programItem, goalSetConfirm.inactiveItem]}>
-                  <View style={goalSetConfirm.programIconContainer}>
-                    <Ionicons name="calculator-outline" size={20} color={palette.text.disabled} />
-                  </View>
-                  <Text style={[goalSetConfirm.programText, goalSetConfirm.inactiveText]}>
-                    {t('onboarding.goalSetConfirm.calorieBudget')}
-                  </Text>
-                </View>
-                
-                <View style={[goalSetConfirm.programItem, goalSetConfirm.inactiveItem]}>
-                  <View style={goalSetConfirm.programIconContainer}>
-                    <Ionicons name="calendar-outline" size={20} color={palette.text.disabled} />
-                  </View>
-                  <Text style={[goalSetConfirm.programText, goalSetConfirm.inactiveText]}>
-                    {t('onboarding.goalSetConfirm.calorieSchedule')}
-                  </Text>
-                </View>
-                
-                <View style={[goalSetConfirm.programItem, goalSetConfirm.inactiveItem]}>
-                  <View style={goalSetConfirm.programIconContainer}>
-                    <Ionicons name="nutrition-outline" size={20} color={palette.text.disabled} />
-                  </View>
-                  <Text style={[goalSetConfirm.programText, goalSetConfirm.inactiveText]}>
-                    {t('onboarding.goalSetConfirm.nutritionStrategy')}
-                  </Text>
-                </View>
-                
-                <View style={[goalSetConfirm.programItem, goalSetConfirm.inactiveItem]}>
-                  <View style={goalSetConfirm.programIconContainer}>
-                    <Ionicons name="time-outline" size={20} color={palette.text.disabled} />
-                  </View>
-                  <Text style={[goalSetConfirm.programText, goalSetConfirm.inactiveText]}>
-                    {t('onboarding.goalSetConfirm.intermittentFasting')}
-                  </Text>
-                </View>
-              </View>
+      <View style={programStyles.programContainer}>
+        <Text style={programStyles.programTitle}>{t('onboarding.welcome.program')}</Text>
+        
+        <View style={programStyles.programContent}>
+          <View style={[programStyles.programItem, programStyles.activeItem]}>
+            <View style={programStyles.programIconContainer}>
+              <Ionicons name="trending-down-outline" size={20} color={palette.white} />
             </View>
-            
-            <View style={goalSetConfirm.goalInfoContainer}>
-              <Text style={goalSetConfirm.goalInfoTitle}>{t('onboarding.goalSetConfirm.primaryGoal')}:</Text>
-              <Text style={goalSetConfirm.goalInfoText}>{getPrimaryGoalName()}</Text>
-              
-              <Text style={goalSetConfirm.goalInfoHint}>
-                {t('onboarding.goalSetConfirm.planMessage')}
-              </Text>
+            <Text style={programStyles.programText}>
+              {t('onboarding.goalSetConfirm.weightReduction', { amount: weightDifference, units: weightUnits })}
+            </Text>
+            <View style={programStyles.programCheckmark}>
+              <Ionicons name="checkmark" size={16} color={palette.white} />
             </View>
+          </View>
+          
+          <View style={[programStyles.programItem, programStyles.activeItem]}>
+            <View style={programStyles.programIconContainer}>
+              <Ionicons name="scale-outline" size={20} color={palette.white} />
+            </View>
+            <Text style={programStyles.programText}>
+              {t('onboarding.goalSetConfirm.targetWeight', { weight: goalWeight, units: weightUnits })}
+            </Text>
+            <View style={programStyles.programCheckmark}>
+              <Ionicons name="checkmark" size={16} color={palette.white} />
+            </View>
+          </View>
+          
+          <View style={[programStyles.programItem, programStyles.inactiveItem]}>
+            <View style={programStyles.programIconContainer}>
+              <Ionicons name="calculator-outline" size={20} color={palette.text.disabled} />
+            </View>
+            <Text style={[programStyles.programText, programStyles.inactiveText]}>
+              {t('onboarding.goalSetConfirm.calorieBudget')}
+            </Text>
+          </View>
+          
+          <View style={[programStyles.programItem, programStyles.inactiveItem]}>
+            <View style={programStyles.programIconContainer}>
+              <Ionicons name="calendar-outline" size={20} color={palette.text.disabled} />
+            </View>
+            <Text style={[programStyles.programText, programStyles.inactiveText]}>
+              {t('onboarding.goalSetConfirm.calorieSchedule')}
+            </Text>
+          </View>
+          
+          <View style={[programStyles.programItem, programStyles.inactiveItem]}>
+            <View style={programStyles.programIconContainer}>
+              <Ionicons name="nutrition-outline" size={20} color={palette.text.disabled} />
+            </View>
+            <Text style={[programStyles.programText, programStyles.inactiveText]}>
+              {t('onboarding.goalSetConfirm.nutritionStrategy')}
+            </Text>
+          </View>
+          
+          <View style={[programStyles.programItem, programStyles.inactiveItem]}>
+            <View style={programStyles.programIconContainer}>
+              <Ionicons name="time-outline" size={20} color={palette.text.disabled} />
+            </View>
+            <Text style={[programStyles.programText, programStyles.inactiveText]}>
+              {t('onboarding.goalSetConfirm.intermittentFasting')}
+            </Text>
+          </View>
+        </View>
+      </View>
+      
+      <View style={cardStyles.infoContainer}>
+        <Text style={cardStyles.infoTitle}>{t('onboarding.goalSetConfirm.primaryGoal')}:</Text>
+        <Text style={cardStyles.infoText}>{getPrimaryGoalName()}</Text>
+        
+        <Text style={[cardStyles.infoText, { marginTop: 12, fontStyle: 'italic' }]}>
+          {t('onboarding.goalSetConfirm.planMessage')}
+        </Text>
+      </View>
     </OnboardingLayout>
   );
 };

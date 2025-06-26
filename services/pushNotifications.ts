@@ -1,7 +1,9 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
-import { getUserId } from './userService';
+import { getTimezoneInfo } from '../utils/timezoneUtils';
+import { getUserId, isUserRegisteredInProfiles } from './userService';
 
 // Настройка поведения уведомлений
 Notifications.setNotificationHandler({
@@ -109,10 +111,26 @@ export class PushNotificationService {
 
   /**
    * Регистрация токена на сервере
+   * ВАЖНО: Эта функция ВСЕГДА отправляет актуальный push токен на сервер
+   * Это необходимо для корректной работы после очистки данных
    */
   private static async registerTokenOnServer(pushToken: string): Promise<void> {
     try {
       const userId = await getUserId();
+      
+      // Проверяем, не зарегистрирован ли пользователь уже
+      const isRegistered = await isUserRegisteredInProfiles();
+      if (isRegistered) {
+        console.log('✅ Пользователь уже зарегистрирован через userService, обновляем push токен');
+        // ИСПРАВЛЕНИЕ: Всегда отправляем webhook с актуальным push токеном
+        // Это особенно важно после очистки данных, когда генерируется новый userId
+      } else {
+        console.log('👤 Регистрируем нового пользователя и отправляем push токен');
+      }
+      
+      // Получаем информацию о часовом поясе
+      const timezoneInfo = getTimezoneInfo();
+      console.log('🕒 Adding timezone info to push token registration:', timezoneInfo);
       
       const payload = {
         userId: userId,
@@ -124,10 +142,13 @@ export class PushNotificationService {
           osName: Device.osName,
           osVersion: Device.osVersion,
         },
+        // Добавляем timezone информацию
+        timezone: timezoneInfo.timezone,
+        timezoneOffset: timezoneInfo.timezoneOffset,
         registeredAt: new Date().toISOString(),
       };
 
-      console.log('📤 Отправка токена на сервер:', { userId, platform: Platform.OS });
+      console.log('📤 Отправка актуального push токена на сервер:', { userId, platform: Platform.OS, isNewUser: !isRegistered });
 
       // Отправляем на N8N webhook
       const response = await fetch('https://ttagent.website/webhook/register-push-token', {
@@ -139,9 +160,14 @@ export class PushNotificationService {
       });
 
       if (response.ok) {
-        console.log('✅ Push токен успешно зарегистрирован на сервере');
+        console.log('✅ Push токен успешно отправлен на сервер');
+        // Отмечаем что пользователь зарегистрирован (для новых пользователей)
+        if (!isRegistered) {
+          await AsyncStorage.setItem('user_registered_in_profiles', 'true');
+          console.log('✅ Пользователь отмечен как зарегистрированный');
+        }
       } else {
-        console.error('❌ Ошибка регистрации токена:', response.status);
+        console.error('❌ Ошибка отправки токена:', response.status);
       }
 
     } catch (error) {
@@ -265,10 +291,31 @@ export class PushNotificationService {
       console.error('❌ Ошибка отключения уведомлений:', error);
     }
   }
+
+  /**
+   * Принудительно обновить push токен на сервере
+   * Используется после очистки данных или смены userId
+   */
+  static async forceUpdatePushToken(): Promise<boolean> {
+    try {
+      if (!this.pushToken) {
+        console.warn('⚠️ Push токен не найден, пропускаем обновление');
+        return false;
+      }
+
+      console.log('🔄 Принудительное обновление push токена на сервере...');
+      await this.registerTokenOnServer(this.pushToken);
+      return true;
+    } catch (error) {
+      console.error('❌ Ошибка принудительного обновления push токена:', error);
+      return false;
+    }
+  }
 }
 
 // Экспортируем основные функции для удобства
 export const initializePushNotifications = () => PushNotificationService.initialize();
 export const sendTestNotification = () => PushNotificationService.sendTestNotification();
 export const disableNotifications = () => PushNotificationService.disableNotifications();
-export const getPushToken = () => PushNotificationService.getPushToken(); 
+export const getPushToken = () => PushNotificationService.getPushToken();
+export const forceUpdatePushToken = () => PushNotificationService.forceUpdatePushToken(); 

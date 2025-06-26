@@ -9,17 +9,23 @@ export interface DailyNutritionData {
   fat: number;
   carbs: number;
   sugar: number; // Для отслеживания скрытого сахара
+  fiber: number; // Клетчатка
+  saturatedFat: number; // Насыщенные жиры
   addedProducts: {
     productId: string;
     name: string;
     servingMultiplier: number; // Коэффициент порции (1.0 = стандартная порция)
+    baseWeight?: number; // Базовый вес продукта в граммах (для правильного отображения)
     calories: number;
     protein: number;
     fat: number;
     carbs: number;
     sugar: number;
+    fiber: number; // Клетчатка
+    saturatedFat: number; // Насыщенные жиры
     image?: string; // URL изображения продукта
     timestamp?: number; // Время добавления продукта
+    fullData?: string; // Полные данные анализа продукта
   }[];
 }
 
@@ -52,6 +58,8 @@ export const getDailyNutrition = async (date?: string): Promise<DailyNutritionDa
       fat: 0,
       carbs: 0,
       sugar: 0,
+      fiber: 0,
+      saturatedFat: 0,
       addedProducts: []
     };
   } catch (error) {
@@ -81,107 +89,161 @@ export const getAllDailyNutrition = async (): Promise<DailyNutritionData[]> => {
 export const addProductToDay = async (
   product: ScanHistoryItem, 
   servingMultiplier: number = 1.0, // По умолчанию - стандартная порция
-  date?: string // Необязательный параметр, по умолчанию - сегодня
+  date?: string, // Необязательный параметр, по умолчанию - сегодня
+  portionDetails?: {
+    portionSize: 'small' | 'regular' | 'large';
+    quantity: number;
+    quantityEaten: 'all' | 'three_quarters' | 'half' | 'third' | 'quarter' | 'tenth' | 'sip';
+    addons: {
+      sauce: number;
+      sugar: number;
+      oil: number;
+      cream: number;
+      cheese: number;
+      nuts: number;
+    };
+    totalMultiplier: number;
+    baseGrams: number;
+    preparationMethod: 'raw' | 'boiled' | 'fried' | 'grilled' | 'baked';
+  }
 ): Promise<DailyNutritionData> => {
   try {
-    // Используем текущую дату, если дата не указана
+    console.log('\n🔄 === ДОБАВЛЕНИЕ ПРОДУКТА В ДНЕВНИК ===');
+    console.log('📦 Продукт:', {
+      id: product.id,
+      name: product.name,
+      calories: product.calories,
+      sugar: product.sugar || 0
+    });
+    console.log('🎯 Параметры:', {
+      servingMultiplier,
+      targetDate: date || 'сегодня',
+      hasPortionDetails: !!portionDetails
+    });
+
     const targetDate = date || formatDateToString(new Date());
+    console.log('📅 Целевая дата:', targetDate);
     
-    // Получаем текущие данные за день
-    const dayData = await getDailyNutrition(targetDate);
+    // Получаем существующие данные за день или создаем новые
+    let dayData = await getDailyNutrition(targetDate);
+    console.log('📊 Состояние дня ДО добавления:', {
+      exists: !!dayData,
+      calories: dayData?.caloriesConsumed || 0,
+      sugar: dayData?.sugar || 0,
+      productsCount: dayData?.addedProducts.length || 0
+    });
     
     if (!dayData) {
-      throw new Error('Не удалось получить данные о питании за день');
+      dayData = {
+        date: targetDate,
+        caloriesConsumed: 0,
+        protein: 0,
+        fat: 0,
+        carbs: 0,
+        sugar: 0,
+        fiber: 0,
+        saturatedFat: 0,
+        addedProducts: []
+      };
+      console.log('✨ Создан новый день');
     }
     
-    // Извлекаем данные о скрытом сахаре, если они есть
-    let sugar = 0;
+    // Рассчитываем финальный мультипликатор
+    let finalMultiplier = servingMultiplier;
+    if (portionDetails) {
+      finalMultiplier = portionDetails.totalMultiplier;
+      console.log('🔢 Использован мультипликатор из порции:', finalMultiplier);
+    }
     
-    // Отладочное логирование
-    console.log('Добавление продукта:', product.name, 'ID:', product.id);
+    // Рассчитываем питательные вещества с учетом порции
+    const adjustedCalories = Math.round(product.calories * finalMultiplier);
+    const adjustedProtein = Math.round((product.protein || 0) * finalMultiplier * 10) / 10;
+    const adjustedFat = Math.round((product.fat || 0) * finalMultiplier * 10) / 10;
+    const adjustedCarbs = Math.round((product.carbs || 0) * finalMultiplier * 10) / 10;
+    const adjustedSugar = Math.round((product.sugar || 0) * finalMultiplier * 10) / 10;
+    const adjustedFiber = Math.round(((product as any).fiber || 0) * finalMultiplier * 10) / 10;
+    const adjustedSaturatedFat = Math.round(((product as any).saturatedFat || 0) * finalMultiplier * 10) / 10;
     
-    if (product.fullData) {
+    console.log('🧮 Рассчитанные значения для добавления:', {
+      adjustedCalories,
+      adjustedSugar,
+      finalMultiplier
+    });
+    
+    // Извлекаем базовый вес из полных данных анализа
+    let baseWeight = 100; // Значение по умолчанию
+    if ((product as any).fullData) {
       try {
-        // Пробуем анализировать полные данные продукта
-        const fullData = JSON.parse(product.fullData);
-        
-        // Выводим всю структуру данных полностью для отладки
-        console.log('Структура данных:', JSON.stringify(fullData, null, 2));
-        
-        // Проверяем структуру данных API-ответа
-        if (fullData && fullData.foodData && fullData.foodData.nutritionInfo) {
-          console.log('Нашли nutritionInfo в ответе API');
-          const { nutritionInfo } = fullData.foodData;
-          
-          // Ищем значение сахара в разных местах
-          if (nutritionInfo.sugars !== undefined) {
-            sugar = nutritionInfo.sugars;
-            console.log('Значение сахара из foodData.nutritionInfo.sugars:', sugar);
-          } else {
-            console.log('Значение sugars не найдено в nutritionInfo');
-          }
-          
-          // Выводим все ключи в nutritionInfo
-          console.log('Ключи в nutritionInfo:', Object.keys(nutritionInfo));
-        } else {
-          console.log('Не нашли foodData.nutritionInfo в ответе API');
-          
-          // Пробуем найти другие варианты структуры
-          if (fullData.nutritionInfo && fullData.nutritionInfo.sugars !== undefined) {
-            sugar = fullData.nutritionInfo.sugars;
-            console.log('Значение сахара из fullData.nutritionInfo.sugars:', sugar);
-          } else if (fullData.sugar !== undefined) {
-            sugar = fullData.sugar;
-            console.log('Значение сахара из fullData.sugar:', sugar);
-          } else {
-            console.log('Сахар не найден в данных продукта');
-          }
+        const fullData = JSON.parse((product as any).fullData);
+        if (fullData.foodData?.portionInfo?.estimatedWeight) {
+          baseWeight = fullData.foodData.portionInfo.estimatedWeight;
+          console.log('🔍 Извлечен базовый вес из fullData:', baseWeight);
         }
       } catch (error) {
-        console.error('Ошибка при парсинге fullData:', error);
+        console.error('❌ Ошибка при извлечении базового веса из fullData:', error);
       }
-    } else {
-      console.log('Нет полных данных для продукта:', product.name);
     }
     
-    // Рассчитываем значения с учетом множителя порции
-    const caloriesAdded = Math.round(product.calories * servingMultiplier);
-    const proteinAdded = Math.round(product.protein * servingMultiplier * 10) / 10;
-    const fatAdded = Math.round(product.fat * servingMultiplier * 10) / 10;
-    const carbsAdded = Math.round(product.carbs * servingMultiplier * 10) / 10;
-    const sugarAdded = Math.round(sugar * servingMultiplier * 10) / 10;
+    // Добавляем продукт в массив
+    const productToAdd = {
+      productId: product.id,
+      name: product.name,
+      servingMultiplier: finalMultiplier,
+      baseWeight: baseWeight, // Сохраняем базовый вес продукта
+      calories: adjustedCalories,
+      protein: adjustedProtein,
+      fat: adjustedFat,
+      carbs: adjustedCarbs,
+      sugar: adjustedSugar,
+      fiber: adjustedFiber,
+      saturatedFat: adjustedSaturatedFat,
+      image: product.image,
+      timestamp: Date.now(), // Добавляем текущий timestamp
+      fullData: (product as any).fullData // Сохраняем полные данные анализа
+    };
     
-    // Добавляем продукт в список и обновляем суммарные значения
+    console.log('📦 Продукт для добавления:', productToAdd);
+    
+    // Обновляем суммарные значения
     const updatedData: DailyNutritionData = {
       ...dayData,
-      caloriesConsumed: dayData.caloriesConsumed + caloriesAdded,
-      protein: Math.round((dayData.protein + proteinAdded) * 10) / 10,
-      fat: Math.round((dayData.fat + fatAdded) * 10) / 10,
-      carbs: Math.round((dayData.carbs + carbsAdded) * 10) / 10,
-      sugar: Math.round((dayData.sugar + sugarAdded) * 10) / 10,
-      addedProducts: [
-        ...dayData.addedProducts,
-        {
-          productId: product.id,
-          name: product.name,
-          servingMultiplier,
-          calories: caloriesAdded,
-          protein: proteinAdded,
-          fat: fatAdded,
-          carbs: carbsAdded,
-          sugar: sugarAdded,
-          image: product.image,
-          timestamp: Date.now()
-        }
-      ]
+      caloriesConsumed: dayData.caloriesConsumed + adjustedCalories,
+      protein: Math.round((dayData.protein + adjustedProtein) * 10) / 10,
+      fat: Math.round((dayData.fat + adjustedFat) * 10) / 10,
+      carbs: Math.round((dayData.carbs + adjustedCarbs) * 10) / 10,
+      sugar: Math.round((dayData.sugar + adjustedSugar) * 10) / 10,
+      fiber: Math.round((dayData.fiber + adjustedFiber) * 10) / 10,
+      saturatedFat: Math.round((dayData.saturatedFat + adjustedSaturatedFat) * 10) / 10,
+      addedProducts: [...dayData.addedProducts, productToAdd]
     };
+    
+    console.log('📊 Состояние дня ПОСЛЕ добавления:', {
+      calories: updatedData.caloriesConsumed,
+      sugar: updatedData.sugar,
+      productsCount: updatedData.addedProducts.length
+    });
+    
+    // Валидация суммы
+    const calculatedCalories = updatedData.addedProducts.reduce((sum, p) => sum + p.calories, 0);
+    const calculatedSugar = updatedData.addedProducts.reduce((sum, p) => sum + p.sugar, 0);
+    
+    console.log('✅ Валидация сумм:', {
+      caloriesMatch: Math.abs(calculatedCalories - updatedData.caloriesConsumed) < 1,
+      sugarMatch: Math.abs(calculatedSugar - updatedData.sugar) < 0.1,
+      calculatedCalories,
+      storedCalories: updatedData.caloriesConsumed,
+      calculatedSugar,
+      storedSugar: updatedData.sugar
+    });
     
     // Сохраняем обновленные данные
     await saveDailyNutrition(updatedData);
+    console.log('💾 Данные сохранены');
+    console.log('🔄 === ДОБАВЛЕНИЕ ЗАВЕРШЕНО ===\n');
     
     return updatedData;
   } catch (error) {
-    console.error('Ошибка при добавлении продукта в дневную статистику:', error);
+    console.error('❌ Ошибка при добавлении продукта в дневную статистику:', error);
     throw error;
   }
 };
@@ -231,25 +293,82 @@ export const removeProductFromDay = async (
   date?: string // Необязательный параметр, по умолчанию - сегодня
 ): Promise<DailyNutritionData | null> => {
   try {
-    // Используем текущую дату, если дата не указана
+    console.log('\n🗑️ === УДАЛЕНИЕ ПРОДУКТА ИЗ ДНЕВНИКА ===');
+    console.log('🔍 Параметры удаления:', {
+      productId,
+      targetDate: date || 'сегодня'
+    });
+
     const targetDate = date || formatDateToString(new Date());
+    console.log('📅 Целевая дата:', targetDate);
     
-    // Получаем текущие данные за день
+    // Получаем данные за день
     const dayData = await getDailyNutrition(targetDate);
-    
-    if (!dayData || dayData.addedProducts.length === 0) {
-      return dayData; // Нечего удалять
+    if (!dayData) {
+      console.log('❌ Нет данных за указанную дату');
+      return null;
     }
     
-    // Ищем продукт для удаления
-    const productIndex = dayData.addedProducts.findIndex(p => p.productId === productId);
+    console.log('📊 Состояние дня ДО удаления:', {
+      calories: dayData.caloriesConsumed,
+      sugar: dayData.sugar,
+      productsCount: dayData.addedProducts.length,
+      products: dayData.addedProducts.map(p => `${p.name} (${p.productId})`)
+    });
+    
+    // Находим продукт для удаления
+    // Пытаемся найти точное совпадение сначала
+    let productIndex = dayData.addedProducts.findIndex(product => 
+      product.productId === productId
+    );
+    
+    // Если точное совпадение не найдено, ищем по частям ID
+    if (productIndex === -1) {
+      console.log('🔍 Точное совпадение не найдено, ищем по частям ID...');
+      
+      // Сначала пробуем найти по первой части ID (базовый timestamp)
+      const firstPart = productId.split('-')[0];
+      console.log('🔍 Первая часть ID для поиска:', firstPart);
+      
+      productIndex = dayData.addedProducts.findIndex(product => 
+        product.productId.startsWith(firstPart)
+      );
+      
+      if (productIndex !== -1) {
+        console.log('✅ Найден продукт по первой части ID:', dayData.addedProducts[productIndex].productId);
+      } else {
+        // Если не найден по первой части, пробуем по базовому ID (первые две части)
+        const baseId = productId.split('-').slice(0, 2).join('-');
+        console.log('🔍 Базовый ID для поиска:', baseId);
+        
+        productIndex = dayData.addedProducts.findIndex(product => 
+          product.productId.startsWith(baseId)
+        );
+        
+        if (productIndex !== -1) {
+          console.log('✅ Найден продукт по базовому ID:', dayData.addedProducts[productIndex].productId);
+        }
+      }
+    }
+    
+    console.log('📍 Найден индекс:', productIndex);
     
     if (productIndex === -1) {
+      console.log('❌ Продукт не найден в дневнике');
       return dayData; // Продукт не найден
     }
     
     // Данные о продукте, который нужно удалить
     const productToRemove = dayData.addedProducts[productIndex];
+    console.log('✅ Продукт найден для удаления:', {
+      name: productToRemove.name,
+      id: productToRemove.productId,
+      calories: productToRemove.calories,
+      sugar: productToRemove.sugar,
+      timestamp: productToRemove.timestamp ? new Date(productToRemove.timestamp).toLocaleString() : 'НЕТ'
+    });
+    console.log('📊 Текущие калории дня до удаления:', dayData.caloriesConsumed);
+    console.log('📊 Калории удаляемого продукта:', productToRemove.calories);
     
     // Обновляем суммарные значения
     const updatedData: DailyNutritionData = {
@@ -259,15 +378,40 @@ export const removeProductFromDay = async (
       fat: Math.round((dayData.fat - productToRemove.fat) * 10) / 10,
       carbs: Math.round((dayData.carbs - productToRemove.carbs) * 10) / 10,
       sugar: Math.round((dayData.sugar - productToRemove.sugar) * 10) / 10,
+      fiber: Math.round((dayData.fiber - productToRemove.fiber) * 10) / 10,
+      saturatedFat: Math.round((dayData.saturatedFat - productToRemove.saturatedFat) * 10) / 10,
       addedProducts: dayData.addedProducts.filter((_, index) => index !== productIndex)
     };
+    
+    console.log('📊 Состояние дня ПОСЛЕ удаления:', {
+      calories: updatedData.caloriesConsumed,
+      sugar: updatedData.sugar,
+      productsCount: updatedData.addedProducts.length,
+      remainingProducts: updatedData.addedProducts.map(p => `${p.name} (${p.productId})`)
+    });
+    
+    // Валидация суммы
+    const calculatedCalories = updatedData.addedProducts.reduce((sum, p) => sum + p.calories, 0);
+    const calculatedSugar = updatedData.addedProducts.reduce((sum, p) => sum + p.sugar, 0);
+    
+    console.log('✅ Валидация сумм после удаления:', {
+      caloriesMatch: Math.abs(calculatedCalories - updatedData.caloriesConsumed) < 1,
+      sugarMatch: Math.abs(calculatedSugar - updatedData.sugar) < 0.1,
+      calculatedCalories,
+      storedCalories: updatedData.caloriesConsumed,
+      calculatedSugar,
+      storedSugar: updatedData.sugar
+    });
     
     // Сохраняем обновленные данные
     await saveDailyNutrition(updatedData);
     
+    console.log('✅ Продукт успешно удален из дневника');
+    console.log('🗑️ === УДАЛЕНИЕ ЗАВЕРШЕНО ===\n');
+    
     return updatedData;
   } catch (error) {
-    console.error('Ошибка при удалении продукта из дневной статистики:', error);
+    console.error('❌ Ошибка при удалении продукта из дневной статистики:', error);
     return null;
   }
 };
@@ -342,10 +486,14 @@ export const getDashboardAddedProducts = async (): Promise<Array<{
   fat: number;
   carbs: number;
   sugar: number;
+  fiber: number;
+  saturatedFat: number;
   dateAdded: string;
   servingMultiplier: number;
+  baseWeight?: number; // Базовый вес продукта в граммах
   image?: string; // URL изображения продукта
   timestamp?: number; // Время добавления продукта
+  fullData?: string; // Полные данные анализа продукта
 }>> => {
   try {
     const allDays = await getAllDailyNutrition();
@@ -357,10 +505,14 @@ export const getDashboardAddedProducts = async (): Promise<Array<{
       fat: number;
       carbs: number;
       sugar: number;
+      fiber: number;
+      saturatedFat: number;
       dateAdded: string;
       servingMultiplier: number;
+      baseWeight?: number; // Базовый вес продукта в граммах
       image?: string; // URL изображения продукта
       timestamp?: number; // Время добавления продукта
+      fullData?: string; // Полные данные анализа продукта
     }> = [];
 
     // Проходим по всем дням и собираем продукты
@@ -376,7 +528,9 @@ export const getDashboardAddedProducts = async (): Promise<Array<{
           ...product,
           dateAdded: day.date,
           image: productImage,
-          timestamp: product.timestamp
+          timestamp: product.timestamp,
+          fullData: product.fullData,
+          baseWeight: product.baseWeight // Передаем базовый вес
         });
       }
     }

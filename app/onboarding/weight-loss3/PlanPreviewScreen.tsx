@@ -4,7 +4,7 @@ import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from '../../../i18n/i18n';
 import { UserProfile } from '../../types/onboarding';
 import { OnboardingLayout } from './unifiedLayouts';
-import { planPreview, usePalette } from './unifiedStyles';
+import { usePalette } from './unifiedStyles';
 
 interface PlanPreviewScreenProps {
   onContinue: () => void;
@@ -21,6 +21,216 @@ const PlanPreviewScreen: React.FC<PlanPreviewScreenProps> = ({
 }) => {
   const palette = usePalette();
   const { t } = useTranslation();
+
+  // Динамические стили для этого экрана
+  const sectionStyle = {
+    backgroundColor: palette.surface,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: palette.border.secondary,
+  };
+
+  const sectionHeaderStyle = {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    marginBottom: 16,
+  };
+
+  const sectionTitleStyle = {
+    fontSize: 18,
+    fontWeight: '600' as const,
+    color: palette.text.primary,
+    marginLeft: 12,
+  };
+
+  const nutritionContainerStyle = {
+    alignItems: 'center' as const,
+  };
+
+  const calorieCardStyle = {
+    alignItems: 'center' as const,
+    marginBottom: 20,
+  };
+
+  const calorieValueStyle = {
+    fontSize: 48,
+    fontWeight: '700' as const,
+    color: palette.primary,
+  };
+
+  const calorieLabelStyle = {
+    fontSize: 16,
+    color: palette.text.secondary,
+    marginTop: 4,
+  };
+
+  const macrosRowStyle = {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-around' as const,
+    width: '100%' as const,
+  };
+
+  const macroItemStyle = {
+    alignItems: 'center' as const,
+    flex: 1,
+  };
+
+  const macroIndicatorStyle = {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginBottom: 8,
+  };
+
+  const macroValueStyle = {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: palette.text.primary,
+    marginBottom: 4,
+  };
+
+  const macroLabelStyle = {
+    fontSize: 14,
+    color: palette.text.secondary,
+  };
+
+  const recommendationItemStyle = {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
+    marginBottom: 12,
+  };
+
+  const recommendationLabelStyle = {
+    fontSize: 14,
+    color: palette.text.secondary,
+    flex: 1,
+  };
+
+  const recommendationValueStyle = {
+    fontSize: 14,
+    fontWeight: '500' as const,
+    color: palette.text.primary,
+    flex: 2,
+    textAlign: 'right' as const,
+  };
+
+  const tipItemStyle = {
+    flexDirection: 'row' as const,
+    alignItems: 'flex-start' as const,
+    marginBottom: 12,
+  };
+
+  const tipTextStyle = {
+    fontSize: 14,
+    color: palette.text.primary,
+    marginLeft: 8,
+    flex: 1,
+    lineHeight: 20,
+  };
+
+  const trialSectionStyle = {
+    backgroundColor: palette.primary,
+    borderRadius: 16,
+    padding: 24,
+    margin: 16,
+    alignItems: 'center' as const,
+  };
+
+  const trialTitleStyle = {
+    fontSize: 20,
+    fontWeight: '700' as const,
+    color: palette.white,
+    textAlign: 'center' as const,
+    marginBottom: 8,
+  };
+
+  const trialSubtitleStyle = {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: palette.white,
+    textAlign: 'center' as const,
+    marginBottom: 16,
+  };
+
+  const trialDescriptionStyle = {
+    fontSize: 14,
+    color: palette.white,
+    textAlign: 'left' as const,
+    lineHeight: 20,
+    marginBottom: 20,
+  };
+
+  const trialButtonStyle = {
+    backgroundColor: palette.white,
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    marginBottom: 16,
+    width: '100%' as const,
+    alignItems: 'center' as const,
+  };
+
+  const trialButtonTextStyle = {
+    color: palette.primary,
+    fontSize: 16,
+    fontWeight: '600' as const,
+  };
+
+  const trialNoteStyle = {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.8)',
+    textAlign: 'center' as const,
+    lineHeight: 16,
+  };
+
+  const fixedButtonContainerStyle = {
+    position: 'absolute' as const,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: palette.background,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 34,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+    borderTopWidth: 1,
+    borderTopColor: palette.border.secondary,
+  };
+
+  const fixedButtonStyle = {
+    backgroundColor: palette.primary,
+    borderRadius: 25,
+    paddingVertical: 16,
+    alignItems: 'center' as const,
+  };
+
+  const fixedButtonTextStyle = {
+    color: palette.white,
+    fontSize: 18,
+    fontWeight: '700' as const,
+  };
+
+  const closeButtonStyle = {
+    position: 'absolute' as const,
+    top: 16,
+    left: 16,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: palette.surface,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    zIndex: 100,
+    borderWidth: 1,
+    borderColor: palette.border.secondary,
+  };
 
   // Рассчитываем показатели пользователя
   const calculateNutrition = () => {
@@ -138,75 +348,64 @@ const PlanPreviewScreen: React.FC<PlanPreviewScreenProps> = ({
     >
       {/* Серый крестик в левом верхнем углу */}
       <TouchableOpacity
-        style={{
-          position: 'absolute',
-          top: 16,
-          left: 16,
-          width: 32,
-          height: 32,
-          borderRadius: 16,
-          backgroundColor: 'rgba(0, 0, 0, 0.1)',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 100
-        }}
+        style={closeButtonStyle}
         onPress={onContinue}
         activeOpacity={0.7}
       >
         <Ionicons 
           name="close" 
           size={20} 
-          color="rgba(0, 0, 0, 0.6)" 
+          color={palette.text.secondary} 
         />
       </TouchableOpacity>
 
       <ScrollView showsVerticalScrollIndicator={false} style={{ paddingBottom: 100 }}>
         {/* Калории и макронутриенты */}
-        <View style={[planPreview.section, { backgroundColor: palette.surface }]}>
-          <View style={planPreview.sectionHeader}>
+        <View style={[sectionStyle, { backgroundColor: palette.surface }]}>
+          <View style={sectionHeaderStyle}>
             <Ionicons name="nutrition-outline" size={24} color={palette.primary} />
-            <Text style={[planPreview.sectionTitle, { color: palette.text.primary }]}>
+            <Text style={sectionTitleStyle}>
               Ваш дневной план питания
             </Text>
           </View>
           
-          <View style={planPreview.nutritionContainer}>
-            <View style={planPreview.calorieCard}>
-              <Text style={[planPreview.calorieValue, { color: palette.primary }]}>
+          <View style={nutritionContainerStyle}>
+            <View style={calorieCardStyle}>
+              <Text style={calorieValueStyle}>
                 {nutrition.calorieTarget}
               </Text>
-              <Text style={[planPreview.calorieLabel, { color: palette.text.secondary }]}>
+              <Text style={calorieLabelStyle}>
                 ккал/день
               </Text>
             </View>
             
-            <View style={planPreview.macrosRow}>
-              <View style={planPreview.macroItem}>
-                <View style={[planPreview.macroIndicator, { backgroundColor: 'rgba(255, 107, 107, 0.85)' }]} />
-                <Text style={[planPreview.macroValue, { color: palette.text.primary }]}>
-                  {nutrition.proteinTarget}г
+            <View style={macrosRowStyle}>
+              <View style={macroItemStyle}>
+                <View style={[macroIndicatorStyle, { backgroundColor: 'rgba(255, 107, 107, 0.85)' }]} />
+                <Text style={macroValueStyle}>
+                  {nutrition.proteinTarget} г
                 </Text>
-                <Text style={[planPreview.macroLabel, { color: palette.text.secondary }]}>
+                <Text style={macroLabelStyle}>
                   Белки
                 </Text>
               </View>
               
-              <View style={planPreview.macroItem}>
-                <View style={[planPreview.macroIndicator, { backgroundColor: 'rgba(255, 209, 102, 0.85)' }]} />
-                <Text style={[planPreview.macroValue, { color: palette.text.primary }]}>
-                  {nutrition.fatTarget}г
+              <View style={macroItemStyle}>
+                <View style={[macroIndicatorStyle, { backgroundColor: 'rgba(255, 209, 102, 0.85)' }]} />
+                <Text style={macroValueStyle}>
+                  {nutrition.fatTarget} г
                 </Text>
-                <Text style={[planPreview.macroLabel, { color: palette.text.secondary }]}>
+                <Text style={macroLabelStyle}>
                   Жиры
                 </Text>
               </View>
               
-              <View style={planPreview.macroItem}>
-                <View style={[planPreview.macroIndicator, { backgroundColor: 'rgba(6, 214, 160, 0.85)' }]} />
-                <Text style={[planPreview.macroValue, { color: palette.text.primary }]}>
-                  {nutrition.carbTarget}г
+              <View style={macroItemStyle}>
+                <View style={[macroIndicatorStyle, { backgroundColor: 'rgba(6, 214, 160, 0.85)' }]} />
+                <Text style={macroValueStyle}>
+                  {nutrition.carbTarget} г
                 </Text>
-                <Text style={[planPreview.macroLabel, { color: palette.text.secondary }]}>
+                <Text style={macroLabelStyle}>
                   Углеводы
                 </Text>
               </View>
@@ -215,37 +414,37 @@ const PlanPreviewScreen: React.FC<PlanPreviewScreenProps> = ({
         </View>
 
         {/* Персональные рекомендации */}
-        <View style={[planPreview.section, { backgroundColor: palette.surface }]}>
-          <View style={planPreview.sectionHeader}>
+        <View style={[sectionStyle, { backgroundColor: palette.surface }]}>
+          <View style={sectionHeaderStyle}>
             <Ionicons name="person-outline" size={24} color={palette.primary} />
-            <Text style={[planPreview.sectionTitle, { color: palette.text.primary }]}>
+            <Text style={sectionTitleStyle}>
               Персональные рекомендации
             </Text>
           </View>
           
-          <View style={planPreview.recommendationItem}>
-            <Text style={[planPreview.recommendationLabel, { color: palette.text.secondary }]}>
+          <View style={recommendationItemStyle}>
+            <Text style={recommendationLabelStyle}>
               Тип питания:
             </Text>
-            <Text style={[planPreview.recommendationValue, { color: palette.text.primary }]}>
+            <Text style={recommendationValueStyle}>
               {getDietPreferenceText()}
             </Text>
           </View>
           
-          <View style={planPreview.recommendationItem}>
-            <Text style={[planPreview.recommendationLabel, { color: palette.text.secondary }]}>
+          <View style={recommendationItemStyle}>
+            <Text style={recommendationLabelStyle}>
               Темп снижения веса:
             </Text>
-            <Text style={[planPreview.recommendationValue, { color: palette.text.primary }]}>
+            <Text style={recommendationValueStyle}>
               {getWeightLossPace()}
             </Text>
           </View>
           
-          <View style={planPreview.recommendationItem}>
-            <Text style={[planPreview.recommendationLabel, { color: palette.text.secondary }]}>
+          <View style={recommendationItemStyle}>
+            <Text style={recommendationLabelStyle}>
               Режим питания:
             </Text>
-            <Text style={[planPreview.recommendationValue, { color: palette.text.primary }]}>
+            <Text style={recommendationValueStyle}>
               {userProfile.mealFrequency === '3-meals' ? '3 приема пищи' : 
                userProfile.mealFrequency === '4-meals' ? '4 приема пищи' :
                userProfile.mealFrequency === 'intermittent' ? 'Интервальное голодание' : '3 приема пищи'}
@@ -254,18 +453,18 @@ const PlanPreviewScreen: React.FC<PlanPreviewScreenProps> = ({
         </View>
 
         {/* Индивидуальные советы */}
-        <View style={[planPreview.section, { backgroundColor: palette.surface }]}>
-          <View style={planPreview.sectionHeader}>
+        <View style={[sectionStyle, { backgroundColor: palette.surface }]}>
+          <View style={sectionHeaderStyle}>
             <Ionicons name="bulb-outline" size={24} color={palette.primary} />
-            <Text style={[planPreview.sectionTitle, { color: palette.text.primary }]}>
+            <Text style={sectionTitleStyle}>
               Ваши индивидуальные советы
             </Text>
           </View>
           
           {personalizedTips.map((tip, index) => (
-            <View key={index} style={planPreview.tipItem}>
+            <View key={index} style={tipItemStyle}>
               <Ionicons name="checkmark-circle" size={20} color={palette.success} />
-              <Text style={[planPreview.tipText, { color: palette.text.primary }]}>
+              <Text style={tipTextStyle}>
                 {tip}
               </Text>
             </View>
@@ -273,14 +472,14 @@ const PlanPreviewScreen: React.FC<PlanPreviewScreenProps> = ({
         </View>
 
         {/* Предложение пробного периода */}
-        <View style={[planPreview.trialSection, { backgroundColor: palette.primary }]}>
-          <Text style={planPreview.trialTitle}>
+        <View style={trialSectionStyle}>
+          <Text style={trialTitleStyle}>
             🎁 Специальное предложение
           </Text>
-          <Text style={planPreview.trialSubtitle}>
+          <Text style={trialSubtitleStyle}>
             Попробуйте полную версию бесплатно 3 дня
           </Text>
-          <Text style={planPreview.trialDescription}>
+          <Text style={trialDescriptionStyle}>
             • Полный доступ ко всем функциям{'\n'}
             • Детальные планы питания{'\n'}
             • Персональные рецепты{'\n'}
@@ -289,16 +488,16 @@ const PlanPreviewScreen: React.FC<PlanPreviewScreenProps> = ({
           </Text>
           
           <TouchableOpacity 
-            style={planPreview.trialButton}
+            style={trialButtonStyle}
             onPress={onStartTrial}
             activeOpacity={0.8}
           >
-            <Text style={planPreview.trialButtonText}>
+            <Text style={trialButtonTextStyle}>
               Начать бесплатный пробный период
             </Text>
           </TouchableOpacity>
           
-          <Text style={planPreview.trialNote}>
+          <Text style={trialNoteStyle}>
             Через 3 дня подписка продлится автоматически.{'\n'}
             Отмените в любой момент в настройках.
           </Text>
@@ -309,36 +508,13 @@ const PlanPreviewScreen: React.FC<PlanPreviewScreenProps> = ({
       </ScrollView>
 
       {/* Фиксированная кнопка внизу экрана */}
-      <View style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: palette.white,
-        paddingHorizontal: 16,
-        paddingTop: 16,
-        paddingBottom: 34, // Отступ для Home Indicator
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 5,
-      }}>
+      <View style={fixedButtonContainerStyle}>
         <TouchableOpacity
-          style={{
-            backgroundColor: palette.primary,
-            borderRadius: 25,
-            paddingVertical: 16,
-            alignItems: 'center',
-          }}
+          style={fixedButtonStyle}
           onPress={onContinue}
           activeOpacity={0.8}
         >
-          <Text style={{
-            color: palette.white,
-            fontSize: 18,
-            fontWeight: '700',
-          }}>
+          <Text style={fixedButtonTextStyle}>
             Получить полный доступ
           </Text>
         </TouchableOpacity>

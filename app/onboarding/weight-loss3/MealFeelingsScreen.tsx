@@ -4,7 +4,7 @@ import { ScrollView, Text, TouchableOpacity, useColorScheme, View } from 'react-
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from '../../../i18n/i18n';
 import ButtonFooter from './components/ButtonFooter';
-import { containers, mealFeelings, options, palette, typography } from './unifiedStyles';
+import { useContainerStyles, useOptionsStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface MealFeelingsScreenProps {
   onContinue: () => void;
@@ -31,6 +31,10 @@ const MealFeelingsScreen: React.FC<MealFeelingsScreenProps> = ({
   
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+  const palette = usePalette();
+  const containers = useContainerStyles();
+  const options = useOptionsStyles();
+  const typography = useTypographyStyles();
   
   // Функция обработки выбора самочувствия после еды
   const handleMealFeelingSelect = (feeling: string) => {
@@ -105,7 +109,7 @@ const MealFeelingsScreen: React.FC<MealFeelingsScreenProps> = ({
                     style={[
                       options.optionContainer,
                       isSelected ? options.selectedOption : options.unselectedOption,
-                      mealFeelings.feelingOption
+                      { marginBottom: 16 }
                     ]}
                     onPress={() => handleMealFeelingSelect(option.id)}
                     activeOpacity={0.5}
@@ -120,11 +124,11 @@ const MealFeelingsScreen: React.FC<MealFeelingsScreenProps> = ({
                       />
                     </View>
                     
-                    <View style={[options.optionTextContainer, mealFeelings.feelingTextContainer]}>
+                    <View style={[options.optionTextContainer, { flex: 1 }]}>
                       <Text style={typography.optionTitle}>
                         {option.label}
                       </Text>
-                      <Text style={mealFeelings.descriptionText}>
+                      <Text style={[typography.optionDescription, { marginTop: 4 }]}>
                         {option.description}
                       </Text>
                     </View>
@@ -142,7 +146,7 @@ const MealFeelingsScreen: React.FC<MealFeelingsScreenProps> = ({
               })}
             </View>
             
-            <Text style={mealFeelings.disclaimerText}>
+            <Text style={[typography.caption, { textAlign: 'center', marginTop: 20, paddingHorizontal: 20 }]}>
               {t('onboarding.mealFeelings.disclaimer')}
             </Text>
           </ScrollView>
@@ -158,7 +162,5 @@ const MealFeelingsScreen: React.FC<MealFeelingsScreenProps> = ({
     </SafeAreaView>
   );
 };
-
-// Локальных стилей больше нет - все стили вынесены в унифицированный модуль unifiedStyles.ts
 
 export default MealFeelingsScreen;

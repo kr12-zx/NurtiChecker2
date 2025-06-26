@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import SimplePicker from '../../../components/SimplePicker';
+import { StyleSheet, Text, useColorScheme, View } from 'react-native';
 import OnboardingNavButtons from '../../../components/OnboardingNavButtons';
+import SimplePicker from '../../../components/SimplePicker';
+import { useTranslation } from '../../../i18n/i18n';
 
 interface GoalWeightScreenProps {
   onContinue: () => void;
@@ -23,6 +23,7 @@ const GoalWeightScreen: React.FC<GoalWeightScreenProps> = ({
 }) => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+  const { t } = useTranslation();
 
   // Генерация значений для выбора целевого веса (должен быть меньше текущего)
   const generateWeightValues = () => {
@@ -35,7 +36,7 @@ const GoalWeightScreen: React.FC<GoalWeightScreenProps> = ({
       // от minWeight до maxWeight в кг
       return Array.from({ length: maxWeight - minWeight + 1 }, (_, i) => {
         const value = minWeight + i;
-        return `${value} кг`;
+        return `${value} ${t('onboarding.heightWeight.units.kg')}`;
       });
     } else {
       // то же самое в фунтах
@@ -43,7 +44,7 @@ const GoalWeightScreen: React.FC<GoalWeightScreenProps> = ({
       const maxLbs = Math.round(maxWeight * 2.20462);
       return Array.from({ length: maxLbs - minLbs + 1 }, (_, i) => {
         const value = minLbs + i;
-        return `${value} lb`;
+        return `${value} ${t('onboarding.heightWeight.units.lb')}`;
       });
     }
   };
@@ -62,9 +63,9 @@ const GoalWeightScreen: React.FC<GoalWeightScreenProps> = ({
   // Получаем целевой вес в правильных единицах и формате для отображения
   const getGoalDisplayValue = (): string => {
     if (units === 'kg') {
-      return `${goalWeight} кг`;
+      return `${goalWeight} ${t('onboarding.heightWeight.units.kg')}`;
     } else {
-      return `${kgToLb(goalWeight)} lb`;
+      return `${kgToLb(goalWeight)} ${t('onboarding.heightWeight.units.lb')}`;
     }
   };
 
@@ -78,9 +79,9 @@ const GoalWeightScreen: React.FC<GoalWeightScreenProps> = ({
   const getWeightLossAmount = (): string => {
     const loss = currentWeight - goalWeight;
     if (units === 'kg') {
-      return `${loss} кг`;
+      return `${loss} ${t('onboarding.heightWeight.units.kg')}`;
     } else {
-      return `${kgToLb(loss)} lb`;
+      return `${kgToLb(loss)} ${t('onboarding.heightWeight.units.lb')}`;
     }
   };
 
@@ -103,7 +104,7 @@ const GoalWeightScreen: React.FC<GoalWeightScreenProps> = ({
 
   return (
     <View style={[styles.container, isDark && styles.darkContainer]}>
-      <Text style={[styles.title, isDark && styles.darkTextPrimary]}>Какой вес вы хотите достичь?</Text>
+      <Text style={[styles.title, isDark && styles.darkTextPrimary]}>{t('onboarding.goalSetting.targetWeightTitle')}</Text>
 
       <View style={styles.pickerContainer}>
         {/* TODO: SimplePicker needs to be updated to support dark mode (e.g., accept an isDark prop) 
@@ -120,16 +121,16 @@ const GoalWeightScreen: React.FC<GoalWeightScreenProps> = ({
       <View style={styles.statsContainer}>
         <View style={styles.statItem}>
           <Text style={[styles.statLabel, isDark && styles.darkTextSecondary]}>
-            Текущий вес
+            {t('onboarding.goalSetting.currentWeight')}
           </Text>
           <Text style={[styles.statValue, isDark && styles.darkTextPrimary]}>
-            {units === 'kg' ? `${currentWeight} кг` : `${kgToLb(currentWeight)} lb`}
+            {units === 'kg' ? `${currentWeight} ${t('onboarding.heightWeight.units.kg')}` : `${kgToLb(currentWeight)} ${t('onboarding.heightWeight.units.lb')}`}
           </Text>
         </View>
         
         <View style={styles.statItem}>
           <Text style={[styles.statLabel, isDark && styles.darkTextSecondary]}>
-            Цель потери
+            {t('onboarding.goalSetting.weightLossGoal')}
           </Text>
           <Text style={[styles.statValue, isDark && styles.darkTextPrimary]}>
             {getWeightLossAmount()}
@@ -138,8 +139,8 @@ const GoalWeightScreen: React.FC<GoalWeightScreenProps> = ({
       </View>
       
       <Text style={[styles.infoText, isDark && styles.darkTextSecondary]}>
-        Рекомендуемый целевой вес для достижения устойчивых и здоровых результатов:
-        {units === 'kg' ? ` ${getRecommendedWeight()} кг` : ` ${kgToLb(getRecommendedWeight())} lb`}
+        {t('onboarding.goalSetting.recommendedText')}
+        {units === 'kg' ? ` ${getRecommendedWeight()} ${t('onboarding.heightWeight.units.kg')}` : ` ${kgToLb(getRecommendedWeight())} ${t('onboarding.heightWeight.units.lb')}`}
       </Text>
 
       <OnboardingNavButtons

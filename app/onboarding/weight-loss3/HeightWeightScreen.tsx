@@ -5,7 +5,7 @@ import SimplePicker from '../../../components/SimplePicker';
 import { useTranslation } from '../../../i18n/i18n';
 import { UnitSettings } from '../../types/onboarding';
 import { OnboardingLayout } from './unifiedLayouts';
-import { heightWeight, usePalette } from './unifiedStyles';
+import { useButtonStyles, usePalette, usePickerStyles } from './unifiedStyles';
 
 interface HeightWeightScreenProps {
   onContinue: () => void;
@@ -26,8 +26,10 @@ const HeightWeightScreen: React.FC<HeightWeightScreenProps> = ({
   onWeightChange,
   unitSettings
 }) => {
-  // Получаем палитру цветов
+  // Получаем динамические стили
   const palette = usePalette();
+  const pickerStyles = usePickerStyles();
+  const buttonStyles = useButtonStyles();
   const { t } = useTranslation();
   
   // Состояние для активной вкладки (рост или вес)
@@ -150,7 +152,7 @@ const HeightWeightScreen: React.FC<HeightWeightScreenProps> = ({
     >
       {activeTab === 'height' ? (
         <>
-          <View style={heightWeight.pickerContainer}>
+          <View style={pickerStyles.pickerContainer}>
             <SimplePicker
               values={simpleHeightValues}
               selectedValue={displayHeight}
@@ -162,16 +164,16 @@ const HeightWeightScreen: React.FC<HeightWeightScreenProps> = ({
           </View>
           
           <TouchableOpacity 
-            style={heightWeight.nextStepButton}
+            style={buttonStyles.secondaryButton}
             onPress={() => setActiveTab('weight')}
           >
-            <Text style={heightWeight.nextStepText}>{t('onboarding.heightWeight.goToWeight')}</Text>
+            <Text style={buttonStyles.secondaryButtonText}>{t('onboarding.heightWeight.goToWeight')}</Text>
             <Ionicons name="arrow-forward" size={18} color={palette.primary} />
           </TouchableOpacity>
         </>
       ) : (
         <>
-          <View style={heightWeight.pickerContainer}>
+          <View style={pickerStyles.pickerContainer}>
             <SimplePicker
               values={simpleWeightValues}
               selectedValue={displayWeight}
@@ -185,11 +187,11 @@ const HeightWeightScreen: React.FC<HeightWeightScreenProps> = ({
           </View>
           
           <TouchableOpacity 
-            style={heightWeight.nextStepButton}
+            style={buttonStyles.secondaryButton}
             onPress={() => setActiveTab('height')}
           >
             <Ionicons name="arrow-back" size={18} color={palette.primary} />
-            <Text style={heightWeight.nextStepText}>{t('onboarding.heightWeight.backToHeight')}</Text>
+            <Text style={buttonStyles.secondaryButtonText}>{t('onboarding.heightWeight.backToHeight')}</Text>
           </TouchableOpacity>
         </>
       )}

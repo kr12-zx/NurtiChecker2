@@ -3,7 +3,7 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from '../../../i18n/i18n';
 import { OnboardingLayout } from './unifiedLayouts';
-import { foodPreferences, options, palette, typography } from './unifiedStyles';
+import { useOptionsStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface FoodPreferencesScreenProps {
   onContinue: () => void;
@@ -21,6 +21,9 @@ const FoodPreferencesScreen: React.FC<FoodPreferencesScreenProps> = ({
   // Добавляем локальное состояние для мгновенного отклика
   const [localFoodPriority, setLocalFoodPriority] = React.useState<string | null>(foodPriority || 'taste');
   const { t } = useTranslation();
+  const palette = usePalette();
+  const options = useOptionsStyles();
+  const typography = useTypographyStyles();
   
   // Обновляем локальное состояние при изменении пропсов
   React.useEffect(() => {
@@ -87,7 +90,7 @@ const FoodPreferencesScreen: React.FC<FoodPreferencesScreenProps> = ({
               style={[
                 options.optionContainer,
                 isSelected ? options.selectedOption : options.unselectedOption,
-                foodPreferences.priorityOption
+                { marginBottom: 16 }
               ]}
               onPress={() => handleFoodPrioritySelect(option.id)}
               activeOpacity={0.5}
@@ -102,11 +105,11 @@ const FoodPreferencesScreen: React.FC<FoodPreferencesScreenProps> = ({
                 />
               </View>
               
-              <View style={[options.optionTextContainer, foodPreferences.priorityTextContainer]}>
+              <View style={[options.optionTextContainer, { flex: 1 }]}>
                 <Text style={typography.optionTitle}>
                   {option.label}
                 </Text>
-                <Text style={foodPreferences.descriptionText}>
+                <Text style={[typography.optionDescription, { marginTop: 4 }]}>
                   {option.description}
                 </Text>
               </View>

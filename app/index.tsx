@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Redirect } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View, useColorScheme } from 'react-native';
 import { getBooleanValue, refreshRemoteConfig } from './firebase/remote-config';
 
 // Ключ для хранения в AsyncStorage
@@ -10,6 +10,8 @@ const HAS_COMPLETED_ONBOARDING_KEY = 'hasCompletedOnboarding';
 export default function AppIndex() {
   const [loading, setLoading] = useState(true);
   const [shouldShowOnboarding, setShouldShowOnboarding] = useState(false);
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
   useEffect(() => {
     const checkOnboarding = async () => {
@@ -48,8 +50,8 @@ export default function AppIndex() {
   // Показываем загрузку, пока проверяем условия
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
+      <View style={[styles.loadingContainer, isDark && styles.darkLoadingContainer]}>
+        <ActivityIndicator size="large" color={isDark ? "#0A84FF" : "#007AFF"} />
       </View>
     );
   }
@@ -64,5 +66,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#FFFFFF'
+  },
+  darkLoadingContainer: {
+    backgroundColor: '#000000'
   }
 });

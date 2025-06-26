@@ -3,7 +3,7 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from '../../../i18n/i18n';
 import { OnboardingLayout } from './unifiedLayouts';
-import { calorieSchedule, options, palette, typography } from './unifiedStyles';
+import { useOptionsStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface CalorieScheduleScreenProps {
   onContinue: () => void;
@@ -21,6 +21,9 @@ const CalorieScheduleScreen: React.FC<CalorieScheduleScreenProps> = ({
   // Добавляем локальное состояние для мгновенного отклика
   const [localUseCalorieSchedule, setLocalUseCalorieSchedule] = React.useState<boolean | null>(useFlexibleCalories);
   const { t } = useTranslation();
+  const palette = usePalette();
+  const options = useOptionsStyles();
+  const typography = useTypographyStyles();
   
   // Обновляем локальное состояние при изменении пропсов
   React.useEffect(() => {
@@ -70,8 +73,11 @@ const CalorieScheduleScreen: React.FC<CalorieScheduleScreenProps> = ({
                     style={[
                       options.optionContainer,
                       isSelected ? options.selectedOption : options.unselectedOption,
-                      option.recommended && calorieSchedule.recommendedOption,
-                      calorieSchedule.scheduleOption
+                      option.recommended && { 
+                        borderColor: palette.primary, 
+                        borderWidth: 2 
+                      },
+                      { marginBottom: 16 }
                     ]}
                     onPress={() => handleCalorieScheduleSelect(option.id)}
                     activeOpacity={0.5}
@@ -86,15 +92,17 @@ const CalorieScheduleScreen: React.FC<CalorieScheduleScreenProps> = ({
                       />
                     </View>
                     
-                    <View style={[options.optionTextContainer, calorieSchedule.scheduleTextContainer]}>
+                    <View style={[options.optionTextContainer, { flex: 1 }]}>
                       <Text style={typography.optionTitle}>
                         {option.label}
                       </Text>
-                      <Text style={calorieSchedule.descriptionText}>
+                      <Text style={[typography.optionDescription, { marginTop: 4 }]}>
                         {option.description}
                       </Text>
                       {option.recommended && (
-                        <Text style={calorieSchedule.recommendedText}>{t('onboarding.calorieSchedule.recommended')}</Text>
+                        <Text style={[typography.optionDescription, { color: palette.primary, fontWeight: '600', marginTop: 8 }]}>
+                          {t('onboarding.calorieSchedule.recommended')}
+                        </Text>
                       )}
                     </View>
                     

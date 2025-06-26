@@ -1,0 +1,29 @@
+id,telegram_id,first_name,username,locale,created_at,mailid,paid,selectedAllergenIds,ip,country,osVersion,modelName,platform,uuid,timezone,timezone_offset
+5,,,,en,2025-05-25 03:25:14.605258+00,02025052420070678475@nutrichecker.top,,Кофе,172.69.114.4,AR,,,,55a8eeaa-abd3-45f6-902d-635836ccaddc,Europe/Moscow,-180
+2,,,,en,2025-05-25 03:19:35.61694+00,2025052420070678475@nutrichecker.top,,Кофе,172.69.114.4,AR,,,,74797d26-fc0a-4949-a75c-ea785abac7bd,Europe/Moscow,-180
+12,,,,ru,2025-05-25 21:39:27.850566+00,2025052518383533341@nutrichecker.top,,,172.71.238.106,AR,,,,7250a73b-9c43-4a65-9cef-42cab55a0984,Europe/Moscow,-180
+26,,,,en,2025-05-26 02:13:12.145767+00,2025052522330875258@nutrichecker.top,,Peanuts,172.69.11.249,AR,16.7.11,iPhone X,ios,0eaf4df2-28d4-46ce-95a7-6499caca640d,Europe/Moscow,-180
+46,,,,en,2025-05-27 11:44:39.476972+00,2025052708443239565@nutrichecker.top,,,172.69.114.99,AR,18.5,iPhone 15 Pro Max,ios,81b3c649-f937-46ee-b54b-96696e94f780,Europe/Moscow,-180
+80,,,,en,2025-05-27 21:08:29.300611+00,2025052718082522252@nutrichecker.top,,,172.71.10.75,AR,16.7.11,iPhone X,ios,abd31a6e-8de1-4208-a131-858cb49f8d3d,Europe/Moscow,-180
+82,,,,en,2025-05-28 11:54:53.704232+00,2025052813545040996@nutrichecker.top,,,172.71.98.128,NL,18.5,iPhone 13,ios,a607a339-d3f9-44d1-a5c3-616410a2e1ba,Europe/Moscow,-180
+132,,,,ru,2025-05-31 02:18:26.536968+00,2025053023182565303@nutrichecker.top,,,172.69.138.169,AR,17.4,Simulator iOS,ios,409e67f4-47e7-4707-83d9-1dbb46947ffe,Europe/Moscow,-180
+148,,,,ru,2025-06-04 22:34:34.133748+00,2025060419343295117@nutrichecker.top,,,172.68.14.116,AR,17.4,Simulator iOS,ios,ac26d480-f645-46a2-9fff-32f8ef007665,Europe/Moscow,-180
+158,,,,ru,2025-06-05 02:34:47.848885+00,2025060423344681850@nutrichecker.top,,,172.69.114.7,AR,17.4,Simulator iOS,ios,4f1380dc-9192-455a-9aba-629f97ee2b76,Europe/Moscow,-180
+166,,,,ru,2025-06-05 21:28:28.795004+00,2025060518282665108@nutrichecker.top,,,172.69.39.38,AR,17.4,Simulator iOS,ios,946ad134-1b7b-4238-b13c-faeeabc7de9c,Europe/Moscow,-180
+172,,,,ru,2025-06-05 22:17:19.335586+00,2025060519171725093@nutrichecker.top,,,162.158.158.37,AR,17.4,Simulator iOS,ios,3b778432-59e8-4191-8e6f-99f8932edd81,Europe/Moscow,-180
+178,,,,ru,2025-06-05 22:33:40.574661+00,2025060519333988633@nutrichecker.top,,,162.158.159.223,AR,17.4,Simulator iOS,ios,9a4f8040-e00f-49b3-a5fb-168425b3e4d3,Europe/Moscow,-180
+184,,,,ru,2025-06-06 00:30:02.295265+00,2025060521300057832@nutrichecker.top,,,162.158.62.155,AR,17.4,Simulator iOS,ios,5368eafe-89c0-4b57-86a3-37ff1678e177,Europe/Moscow,-180
+190,,,,ru,2025-06-06 00:56:32.97159+00,2025060521563166367@nutrichecker.top,,,162.158.159.230,AR,17.4,Simulator iOS,ios,1834e519-4e1d-4cc0-aa85-63a790537c8e,Europe/Moscow,-180
+199,,,,en,2025-06-06 13:56:39.062464+00,2025060610563760851@nutrichecker.top,,,172.70.255.90,AR,18.5,iPhone 15 Pro Max,ios,e712c774-cf39-4739-8d75-962978cb7133,Europe/Moscow,-180
+221,,,,ru,2025-06-06 14:43:39.978329+00,2025060611433897080@nutrichecker.top,,,172.69.114.7,AR,17.4,Simulator iOS,ios,9b429502-0b19-4d50-8b67-37012a1d474f,Europe/Moscow,-180
+268,,,,ru,2025-06-11 21:49:18.439987+00,2025061118491622995@nutrichecker.top,,,172.70.140.180,AR,18.0,Simulator iOS,ios,81b2d0d0-5fb4-49f8-815d-d3457b127366,Europe/Moscow,-180
+286,,,,ru,2025-06-13 17:38:18.521764+00,2025061314380796588@nutrichecker.top,,,172.71.11.61,AR,18.0,Simulator iOS,ios,37a1ae7e-d7ec-4bbb-bb5c-1d6972fa36c2,Europe/Moscow,-180
+288,,,,ru,2025-06-13 20:08:33.947095+00,2025061317083253949@nutrichecker.top,,,172.68.19.131,AR,18.0,Simulator iOS,ios,19864b53-9de2-4699-86ef-f584ef166584,Europe/Moscow,-180
+290,,,,ru,2025-06-13 20:23:36.858039+00,2025061317233580501@nutrichecker.top,,,172.68.19.15,AR,18.0,Simulator iOS,ios,1af2235d-af6b-4e4c-839c-c50318eed920,America/Argentina/Buenos_Aires,180
+292,,,,ru,2025-06-13 20:41:38.473446+00,2025061317402091152@nutrichecker.top,,,172.71.10.138,AR,18.0,Simulator iOS,ios,6615e2ad-075e-4f12-b45e-49f1ed9ed071,America/Argentina/Buenos_Aires,180
+293,,,,ru,2025-06-13 20:44:24.537884+00,2025061317442392422@nutrichecker.top,,,172.71.11.40,AR,18.0,Simulator iOS,ios,6d174659-2697-4dc1-8868-92011b27872a,America/Argentina/Buenos_Aires,180
+300,,,,ru,2025-06-13 23:46:42.342928+00,2025061320464147930@nutrichecker.top,,,172.71.10.235,AR,18.0,Simulator iOS,ios,27234f61-6c59-479e-a350-f3887f1eeeaf,America/Argentina/Buenos_Aires,180
+305,,,,ru,2025-06-13 23:52:42.662362+00,2025061320524179369@nutrichecker.top,,,172.71.10.138,AR,18.0,Simulator iOS,ios,d4723fcb-4fa4-4ce9-8707-98ddf189392b,America/Argentina/Buenos_Aires,180
+310,,,,ru,2025-06-14 00:08:22.446287+00,2025061321082189854@nutrichecker.top,,,172.68.187.34,AR,18.0,Simulator iOS,ios,d5a8668e-5443-4c78-8b53-0aff363a324c,America/Argentina/Buenos_Aires,180
+315,,,,ru,2025-06-14 00:38:54.494071+00,2025061321385362248@nutrichecker.top,,,172.68.14.250,AR,18.0,Simulator iOS,ios,a5ad2c31-f530-4475-babf-026be099ed91,America/Argentina/Buenos_Aires,180
+320,,,,ru,2025-06-14 12:13:59.499543+00,2025061409135854968@nutrichecker.top,,,198.41.230.172,AR,17.4,Simulator iOS,ios,d32f086d-8933-432d-9ee9-72eb6f39e5c7,America/Argentina/Buenos_Aires,180

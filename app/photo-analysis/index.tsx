@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 import * as Localization from 'expo-localization';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Animated, Easing, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { ActivityIndicator, Alert, Animated, Easing, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from '../../i18n/i18n';
 // Используем реальный Firebase для загрузки изображений
@@ -13,6 +13,7 @@ import NutrientBadge from '../../components/NutrientBadge';
 import { navigateToProductDetail } from '../../services/navigationService';
 import { saveScanToHistory } from '../../services/scanHistory';
 import { getUserId } from '../../services/userService';
+import { getTimezoneInfo } from '../../utils/timezoneUtils';
 
 type PhotoAnalysisParams = {
   imageUri: string;
@@ -57,10 +58,10 @@ const LoadingOverlay = () => {
   const isDark = useColorScheme() === 'dark';
   
   useEffect(() => {
-    // Анимация прогресс-бара в течение примерно 30 секунд
+    // Анимация прогресс-бара в течение примерно 60 секунд
     Animated.timing(progressAnim, {
       toValue: 0.95, // Не делаем 100%, чтобы показать, что процесс ещё идёт
-      duration: 45000, // 45 секунд
+      duration: 60000, // 60 секунд
       easing: Easing.bezier(0.25, 0.1, 0.25, 1),
       useNativeDriver: false,
     }).start();
@@ -80,7 +81,7 @@ const LoadingOverlay = () => {
     >
       <View style={styles.modalOverlay}>
         <View style={[styles.loadingCard, isDark && {backgroundColor: '#2A2A2A'}]}>
-          <ActivityIndicator size="large" color="#007AFF" style={styles.loadingIndicator} />
+          <ActivityIndicator size="large" color={isDark ? "#0A84FF" : "#007AFF"} style={styles.loadingIndicator} />
           <Text style={[styles.loadingText, isDark && {color: '#FFF'}]}>
             {t('photoAnalysis.processingMessage') || 'Пожалуйста, подождите, анализируем вашу еду...'}
           </Text>
@@ -106,6 +107,18 @@ export default function PhotoAnalysisScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   
+  // Состояния для редактирования пищевой ценности
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedNutrition, setEditedNutrition] = useState({
+    calories: '',
+    protein: '',
+    fat: '',
+    carbs: '',
+    sugars: '',
+    fiber: '',
+    saturatedFat: ''
+  });
+  
   // Если imageUri не определен, перенаправляем назад на экран сканирования
   if (!imageUri) {
     router.replace('/scan');
@@ -114,6 +127,86 @@ export default function PhotoAnalysisScreen() {
 
   const handleTakeAnotherPhoto = () => {
     router.back();
+  };
+
+  // Функция для начала редактирования
+  const handleStartEditing = () => {
+    if (analysisData?.nutritionInfo) {
+      setEditedNutrition({
+        calories: String(analysisData.nutritionInfo.calories || 0),
+        protein: String(analysisData.nutritionInfo.protein || 0),
+        fat: String(analysisData.nutritionInfo.fat || 0),
+        carbs: String(analysisData.nutritionInfo.carbs || 0),
+        sugars: String(analysisData.nutritionInfo.sugars || 0),
+        fiber: String(analysisData.nutritionInfo.fiber || 0),
+        saturatedFat: String(analysisData.nutritionInfo.saturatedFat || 0)
+      });
+      setIsEditing(true);
+    }
+  };
+
+  // Функция для сохранения изменений
+  const handleSaveEditing = async () => {
+    try {
+      // Валидация введенных данных
+      const calories = parseFloat(editedNutrition.calories) || 0;
+      const protein = parseFloat(editedNutrition.protein) || 0;
+      const fat = parseFloat(editedNutrition.fat) || 0;
+      const carbs = parseFloat(editedNutrition.carbs) || 0;
+      const sugars = parseFloat(editedNutrition.sugars) || 0;
+      const fiber = parseFloat(editedNutrition.fiber) || 0;
+      const saturatedFat = parseFloat(editedNutrition.saturatedFat) || 0;
+
+      // Проверка на разумные пределы
+      if (calories < 0 || calories > 2000) {
+        Alert.alert('Ошибка', 'Калории должны быть от 0 до 2000');
+        return;
+      }
+
+      // Обновляем данные анализа
+      if (analysisData) {
+        const updatedAnalysisData = {
+          ...analysisData,
+          nutritionInfo: {
+            ...analysisData.nutritionInfo,
+            calories,
+            protein,
+            fat,
+            carbs,
+            sugars,
+            fiber,
+            saturatedFat
+          }
+        };
+        
+        setAnalysisData(updatedAnalysisData);
+        
+        // Сохраняем обновленные данные в AsyncStorage
+        const storageKey = `@nutrichecker:edited_nutrition_${Date.now()}`;
+        await AsyncStorage.setItem(storageKey, JSON.stringify(updatedAnalysisData));
+        
+        console.log('Пищевая ценность обновлена и сохранена');
+      }
+      
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Ошибка при сохранении:', error);
+      Alert.alert('Ошибка', 'Не удалось сохранить изменения');
+    }
+  };
+
+  // Функция для отмены редактирования
+  const handleCancelEditing = () => {
+    setIsEditing(false);
+    setEditedNutrition({
+      calories: '',
+      protein: '',
+      fat: '',
+      carbs: '',
+      sugars: '',
+      fiber: '',
+      saturatedFat: ''
+    });
   };
 
   const handleAnalyze = async () => {
@@ -306,6 +399,10 @@ export default function PhotoAnalysisScreen() {
       const userId = await getUserId();
       console.log('ID пользователя для webhook:', userId);
       
+      // Получаем информацию о часовом поясе
+      const timezoneInfo = getTimezoneInfo();
+      console.log('🕒 Adding timezone info to product analysis webhook:', timezoneInfo);
+      
       // Формируем URL с корректным кодированием параметров
       const urlParams = new URLSearchParams();
       urlParams.append('imageUrl', downloadURL);
@@ -315,65 +412,69 @@ export default function PhotoAnalysisScreen() {
       urlParams.append('selectedAllergenIds', selectedAllergenIds);
       urlParams.append('customAllergens', simplifiedCustomAllergens);
       urlParams.append('allergenDetails', JSON.stringify(allergenData.allergenDetails || []));
+      // Добавляем timezone информацию
+      urlParams.append('timezone', timezoneInfo.timezone);
+      urlParams.append('timezoneOffset', timezoneInfo.timezoneOffset.toString());
       
       const queryParams = '?' + urlParams.toString();
       
       console.log('Отправка запроса в n8n:', `${n8nWebhookUrl}${queryParams}`);
       
-      // 5. Отправляем запрос в n8n с механизмом повторных попыток (retry)
+      // 5. Отправляем запрос в n8n с retry только для сетевых ошибок
       let response;
       let retryCount = 0;
-      const maxRetries = 5; // Максимальное количество попыток
+      const maxRetries = 3; // Уменьшаем количество попыток
       
       while (retryCount < maxRetries) {
         try {
+          // Создаем AbortController для правильной реализации timeout
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 минуты timeout
+          
           const fetchOptions = {
             method: 'GET',
             headers: {
               'Accept': 'application/json',
               'Content-Type': 'application/json'
             },
-            timeout: 60000 // Тайм-аут 60 секунд (1 минута)
+            signal: controller.signal
           };
           
           // Добавляем дополнительный параметр для предотвращения кэширования
           const timestamp = Date.now();
           const nonCachedUrl = `${n8nWebhookUrl}${queryParams}${queryParams.includes('?') ? '&' : '?'}_t=${timestamp}`;
           
+          console.log(`Попытка ${retryCount + 1}: отправка запроса в n8n`);
+          
           response = await fetch(nonCachedUrl, fetchOptions);
           
-          if (response.ok) {
-            break; // Успешный ответ, выходим из цикла
-          } else {
-            console.log(`Попытка ${retryCount + 1} завершилась с ошибкой ${response.status}`);
-            retryCount++;
-          }
+          // Очищаем timeout при успешном получении ответа
+          clearTimeout(timeoutId);
+          
+          // Если получили ответ (даже с ошибкой) - НЕ повторяем
+          // Retry только если вообще не смогли подключиться
+          break;
+          
         } catch (error) {
-          console.log(`Попытка ${retryCount + 1} завершилась ошибкой:`, error);
+          console.log(`Попытка ${retryCount + 1} - сетевая ошибка:`, error);
           retryCount++;
           
+          // Если это последняя попытка - выбрасываем ошибку
           if (retryCount >= maxRetries) {
-            // Правильно обрабатываем ошибку неизвестного типа
             const errorMessage = error instanceof Error ? error.message : String(error);
-            throw new Error(`Ошибка после ${maxRetries} попыток: ${errorMessage}`);
+            throw new Error(`Сетевая ошибка после ${maxRetries} попыток: ${errorMessage}`);
           }
           
-          // Ждем перед следующей попыткой
-          // Прогрессивное увеличение задержки для повторных попыток
-          let delayTime = 2000; // Базовая задержка 2 секунды
-          
-          // Увеличиваем время ожидания с каждой попыткой
-          if (retryCount === 2) delayTime = 3000;      // На 3-ю попытку: 3 секунды
-          else if (retryCount === 3) delayTime = 4000; // На 4-ю попытку: 4 секунды
-          else if (retryCount === 4) delayTime = 5000; // На 5-ю попытку: 5 секунд
-
-          console.log(`Ожидание ${delayTime/1000} секунд перед попыткой ${retryCount + 1}`);
+          // Ждем перед следующей попыткой (только для сетевых ошибок)
+          const delayTime = 2000 * retryCount; // 2, 4 секунды
+          console.log(`Ожидание ${delayTime/1000} секунд перед следующей попыткой`);
           await new Promise(resolve => setTimeout(resolve, delayTime));
         }
       }
       
+      // Проверяем статус ответа (но НЕ повторяем при ошибках статуса)
       if (!response || !response.ok) {
-        throw new Error(`Ошибка запроса: ${response ? response.status : 'Нет ответа'}`);
+        throw new Error(`Ошибка сервера: ${response ? response.status : 'Нет ответа'}`);
       }
       
       // 6. Обрабатываем результат
@@ -387,11 +488,8 @@ export default function PhotoAnalysisScreen() {
       if (analysisResult.error) {
         Alert.alert(
           t('common.error'),
-          t('photoAnalysis.nonFoodError'),
-          [{ 
-            text: t('photoAnalysis.takeAnother'), 
-            onPress: () => router.replace('/scan')
-          }]
+          t('photoAnalysis.generalAnalysisError'),
+          [{ text: 'OK' }]
         );
         return;
       }
@@ -535,8 +633,8 @@ export default function PhotoAnalysisScreen() {
           // Если данных вообще нет, показываем ошибку
           console.error('Критическая ошибка при обработке данных:', saveError);
           Alert.alert(
-            'Ошибка',
-            'Не удалось распознать продукт на изображении. Попробуйте сделать более четкое фото еды.',
+            t('common.error'),
+            t('photoAnalysis.criticalError'),
             [{ text: 'OK' }]
           );
         }
@@ -546,8 +644,8 @@ export default function PhotoAnalysisScreen() {
       setIsLoading(false);
       
       Alert.alert(
-        'Ошибка',
-        'Не удалось проанализировать изображение. Пожалуйста, попробуйте снова.',
+        t('common.error'),
+        t('photoAnalysis.generalAnalysisError'),
         [{ text: 'OK' }]
       );
       
@@ -575,6 +673,10 @@ export default function PhotoAnalysisScreen() {
                 contentFit="cover"
                 cachePolicy="memory-disk"
                 transition={200}
+                placeholder={{ blurhash: 'LGF5?xYk^6#M@-5c,1J5@[or[Q6.' }}
+                onError={(error) => {
+                  console.warn('❌ Ошибка загрузки изображения в результатах анализа:', error);
+                }}
               />
             </View>
             
@@ -584,47 +686,164 @@ export default function PhotoAnalysisScreen() {
             
             <View style={styles.portionContainer}>
               <Text style={[styles.portionDescription, isDark && { color: '#CCC' }]}>
-                {analysisData.portionInfo?.description || 'Порция не определена'} 
+                {analysisData.portionInfo?.description || t('nutrition.portionNotDetermined')} 
                 {analysisData.portionInfo?.estimatedWeight && analysisData.portionInfo?.measurementUnit ? 
                   `(${analysisData.portionInfo.estimatedWeight} ${analysisData.portionInfo.measurementUnit})` : 
-                  '(100 г)'
+                  `(100 ${t('nutrition.gram')})`
                 }
               </Text>
             </View>
             
-            <View style={styles.nutritionContainer}>
+            <View style={[styles.nutritionContainer, isEditing && styles.editingContainer]}>
+              <View style={styles.nutritionHeader}>
               <Text style={[styles.sectionTitle, isDark && { color: '#FFF' }]}>
-                Питательная ценность:
+                {t('nutrition.nutritionFacts')}:
               </Text>
-              <View style={styles.nutritionRow}>
-                <Text style={[styles.nutritionLabel, isDark && { color: '#CCC' }]}>- Калорийность:</Text>
-                <Text style={[styles.nutritionValue, isDark && { color: '#FFF' }]}>{analysisData.nutritionInfo?.calories || 0} ккал</Text>
+                <View style={styles.editButtonsContainer}>
+                  <TouchableOpacity
+                    style={[styles.editButton, isDark && styles.darkEditButton]}
+                    onPress={isEditing ? handleSaveEditing : handleStartEditing}
+                  >
+                    <Ionicons 
+                      name={isEditing ? "checkmark" : "pencil"} 
+                      size={20} 
+                      color={isEditing ? "#28a745" : "#007AFF"} 
+                    />
+                  </TouchableOpacity>
+                  {isEditing && (
+                    <TouchableOpacity
+                      style={[styles.editButton, isDark && styles.darkEditButton, { marginLeft: 8 }]}
+                      onPress={handleCancelEditing}
+                    >
+                      <Ionicons name="close" size={20} color="#dc3545" />
+                    </TouchableOpacity>
+                  )}
+                </View>
               </View>
+
+              {/* Калории */}
               <View style={styles.nutritionRow}>
-                <Text style={[styles.nutritionLabel, isDark && { color: '#CCC' }]}>- Белки:</Text>
-                <Text style={[styles.nutritionValue, isDark && { color: '#FFF' }]}>{analysisData.nutritionInfo?.protein || 0} г</Text>
+                <Text style={[styles.nutritionLabel, isDark && { color: '#CCC' }]}>- {t('nutrition.calories')}:</Text>
+                {isEditing ? (
+                  <TextInput
+                    style={[styles.nutritionInput, isDark && styles.darkInput]}
+                    value={editedNutrition.calories}
+                    onChangeText={(text) => setEditedNutrition(prev => ({ ...prev, calories: text }))}
+                    keyboardType="numeric"
+                    placeholder="0"
+                    placeholderTextColor={isDark ? '#666' : '#999'}
+                  />
+                ) : (
+                  <Text style={[styles.nutritionValue, isDark && { color: '#FFF' }]}>
+                    {analysisData.nutritionInfo?.calories || 0} {t('nutrition.kcal')}
+                  </Text>
+                )}
               </View>
+
+              {/* Белки */}
               <View style={styles.nutritionRow}>
-                <Text style={[styles.nutritionLabel, isDark && { color: '#CCC' }]}>- Жиры:</Text>
+                <Text style={[styles.nutritionLabel, isDark && { color: '#CCC' }]}>- {t('nutrition.protein')}:</Text>
+                {isEditing ? (
+                  <TextInput
+                    style={[styles.nutritionInput, isDark && styles.darkInput]}
+                    value={editedNutrition.protein}
+                    onChangeText={(text) => setEditedNutrition(prev => ({ ...prev, protein: text }))}
+                    keyboardType="numeric"
+                    placeholder="0"
+                    placeholderTextColor={isDark ? '#666' : '#999'}
+                  />
+                ) : (
+                  <Text style={[styles.nutritionValue, isDark && { color: '#FFF' }]}>
+                    {analysisData.nutritionInfo?.protein || 0} {t('nutrition.gram')}
+                  </Text>
+                )}
+              </View>
+
+              {/* Жиры */}
+              <View style={styles.nutritionRow}>
+                <Text style={[styles.nutritionLabel, isDark && { color: '#CCC' }]}>- {t('nutrition.fats')}:</Text>
+                {isEditing ? (
+                  <View style={styles.fatInputContainer}>
+                    <TextInput
+                      style={[styles.nutritionInput, styles.fatInput, isDark && styles.darkInput]}
+                      value={editedNutrition.fat}
+                      onChangeText={(text) => setEditedNutrition(prev => ({ ...prev, fat: text }))}
+                      keyboardType="numeric"
+                      placeholder="0"
+                      placeholderTextColor={isDark ? '#666' : '#999'}
+                    />
+                    <Text style={[styles.fatSeparator, isDark && { color: '#CCC' }]}> ({t('nutrition.saturatedFat')}: </Text>
+                    <TextInput
+                      style={[styles.nutritionInput, styles.saturatedFatInput, isDark && styles.darkInput]}
+                      value={editedNutrition.saturatedFat}
+                      onChangeText={(text) => setEditedNutrition(prev => ({ ...prev, saturatedFat: text }))}
+                      keyboardType="numeric"
+                      placeholder="0"
+                      placeholderTextColor={isDark ? '#666' : '#999'}
+                    />
+                    <Text style={[styles.fatSeparator, isDark && { color: '#CCC' }]}> {t('nutrition.gram')})</Text>
+                  </View>
+                ) : (
                 <Text style={[styles.nutritionValue, isDark && { color: '#FFF' }]}>
-                  {analysisData.nutritionInfo?.fat || 0} г (насыщенные: {analysisData.nutritionInfo?.saturatedFat || 0} г)
+                  {analysisData.nutritionInfo?.fat || 0} {t('nutrition.gram')} ({t('nutrition.saturatedFat')}: {analysisData.nutritionInfo?.saturatedFat || 0} {t('nutrition.gram')})
                 </Text>
+                )}
               </View>
+
+              {/* Углеводы */}
               <View style={styles.nutritionRow}>
-                <Text style={[styles.nutritionLabel, isDark && { color: '#CCC' }]}>- Углеводы:</Text>
+                <Text style={[styles.nutritionLabel, isDark && { color: '#CCC' }]}>- {t('nutrition.carbs')}:</Text>
+                {isEditing ? (
+                  <View style={styles.carbInputContainer}>
+                    <TextInput
+                      style={[styles.nutritionInput, styles.carbInput, isDark && styles.darkInput]}
+                      value={editedNutrition.carbs}
+                      onChangeText={(text) => setEditedNutrition(prev => ({ ...prev, carbs: text }))}
+                      keyboardType="numeric"
+                      placeholder="0"
+                      placeholderTextColor={isDark ? '#666' : '#999'}
+                    />
+                    <Text style={[styles.carbSeparator, isDark && { color: '#CCC' }]}> ({t('nutrition.sugars')}: </Text>
+                    <TextInput
+                      style={[styles.nutritionInput, styles.sugarInput, isDark && styles.darkInput]}
+                      value={editedNutrition.sugars}
+                      onChangeText={(text) => setEditedNutrition(prev => ({ ...prev, sugars: text }))}
+                      keyboardType="numeric"
+                      placeholder="0"
+                      placeholderTextColor={isDark ? '#666' : '#999'}
+                    />
+                    <Text style={[styles.carbSeparator, isDark && { color: '#CCC' }]}> {t('nutrition.gram')})</Text>
+                  </View>
+                ) : (
                 <Text style={[styles.nutritionValue, isDark && { color: '#FFF' }]}>
-                  {analysisData.nutritionInfo?.carbs || 0} г (сахара: {analysisData.nutritionInfo?.sugars || 0} г)
+                  {analysisData.nutritionInfo?.carbs || 0} {t('nutrition.gram')} ({t('nutrition.sugars')}: {analysisData.nutritionInfo?.sugars || 0} {t('nutrition.gram')})
                 </Text>
+                )}
               </View>
+
+              {/* Клетчатка */}
               <View style={styles.nutritionRow}>
-                <Text style={[styles.nutritionLabel, isDark && { color: '#CCC' }]}>- Пищевые волокна:</Text>
-                <Text style={[styles.nutritionValue, isDark && { color: '#FFF' }]}>{analysisData.nutritionInfo?.fiber || 0} г</Text>
+                <Text style={[styles.nutritionLabel, isDark && { color: '#CCC' }]}>- {t('nutrition.fiber')}:</Text>
+                {isEditing ? (
+                  <TextInput
+                    style={[styles.nutritionInput, isDark && styles.darkInput]}
+                    value={editedNutrition.fiber}
+                    onChangeText={(text) => setEditedNutrition(prev => ({ ...prev, fiber: text }))}
+                    keyboardType="numeric"
+                    placeholder="0"
+                    placeholderTextColor={isDark ? '#666' : '#999'}
+                  />
+                ) : (
+                  <Text style={[styles.nutritionValue, isDark && { color: '#FFF' }]}>
+                    {analysisData.nutritionInfo?.fiber || 0} {t('nutrition.gram')}
+                  </Text>
+                )}
               </View>
               
               {/* Отображение витаминов */}
               {analysisData.nutritionInfo.vitamins && analysisData.nutritionInfo.vitamins.length > 0 && (
                 <View style={styles.vitaminsContainer}>
-                  <Text style={[styles.sectionSubtitle, isDark && { color: '#FFF' }]}>Витамины:</Text>
+                  <Text style={[styles.sectionSubtitle, isDark && { color: '#FFF' }]}>{t('product.vitamins')}:</Text>
                   <View style={styles.badgesContainer}>
                     {analysisData.nutritionInfo.vitamins.map((vitamin, index) => (
                       <NutrientBadge
@@ -640,7 +859,7 @@ export default function PhotoAnalysisScreen() {
               {/* Отображение минералов */}
               {analysisData.nutritionInfo.minerals && analysisData.nutritionInfo.minerals.length > 0 && (
                 <View style={styles.mineralsContainer}>
-                  <Text style={[styles.sectionSubtitle, isDark && { color: '#FFF' }]}>Минералы:</Text>
+                  <Text style={[styles.sectionSubtitle, isDark && { color: '#FFF' }]}>{t('product.minerals')}:</Text>
                   <View style={styles.badgesContainer}>
                     {analysisData.nutritionInfo.minerals.map((mineral, index) => (
                       <NutrientBadge
@@ -656,21 +875,21 @@ export default function PhotoAnalysisScreen() {
             
             <View style={styles.scoreContainer}>
               <Text style={[styles.sectionTitle, isDark && { color: '#FFF' }]}>
-                Общая оценка здоровья: {analysisData.analysis?.overallHealthScore || 'Не определена'}/100
+                {t('nutrition.overallHealthScore')}: {analysisData.analysis?.overallHealthScore || t('nutrition.notDetermined')}/100
               </Text>
             </View>
             
             {analysisData.recommendedIntake && (
               <View style={styles.recommendationsContainer}>
                 <Text style={[styles.sectionTitle, isDark && { color: '#FFF' }]}>
-                  Рекомендации:
+                  {t('nutrition.recommendations')}:
                 </Text>
                 <Text style={[styles.recommendationsText, isDark && { color: '#CCC' }]}>
-                  {analysisData.recommendedIntake.description || 'Рекомендации не определены'}
+                  {analysisData.recommendedIntake.description || t('nutrition.recommendationsNotDetermined')}
                 </Text>
                 {analysisData.recommendedIntake.maxFrequency && (
                   <Text style={[styles.frequencyText, isDark && { color: '#CCC' }]}>
-                    <Text style={{fontWeight: 'bold'}}>Рекомендуемая частота:</Text> {analysisData.recommendedIntake.maxFrequency}
+                    <Text style={{fontWeight: 'bold'}}>{t('nutrition.frequency')}:</Text> {analysisData.recommendedIntake.maxFrequency}
                   </Text>
                 )}
               </View>
@@ -681,7 +900,7 @@ export default function PhotoAnalysisScreen() {
               onPress={handleTakeAnotherPhoto}
             >
               <Ionicons name="camera-outline" size={24} color="#FFF" />
-              <Text style={styles.buttonText}>Сделать другое фото</Text>
+              <Text style={styles.buttonText}>{t('photoAnalysis.takeAnotherPhoto')}</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -694,6 +913,10 @@ export default function PhotoAnalysisScreen() {
                 contentFit="cover"
                 cachePolicy="memory-disk"
                 transition={200}
+                placeholder={{ blurhash: 'LGF5?xYk^6#M@-5c,1J5@[or[Q6.' }}
+                onError={(error) => {
+                  console.warn('❌ Ошибка загрузки изображения в анализе фото:', error);
+                }}
               />
             </View>
             
@@ -990,5 +1213,113 @@ const styles = StyleSheet.create({
   fullWidthButton: {
     marginHorizontal: 0,
     marginTop: 16,
-  }
+  },
+  editingContainer: {
+    borderWidth: 2,
+    borderColor: '#007AFF',
+    backgroundColor: '#F8F9FA',
+  },
+  nutritionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  editButtonsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  editButton: {
+    padding: 8,
+    borderRadius: 6,
+    backgroundColor: '#F0F0F0',
+    marginLeft: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  nutritionInput: {
+    flex: 1,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 4,
+    backgroundColor: '#FFF',
+    fontSize: 16,
+    textAlign: 'right',
+    minWidth: 60,
+  },
+  darkInput: {
+    backgroundColor: '#333',
+    borderColor: '#555',
+    color: '#FFF',
+  },
+  fatInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  fatInput: {
+    flex: 1,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 4,
+    backgroundColor: '#FFF',
+    fontSize: 16,
+    textAlign: 'right',
+    minWidth: 40,
+  },
+  saturatedFatInput: {
+    flex: 1,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 4,
+    backgroundColor: '#FFF',
+    fontSize: 16,
+    textAlign: 'right',
+    minWidth: 40,
+  },
+  fatSeparator: {
+    fontSize: 16,
+    marginHorizontal: 4,
+  },
+  carbInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  carbInput: {
+    flex: 1,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 4,
+    backgroundColor: '#FFF',
+    fontSize: 16,
+    textAlign: 'right',
+    minWidth: 40,
+  },
+  sugarInput: {
+    flex: 1,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 4,
+    backgroundColor: '#FFF',
+    fontSize: 16,
+    textAlign: 'right',
+    minWidth: 40,
+  },
+  carbSeparator: {
+    fontSize: 16,
+    marginHorizontal: 4,
+  },
+  darkEditButton: {
+    backgroundColor: '#333',
+    borderColor: '#555',
+  },
 });

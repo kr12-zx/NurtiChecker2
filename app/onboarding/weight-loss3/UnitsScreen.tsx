@@ -4,7 +4,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from '../../../i18n/i18n';
 import { UnitSettings } from '../../types/onboarding';
 import { OnboardingLayout } from './unifiedLayouts';
-import { options, typography, usePalette } from './unifiedStyles';
+import { useOptionsStyles, usePalette, useTypographyStyles } from './unifiedStyles';
 
 interface UnitsScreenProps {
   onContinue: () => void;
@@ -20,6 +20,8 @@ const UnitsScreen: React.FC<UnitsScreenProps> = ({
   onUnitSettingsChange
 }) => {
   const palette = usePalette();
+  const optionsStyles = useOptionsStyles();
+  const typography = useTypographyStyles();
   const { t } = useTranslation();
 
   const unitOptions = [
@@ -51,13 +53,13 @@ const UnitsScreen: React.FC<UnitsScreenProps> = ({
             <TouchableOpacity
               key={option.id}
               style={[
-                options.optionContainer,
-                isSelected ? options.selectedOption : options.unselectedOption
+                optionsStyles.optionContainer,
+                isSelected ? optionsStyles.selectedOption : optionsStyles.unselectedOption
               ]}
               onPress={() => handleUnitChange(option.id as 'metric' | 'imperial')}
               activeOpacity={0.5}
             >
-              <View style={options.optionIconContainer}>
+              <View style={optionsStyles.optionIconContainer}>
                 <Ionicons
                   name={option.icon as any}
                   size={24}
@@ -65,15 +67,15 @@ const UnitsScreen: React.FC<UnitsScreenProps> = ({
                 />
               </View>
               
-              <View style={options.optionTextContainer}>
+              <View style={optionsStyles.optionTextContainer}>
                 <Text style={typography.optionTitle}>
                   {option.label}
                 </Text>
               </View>
               
               <View style={[
-                options.checkIconContainer,
-                isSelected ? options.selectedCheckIconContainer : options.unselectedCheckIconContainer
+                optionsStyles.checkIconContainer,
+                isSelected ? optionsStyles.selectedCheckIconContainer : optionsStyles.unselectedCheckIconContainer
               ]}>
                 {isSelected && (
                   <Ionicons name="checkmark" size={16} color={palette.text.white} />
